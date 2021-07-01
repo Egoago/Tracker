@@ -165,7 +165,12 @@
     </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Tracker.cpp" />
+    <ClCompile Include="src\Camera\uEyeCamera.cpp" />
+    <ClCompile Include="src\Tracker.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\Camera\Camera.h" />
+    <ClInclude Include="src\Camera\uEyeCamera.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
