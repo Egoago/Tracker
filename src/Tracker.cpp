@@ -1,105 +1,104 @@
 #include "opencv2/opencv.hpp"
 #include "opencv2/highgui/highgui.hpp"
-#include "Camera/OpenCVCamera.h"
+#include <GL/glew.h>
 #include <GL/freeglut.h>
+#include "Camera/OpenCVCamera.h"
+#include "Object/AssimpGeometry.h"
+#include "Rendering/Shader.h"
 
 using namespace cv;
 using namespace std;
 
-int rx = 100, ry = 125;
-int xCenter = 250, yCenter = 250;
+AssimpGeometry* geo;
+Shader shader;
 
-void myinit(void)
+void init(int argc, char** argv)
 {
-    glClearColor(1.0, 1.0, 1.0, 0.0);
+    glutInit(&argc, argv);
+    glutInitWindowSize(1280, 1080);
+    glutInitWindowPosition(10, 10);
+    glutCreateWindow("Assimp test");
+    glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB | GLUT_DEPTH);
+    glEnable(GL_DEPTH_TEST);
+
+    glewInit();
+    int majorVersion = 3, minorVersion = 3;
+    printf("GL Vendor    : %s\n", glGetString(GL_VENDOR));
+    printf("GL Renderer  : %s\n", glGetString(GL_RENDERER));
+    printf("GL Version (string)  : %s\n", glGetString(GL_VERSION));
+    glGetIntegerv(GL_MAJOR_VERSION, &majorVersion);
+    glGetIntegerv(GL_MINOR_VERSION, &minorVersion);
+    printf("GL Version (integer) : %d.%d\n", majorVersion, minorVersion);
+    printf("GLSL Version : %s\n", glGetString(GL_SHADING_LANGUAGE_VERSION));
+
+    glClearColor(0.0, 0.0, 0.0, 0.0);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluOrtho2D(0.0, 640.0, 0.0, 480.0);
-}
+    gluPerspective(45.0, 1.0, 0.1, 1000.0);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    glTranslated(0.0, 0.0, -200.0);
+    glRotated(-45.0, 0.0, 1.0, 0.0);
 
-void setPixel(GLint x, GLint y)
-{
-    glBegin(GL_POINTS);
-    glVertex2i(x, y);
-    glEnd();
-}
-void ellipseMidPoint()
-{
-    float x = 0;
-    float y = ry;
-    float p1 = ry * ry - (rx * rx) * ry + (rx * rx) * (0.25);
-    float dx = 2 * (ry * ry) * x;
-    float dy = 2 * (rx * rx) * y;
-    glColor3ub(rand() % 255, rand() % 255, rand() % 255);
-    while (dx < dy)
-    {
-        setPixel(xCenter + x, yCenter + y);
-        setPixel(xCenter - x, yCenter + y);
-        setPixel(xCenter + x, yCenter - y);
-        setPixel(xCenter - x, yCenter - y);
-        if (p1 < 0)
-        {
-            x = x + 1;
-            dx = 2 * (ry * ry) * x;
-            p1 = p1 + dx + (ry * ry);
-        }
-        else
-        {
-            x = x + 1;
-            y = y - 1;
-            dx = 2 * (ry * ry) * x;
-            dy = 2 * (rx * rx) * y;
-            p1 = p1 + dx - dy + (ry * ry);
-        }
-    }
-    glFlush();
+    GLfloat black[] = { 0.0, 0.0, 0.0, 1.0 };
+    GLfloat yellow[] = { 1.0, 1.0, 0.0, 1.0 };
+    GLfloat cyan[] = { 0.0, 1.0, 1.0, 1.0 };
+    GLfloat white[] = { 1.0, 1.0, 1.0, 1.0 };
+    GLfloat direction[] = { 1.0, 1.0, 1.0, 0.0 };
 
-    float p2 = (ry * ry) * (x + 0.5) * (x + 0.5) + (rx * rx) * (y
-        - 1) * (y - 1) - (rx * rx) * (ry * ry);
-    glColor3ub(rand() % 255, rand() % 255, rand() % 255);
-    while (y > 0)
-    {
-        setPixel(xCenter + x, yCenter + y);
-        setPixel(xCenter - x, yCenter + y);
-        setPixel(xCenter + x, yCenter - y);
-        setPixel(xCenter - x, yCenter - y);
-        if (p2 > 0)
-        {
-            x = x;
-            y = y - 1;
-            dy = 2 * (rx * rx) * y;
-            p2 = p2 - dy + (rx * rx);
-        }
-        else
-        {
-            x = x + 1;
-            y = y - 1;
-            dy = dy - 2 * (rx * rx);
-            dx = dx + 2 * (ry * ry);
-            p2 = p2 + dx -
-                dy + (rx * rx);
-        }
-    }
-    glFlush();
+    shader.loadShader(GL_VERTEX_SHADER, "../../src/Shaders/pass.vert");
+    shader.loadShader(GL_FRAGMENT_SHADER, "../../src/Shaders/simple.frag");
+    shader.compile();
+
+
 }
 void display()
 {
-    glClear(GL_COLOR_BUFFER_BIT);
-    glColor3f(1.0, 0.0, 0.0);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glPointSize(2.0);
-    ellipseMidPoint();
+    glLineWidth(1.0);
+
+    glBegin(GL_LINES);
+    glColor3f(1, 0, 0); glVertex3f(0, 0, 0); glVertex3f(40, 0, 0);
+    glColor3f(0, 1, 0); glVertex3f(0, 0, 0); glVertex3f(0, 40, 0);
+    glColor3f(0, 0, 1); glVertex3f(0, 0, 0); glVertex3f(0, 0, 40);
+    glEnd();
+    shader.enable();
+
+    glColor3f(1.0, 1.0, 1.0);
+    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    GLuint VB, IB;
+    glGenBuffers(1, &VB);
+    glBindBuffer(GL_ARRAY_BUFFER, VB);
+    glBufferData(GL_ARRAY_BUFFER, geo->getVerticesCount() * geo->getVertexSize(), geo->getVertices(), GL_STATIC_DRAW);
+
+    glGenBuffers(1, &IB);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IB);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, geo->getIndecesCount() * geo->getIndexSize(), geo->getIndices(), GL_STATIC_DRAW);
+
+    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
+
+    glBindBuffer(GL_ARRAY_BUFFER, VB);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, geo->getVertexSize(), 0);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, geo->getVertexSize(), (const GLvoid*)12);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IB);
+
+    glDrawElements(GL_TRIANGLES, geo->getIndecesCount(), GL_UNSIGNED_INT, 0);
+    glDisableVertexAttribArray(0);
+    glDisableVertexAttribArray(1);
+
+    shader.disable();
     glFlush();
 }
 
 int main(int argc, char** argv) {
-    /*glutInit(&argc, argv);
-    glutInitWindowSize(640, 480);
-    glutInitWindowPosition(10, 10);
-    glutCreateWindow("User_Name");
-    myinit();
-    glutDisplayFunc(display);
-    glutMainLoop();*/
-    Camera* cam = new OpenCVCamera();
+    geo = new AssimpGeometry("cylinder.STL");
+    init(argc, argv);
+    display();
+    waitKey(1000000);
+    /*Camera* cam = new OpenCVCamera();
     namedWindow("Original", WINDOW_NORMAL);
     resizeWindow("Original", cam->getWidth() / 2, cam->getHeight() / 2);
     moveWindow("Original", 50, 50);
@@ -120,6 +119,6 @@ int main(int argc, char** argv) {
         imshow("Canny", dst);
         waitKey(1);
     }
-    delete cam;
+    delete cam;*/
     return 0;
 }

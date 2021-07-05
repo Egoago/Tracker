@@ -27,7 +27,9 @@ OpenCVCamera::~OpenCVCamera()
 char* OpenCVCamera::getNextFrame()
 {
     VideoCapture* camera = (VideoCapture*)cap;
-    *camera >> frame;
+    Mat bgrFrame;
+    *camera >> bgrFrame;
+    cvtColor(bgrFrame, frame, COLOR_BGR2GRAY);
     return (char*)frame.data;
 }
 
@@ -40,5 +42,5 @@ int OpenCVCamera::getFormat() const {
     VideoCapture* camera = (VideoCapture*)cap;
     //return (int) camera->get(CAP_PROP_FORMAT);
     //TODO
-    return CV_8UC3;
+    return CV_8U;
 }

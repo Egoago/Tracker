@@ -7,6 +7,7 @@ protected:
 	int nBitsPerPixel;
 public:
 	int getWidth() const { return width; }
+	virtual ~Camera() {}
 	int getHeight() const { return height; }
 	int getPixelSize() const { return nBitsPerPixel / 8; }
 	virtual char* getNextFrame() = 0;

@@ -80,18 +80,18 @@
     <LinkIncremental>true</LinkIncremental>
     <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>Build\$(Platform)\$(Configuration)\</IntDir>
-    <IncludePath>$(SolutionDir)Common\uEye\Include;$(SolutionDir)Common\freeglut\Include;$(SolutionDir)Common\Opencv\Include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)Common\uEye\Lib;$(SolutionDir)Common\freeglut\Lib;$(SolutionDir)Common\OpenCV\Lib;$(LibraryPath)</LibraryPath>
-    <SourcePath>$(SolutionDir)Common\freeglut\Bin;$(SolutionDir)Common\OpenCV\Bin;$(SourcePath)</SourcePath>
+    <IncludePath>$(SolutionDir)Common\assimp\Include;$(SolutionDir)Common\uEye\Include;$(SolutionDir)Common\freeglut\Include;$(SolutionDir)Common\glew-2.1.0\Include;$(SolutionDir)Common\Opencv\Include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)Common\uEye\Lib;$(SolutionDir)Common\freeglut\Lib;$(SolutionDir)Common\assimp\Lib;$(SolutionDir)Common\glew-2.1.0\Lib\Release\x64;$(SolutionDir)Common\OpenCV\Lib;$(LibraryPath)</LibraryPath>
+    <SourcePath>$(SourcePath)</SourcePath>
     <CustomBuildBeforeTargets>Build</CustomBuildBeforeTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>Build\$(Platform)\$(Configuration)\</IntDir>
-    <IncludePath>$(SolutionDir)Common\uEye\Include;$(SolutionDir)Common\freeglut\Include;$(SolutionDir)Common\Opencv\Include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)Common\uEye\Lib;$(SolutionDir)Common\freeglut\Lib;$(SolutionDir)Common\OpenCV\Lib;$(LibraryPath)</LibraryPath>
-    <SourcePath>$(SolutionDir)Common\freeglut\Bin;$(SolutionDir)Common\OpenCV\Bin;$(SourcePath)</SourcePath>
+    <IncludePath>$(SolutionDir)Common\glew-2.1.0\Include;$(SolutionDir)Common\assimp\Include;$(SolutionDir)Common\uEye\Include;$(SolutionDir)Common\freeglut\Include;$(SolutionDir)Common\Opencv\Include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)Common\uEye\Lib;$(SolutionDir)Common\freeglut\Lib;$(SolutionDir)Common\assimp\Lib;$(SolutionDir)Common\glew-2.1.0\Lib\Release\x64;$(SolutionDir)Common\OpenCV\Lib;$(LibraryPath)</LibraryPath>
+    <SourcePath>$(SourcePath)</SourcePath>
     <CustomBuildBeforeTargets>Build</CustomBuildBeforeTargets>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -132,15 +132,17 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>opencv_world452d.lib;uEye_api_64.lib;uEye_tools_64.lib;freeglut64.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opencv_world452d.lib;uEye_api_64.lib;uEye_tools_64.lib;freeglut64.lib;assimp-vc142-mtd.lib;glew32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
     </Link>
     <CustomBuildStep>
       <Command>copy "$(SolutionDir)Common\OpenCV\Bin\opencv_world452d.dll" "$(SolutionDir)Bin\$(Platform)\$(Configuration)\opencv_world452d.dll" /Y
-copy "$(SolutionDir)Common\freeglut\Bin\x64\freeglut.dll" "$(SolutionDir)Bin\$(Platform)\$(Configuration)\freeglut.dll" /Y</Command>
+copy "$(SolutionDir)Common\freeglut\Bin\x64\freeglut.dll" "$(SolutionDir)Bin\$(Platform)\$(Configuration)\freeglut.dll" /Y
+copy "$(SolutionDir)Common\assimp\Bin\assimp-vc142-mtd.dll" "$(SolutionDir)Bin\$(Platform)\$(Configuration)\assimp-vc142-mtd.dll" /Y
+copy "$(SolutionDir)Common\glew-2.1.0\Bin\Release\x64\glew32.dll" "$(SolutionDir)Bin\$(Platform)\$(Configuration)\glew32.dll" /Y</Command>
     </CustomBuildStep>
     <CustomBuildStep>
-      <Outputs>$(SolutionDir)Bin\$(Platform)\$(Configuration)\opencv_world452d.dll;$(SolutionDir)Bin\$(Platform)\$(Configuration)\freeglut.dll</Outputs>
+      <Outputs>$(SolutionDir)Bin\$(Platform)\$(Configuration)\opencv_world452d.dll;$(SolutionDir)Bin\$(Platform)\$(Configuration)\freeglut.dll;$(SolutionDir)Bin\$(Platform)\$(Configuration)\assimp-vc142-mtd.dll;$(SolutionDir)Bin\$(Platform)\$(Configuration)\glew32.dll</Outputs>
     </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -157,25 +159,35 @@ copy "$(SolutionDir)Common\freeglut\Bin\x64\freeglut.dll" "$(SolutionDir)Bin\$(P
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>opencv_world452.lib;uEye_api_64.lib;uEye_tools_64.lib;freeglut64.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opencv_world452.lib;uEye_api_64.lib;uEye_tools_64.lib;freeglut64.lib;assimp-vc142-mtd.lib;glew32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <CustomBuildStep>
       <Command>copy "$(SolutionDir)Common\OpenCV\Bin\opencv_world452.dll" "$(SolutionDir)Bin\$(Platform)\$(Configuration)\opencv_world452.dll" /Y
-copy "$(SolutionDir)Common\freeglut\Bin\x64\freeglut.dll" "$(SolutionDir)Bin\$(Platform)\$(Configuration)\freeglut.dll" /Y</Command>
+copy "$(SolutionDir)Common\freeglut\Bin\x64\freeglut.dll" "$(SolutionDir)Bin\$(Platform)\$(Configuration)\freeglut.dll" /Y
+copy "$(SolutionDir)Common\assimp\Bin\assimp-vc142-mtd.dll" "$(SolutionDir)Bin\$(Platform)\$(Configuration)\assimp-vc142-mtd.dll" /Y
+copy "$(SolutionDir)Common\glew-2.1.0\Bin\Release\x64\glew32.dll" "$(SolutionDir)Bin\$(Platform)\$(Configuration)\glew32.dll" /Y</Command>
     </CustomBuildStep>
     <CustomBuildStep>
-      <Outputs>$(SolutionDir)Bin\$(Platform)\$(Configuration)\opencv_world452.dll;$(SolutionDir)Bin\$(Platform)\$(Configuration)\freeglut.dll</Outputs>
+      <Outputs>$(SolutionDir)Bin\$(Platform)\$(Configuration)\opencv_world452.dll;$(SolutionDir)Bin\$(Platform)\$(Configuration)\freeglut.dll;$(SolutionDir)Bin\$(Platform)\$(Configuration)\assimp-vc142-mtd.dll;$(SolutionDir)Bin\$(Platform)\$(Configuration)\glew32.dll</Outputs>
     </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\Camera\OpenCVCamera.cpp" />
     <ClCompile Include="src\Camera\uEyeCamera.cpp" />
+    <ClCompile Include="src\Object\AssimpGeometry.cpp" />
     <ClCompile Include="src\Tracker.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="resource.h" />
     <ClInclude Include="src\Camera\Camera.h" />
     <ClInclude Include="src\Camera\OpenCVCamera.h" />
     <ClInclude Include="src\Camera\uEyeCamera.h" />
+    <ClInclude Include="src\Object\Geometry.h" />
+    <ClInclude Include="src\Object\AssimpGeometry.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="src\Shaders\pass.vert" />
+    <None Include="src\Shaders\simple.frag" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
