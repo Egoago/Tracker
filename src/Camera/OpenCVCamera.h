@@ -1,16 +1,17 @@
 #pragma once
-#include "Camera.h"
 
-class UEyeCamera : public Camera
-{
+#include "Camera.h"
+#include <opencv2/opencv.hpp>
+
+class OpenCVCamera : public Camera {
 private:
-	int id;
-	unsigned long hCam = 0;
-	char* pcImageMemory;
+	void* cap;
+	cv::Mat frame;
 public:
-	UEyeCamera();
-	~UEyeCamera();
+	OpenCVCamera(int id = 0);
+	~OpenCVCamera();
 	virtual char* getNextFrame();
 	virtual double getFPS() const;
 	virtual int getFormat() const;
 };
+

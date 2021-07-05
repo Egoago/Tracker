@@ -28,7 +28,7 @@ int setColorMode(HIDS hCam, char colorMode) {
     return nBitsPerPixel;
 }
 
-uEyeCamera::uEyeCamera()
+UEyeCamera::UEyeCamera()
 {
     if (is_InitCamera(&hCam, NULL) != IS_SUCCESS) {
         std::cerr << "Camera not found";
@@ -53,7 +53,7 @@ uEyeCamera::uEyeCamera()
     is_SetDisplayMode(hCam, IS_SET_DM_DIB);
 }
 
-uEyeCamera::~uEyeCamera()
+UEyeCamera::~UEyeCamera()
 {
     // Releases an image memory that was allocated
     is_FreeImageMem(hCam, pcImageMemory, id);
@@ -61,14 +61,18 @@ uEyeCamera::~uEyeCamera()
     is_ExitCamera(hCam);
 }
 
-char* uEyeCamera::getNextFrame() {
+char* UEyeCamera::getNextFrame() {
     is_FreezeVideo(hCam, IS_WAIT);
     return pcImageMemory;
 }
 
-double uEyeCamera::getFPS() const
+double UEyeCamera::getFPS() const
 {
     double fps = 0.0;
     is_GetFramesPerSecond(hCam, &fps);
     return fps;
+}
+
+int UEyeCamera::getFormat() const {
+    return 0;
 }

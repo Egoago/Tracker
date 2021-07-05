@@ -1,6 +1,6 @@
 #include "opencv2/opencv.hpp"
 #include "opencv2/highgui/highgui.hpp"
-#include "Camera/uEyeCamera.h"
+#include "Camera/OpenCVCamera.h"
 #include <GL/freeglut.h>
 
 using namespace cv;
@@ -92,14 +92,14 @@ void display()
 }
 
 int main(int argc, char** argv) {
-    glutInit(&argc, argv);
+    /*glutInit(&argc, argv);
     glutInitWindowSize(640, 480);
     glutInitWindowPosition(10, 10);
     glutCreateWindow("User_Name");
     myinit();
     glutDisplayFunc(display);
-    glutMainLoop();
-    Camera* cam = new uEyeCamera();
+    glutMainLoop();*/
+    Camera* cam = new OpenCVCamera();
     namedWindow("Original", WINDOW_NORMAL);
     resizeWindow("Original", cam->getWidth() / 2, cam->getHeight() / 2);
     moveWindow("Original", 50, 50);
@@ -109,12 +109,12 @@ int main(int argc, char** argv) {
     while (1)
     {
         char* frame = cam->getNextFrame();
-        Mat wrapped(Size(cam->getWidth(), cam->getHeight()), CV_8U, frame);
+        Mat wrapped(Size(cam->getWidth(), cam->getHeight()), cam->getFormat(), frame);
         cout <<"\r"<<cam->getFPS();
         imshow("Original", wrapped);
         Mat dst, detected_edges;
         blur(wrapped, detected_edges, Size(5, 5));
-        Canny(wrapped, detected_edges, 100, 20 * 3, 3);
+        Canny(wrapped, detected_edges, 200, 30 * 3, 3);
         dst = Scalar::all(0);
         wrapped.copyTo(dst, detected_edges);
         imshow("Canny", dst);

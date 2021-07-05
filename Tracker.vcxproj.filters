@@ -24,12 +24,18 @@
     <ClCompile Include="src\Camera\uEyeCamera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\Camera\OpenCVCamera.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Camera\Camera.h">
       <Filter>Header Files\Camera</Filter>
     </ClInclude>
     <ClInclude Include="src\Camera\uEyeCamera.h">
+      <Filter>Header Files\Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Camera\OpenCVCamera.h">
       <Filter>Header Files\Camera</Filter>
     </ClInclude>
   </ItemGroup>

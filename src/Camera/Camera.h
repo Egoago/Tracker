@@ -11,5 +11,6 @@ public:
 	int getPixelSize() const { return nBitsPerPixel / 8; }
 	virtual char* getNextFrame() = 0;
 	virtual double getFPS() const = 0;
+	virtual int getFormat() const = 0;
 };
 
