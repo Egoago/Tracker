@@ -97,12 +97,12 @@ void Renderer::renderModel(const char* file, unsigned char* outTexture)
     glEnableVertexAttribArray(1);
 
     glBindBuffer(GL_ARRAY_BUFFER, VB);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, geo->getVertexSize(), 0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, geo->getVertexSize(), (const GLvoid*)12);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, (GLsizei)geo->getVertexSize(), 0);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, (GLsizei)geo->getVertexSize(), (const GLvoid*)12);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IB);
 
-    glDrawElements(GL_TRIANGLES, geo->getIndecesCount(), GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_TRIANGLES, (GLsizei)geo->getIndecesCount(), GL_UNSIGNED_INT, 0);
     glDisableVertexAttribArray(0);
     glDisableVertexAttribArray(1);
 

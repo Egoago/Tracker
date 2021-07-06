@@ -4,12 +4,11 @@
 #include <assimp/postprocess.h>
 #include <iostream>
 
-
 AssimpGeometry::AssimpGeometry(const char* fileName) {
 	std::string path = "Models/" + std::string(fileName);
 	Assimp::Importer importer;
 
-	const aiScene* scene = importer.ReadFile(path, /*aiProcess_Triangulate |*/ aiProcess_GenNormals);
+	const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_GenNormals);
 	if (scene == nullptr) {
 		std::cerr << "Failed to load obj file " << path << ". Assimp error message: " << importer.GetErrorString();
 		exit(1);
