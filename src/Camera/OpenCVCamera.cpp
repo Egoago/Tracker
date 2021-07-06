@@ -12,9 +12,9 @@ OpenCVCamera::OpenCVCamera(int id)
         std::cerr << "Couldn't open OpenCV camera";
         exit(1);
     }
-    width = camera->get(CAP_PROP_FRAME_WIDTH);
+    width = (int)camera->get(CAP_PROP_FRAME_WIDTH);
     std::cout << width << std::endl;
-    height = camera->get(CAP_PROP_FRAME_HEIGHT);
+    height = (int)camera->get(CAP_PROP_FRAME_HEIGHT);
     std::cout << height << std::endl;
     nBitsPerPixel = 24;
 }

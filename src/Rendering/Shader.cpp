@@ -21,7 +21,7 @@ void Shader::loadShader(GLuint type, std::string filename)
 		break;
 
 	case GL_FRAGMENT_SHADER:
-		fID = glCreateShader(GL_VERTEX_SHADER);
+		fID = glCreateShader(GL_FRAGMENT_SHADER);
 		fShader = readFile(filename);
 		break;
 	default:
@@ -78,6 +78,7 @@ bool Shader::compile()
 		glGetProgramInfoLog(ID, InfoLogLength, NULL, &programErrorMessage[0]);
 		std::cout << "Link: " << programErrorMessage.data() << std::endl;
 	}
+	else compiled = true;
 
 	glDeleteShader(vID);
 	glDeleteShader(fID);
@@ -98,9 +99,14 @@ bool Shader::disable()
     return compiled;
 }
 
-
 void Shader::registerMVP(GLfloat* m)
 {
 	GLuint id = glGetUniformLocation(ID, "MVP");
 	glUniformMatrix4fv(id, 1, GL_FALSE, m);
+}
+
+void Shader::registerVec4(std::string name, float f1, float f2, float f3, float f4)
+{
+	GLuint id = glGetUniformLocation(ID, name.c_str());
+	glUniform4f(id, f1, f2, f3, f4);
 }

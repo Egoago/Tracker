@@ -13,5 +13,6 @@ public:
 	bool enable();
 	bool disable();
 	void registerMVP(GLfloat* m);
+	void registerVec4(std::string name, float f1, float f2, float f3, float f4);
 };
 

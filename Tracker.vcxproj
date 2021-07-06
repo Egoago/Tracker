@@ -80,7 +80,7 @@
     <LinkIncremental>true</LinkIncremental>
     <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>Build\$(Platform)\$(Configuration)\</IntDir>
-    <IncludePath>$(SolutionDir)Common\assimp\Include;$(SolutionDir)Common\uEye\Include;$(SolutionDir)Common\freeglut\Include;$(SolutionDir)Common\glew-2.1.0\Include;$(SolutionDir)Common\Opencv\Include;$(IncludePath)</IncludePath>
+    <IncludePath>D:\Egoago\Sztaki\Tracker\Common\glm;$(SolutionDir)Common\assimp\Include;$(SolutionDir)Common\uEye\Include;$(SolutionDir)Common\freeglut\Include;$(SolutionDir)Common\glew-2.1.0\Include;$(SolutionDir)Common\Opencv\Include;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)Common\uEye\Lib;$(SolutionDir)Common\freeglut\Lib;$(SolutionDir)Common\assimp\Lib;$(SolutionDir)Common\glew-2.1.0\Lib\Release\x64;$(SolutionDir)Common\OpenCV\Lib;$(LibraryPath)</LibraryPath>
     <SourcePath>$(SourcePath)</SourcePath>
     <CustomBuildBeforeTargets>Build</CustomBuildBeforeTargets>
@@ -89,7 +89,7 @@
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>Build\$(Platform)\$(Configuration)\</IntDir>
-    <IncludePath>$(SolutionDir)Common\glew-2.1.0\Include;$(SolutionDir)Common\assimp\Include;$(SolutionDir)Common\uEye\Include;$(SolutionDir)Common\freeglut\Include;$(SolutionDir)Common\Opencv\Include;$(IncludePath)</IncludePath>
+    <IncludePath>D:\Egoago\Sztaki\Tracker\Common\glm;$(SolutionDir)Common\glew-2.1.0\Include;$(SolutionDir)Common\assimp\Include;$(SolutionDir)Common\uEye\Include;$(SolutionDir)Common\freeglut\Include;$(SolutionDir)Common\Opencv\Include;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)Common\uEye\Lib;$(SolutionDir)Common\freeglut\Lib;$(SolutionDir)Common\assimp\Lib;$(SolutionDir)Common\glew-2.1.0\Lib\Release\x64;$(SolutionDir)Common\OpenCV\Lib;$(LibraryPath)</LibraryPath>
     <SourcePath>$(SourcePath)</SourcePath>
     <CustomBuildBeforeTargets>Build</CustomBuildBeforeTargets>
@@ -175,15 +175,18 @@ copy "$(SolutionDir)Common\glew-2.1.0\Bin\Release\x64\glew32.dll" "$(SolutionDir
     <ClCompile Include="src\Camera\OpenCVCamera.cpp" />
     <ClCompile Include="src\Camera\uEyeCamera.cpp" />
     <ClCompile Include="src\Object\AssimpGeometry.cpp" />
+    <ClCompile Include="src\Rendering\Renderer.cpp" />
+    <ClCompile Include="src\Rendering\Shader.cpp" />
     <ClCompile Include="src\Tracker.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="resource.h" />
     <ClInclude Include="src\Camera\Camera.h" />
     <ClInclude Include="src\Camera\OpenCVCamera.h" />
     <ClInclude Include="src\Camera\uEyeCamera.h" />
     <ClInclude Include="src\Object\Geometry.h" />
     <ClInclude Include="src\Object\AssimpGeometry.h" />
+    <ClInclude Include="src\Rendering\Renderer.h" />
+    <ClInclude Include="src\Rendering\Shader.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="src\Shaders\pass.vert" />

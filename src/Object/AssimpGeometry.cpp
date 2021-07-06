@@ -6,7 +6,7 @@
 
 
 AssimpGeometry::AssimpGeometry(const char* fileName) {
-	std::string path = "D:\\Egoago\\Sztaki\\Models\\" + std::string(fileName);
+	std::string path = "Models/" + std::string(fileName);
 	Assimp::Importer importer;
 
 	const aiScene* scene = importer.ReadFile(path, /*aiProcess_Triangulate |*/ aiProcess_GenSmoothNormals);
