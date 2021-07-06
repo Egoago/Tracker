@@ -1,4 +1,3 @@
-
 #include "Renderer.h"
 //#include <GL/glew.h>
 #include <GL/freeglut.h>
@@ -6,14 +5,47 @@
 #include <glm/ext/matrix_clip_space.hpp>
 #include "../Object/AssimpGeometry.h"
 
+void Renderer::createFrameBuffer() {
+    //Color buffer
+    glGenTextures(1, &colorBuffer);
+    glBindTexture(GL_TEXTURE_2D, colorBuffer);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, resolution.x, resolution.y, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+    //Depth buffer
+    GLuint depthRenderBuffer;
+    glGenRenderbuffers(1, &depthRenderBuffer);
+    glBindRenderbuffer(GL_RENDERBUFFER, depthRenderBuffer);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, resolution.x, resolution.y);
+
+    //Frame buffer
+    GLuint frameBuffer = 0;
+    glGenFramebuffers(1, &frameBuffer);
+    glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
+    glViewport(0, 0, resolution.x, resolution.y);
+
+    //Bind
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthRenderBuffer);
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, colorBuffer, 0);
+    GLenum DrawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
+    glDrawBuffers(1, DrawBuffers);
+}
+
 Renderer::Renderer(int argc, char** argv, unsigned int width, unsigned int height)
 {
     glutInit(&argc, argv);
     resolution = glm::uvec2(width, height);
-    glutInitWindowSize(resolution.x, resolution.y);
-    glutInitWindowPosition(10, 10);
+    //glutInitWindowSize(1, 1);
+    //glutInitWindowPosition(10, 10);
     glutCreateWindow("Assimp test");
-    glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB | GLUT_DEPTH);
+    /*glutHideWindow();
+    * can not hide window due to
+    * main loop not being called*/
+    
+    //glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB | GLUT_DEPTH);
     glEnable(GL_DEPTH_TEST);
     setProj();
     setModel();
@@ -22,6 +54,8 @@ Renderer::Renderer(int argc, char** argv, unsigned int width, unsigned int heigh
     shader.loadShader(GL_VERTEX_SHADER, "src/Shaders/pass.vert");
     shader.loadShader(GL_FRAGMENT_SHADER, "src/Shaders/simple.frag");
     shader.compile();
+
+    createFrameBuffer();
 }
 
 void Renderer::setProj(float fov, float nearP, float farP)
@@ -37,7 +71,8 @@ void Renderer::setModel(float x, float y, float z, float rotateX, float rotateY)
 	Model = glm::rotate(Model, rotateX, glm::vec3(1,0,0));
 }
 
-void Renderer::renderModel(const char* file)
+
+void Renderer::renderModel(const char* file, unsigned char* outTexture)
 {
 	Geometry* geo = new AssimpGeometry(file);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -73,4 +108,7 @@ void Renderer::renderModel(const char* file)
 
     shader.disable();
     glFlush();
+
+    glBindTexture(GL_TEXTURE_2D, colorBuffer);
+    glGetTexImage(GL_TEXTURE_2D, 0 , GL_BGR, GL_UNSIGNED_BYTE, outTexture);
 }
