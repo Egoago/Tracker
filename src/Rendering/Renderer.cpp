@@ -15,10 +15,15 @@ void Renderer::createFrameBuffer() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
     //Depth buffer
-    GLuint depthRenderBuffer;
-    glGenRenderbuffers(1, &depthRenderBuffer);
-    glBindRenderbuffer(GL_RENDERBUFFER, depthRenderBuffer);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, resolution.x, resolution.y);
+    glGenTextures(1, &depthBuffer);
+    glBindTexture(GL_TEXTURE_2D, depthBuffer);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, resolution.x, resolution.y, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
 
     //Frame buffer
     GLuint frameBuffer = 0;
@@ -27,8 +32,8 @@ void Renderer::createFrameBuffer() {
     glViewport(0, 0, resolution.x, resolution.y);
 
     //Bind
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthRenderBuffer);
     glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, colorBuffer, 0);
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthBuffer, 0);
     GLenum DrawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
     glDrawBuffers(1, DrawBuffers);
 }
@@ -70,7 +75,7 @@ void Renderer::setModel(float x, float y, float z, float rotateX, float rotateY)
 	Model = glm::rotate(Model, rotateX, glm::vec3(1,0,0));
 }
 
-glm::mat4 Renderer::renderModel(Geometry& geometry, unsigned char* outTexture)
+glm::mat4 Renderer::renderModel(Geometry& geometry, unsigned char* depthMap, unsigned char* colorMap)
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glPointSize(2.0);
@@ -106,7 +111,9 @@ glm::mat4 Renderer::renderModel(Geometry& geometry, unsigned char* outTexture)
     shader.disable();
     glFlush();
 
+    glBindTexture(GL_TEXTURE_2D, depthBuffer);
+    glGetTexImage(GL_TEXTURE_2D, 0 , GL_DEPTH_COMPONENT, GL_FLOAT, depthMap);
     glBindTexture(GL_TEXTURE_2D, colorBuffer);
-    glGetTexImage(GL_TEXTURE_2D, 0 , GL_BGR, GL_UNSIGNED_BYTE, outTexture);
+    glGetTexImage(GL_TEXTURE_2D, 0, GL_BGR, GL_UNSIGNED_BYTE, colorMap);
     return mvp;
 }
