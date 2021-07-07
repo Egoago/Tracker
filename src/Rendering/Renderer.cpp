@@ -3,7 +3,6 @@
 #include <GL/freeglut.h>
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/ext/matrix_clip_space.hpp>
-#include "../Object/AssimpGeometry.h"
 
 void Renderer::createFrameBuffer() {
     //Color buffer
@@ -71,10 +70,8 @@ void Renderer::setModel(float x, float y, float z, float rotateX, float rotateY)
 	Model = glm::rotate(Model, rotateX, glm::vec3(1,0,0));
 }
 
-
-void Renderer::renderModel(const char* file, unsigned char* outTexture)
+glm::mat4 Renderer::renderModel(Geometry& geometry, unsigned char* outTexture)
 {
-	Geometry* geo = new AssimpGeometry(file);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glPointSize(2.0);
     glLineWidth(2.0);
@@ -87,22 +84,22 @@ void Renderer::renderModel(const char* file, unsigned char* outTexture)
     GLuint VB, IB;
     glGenBuffers(1, &VB);
     glBindBuffer(GL_ARRAY_BUFFER, VB);
-    glBufferData(GL_ARRAY_BUFFER, geo->getVerticesCount() * geo->getVertexSize(), geo->getVertices(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, geometry.getVerticesCount() * geometry.getVertexSize(), geometry.getVertices(), GL_STATIC_DRAW);
 
     glGenBuffers(1, &IB);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IB);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, geo->getIndecesCount() * geo->getIndexSize(), geo->getIndices(), GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, geometry.getIndecesCount() * geometry.getIndexSize(), geometry.getIndices(), GL_STATIC_DRAW);
 
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);
 
     glBindBuffer(GL_ARRAY_BUFFER, VB);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, (GLsizei)geo->getVertexSize(), 0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, (GLsizei)geo->getVertexSize(), (const GLvoid*)12);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, (GLsizei)geometry.getVertexSize(), 0);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, (GLsizei)geometry.getVertexSize(), (const GLvoid*)12);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IB);
 
-    glDrawElements(GL_TRIANGLES, (GLsizei)geo->getIndecesCount(), GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_TRIANGLES, (GLsizei)geometry.getIndecesCount(), GL_UNSIGNED_INT, 0);
     glDisableVertexAttribArray(0);
     glDisableVertexAttribArray(1);
 
@@ -111,4 +108,5 @@ void Renderer::renderModel(const char* file, unsigned char* outTexture)
 
     glBindTexture(GL_TEXTURE_2D, colorBuffer);
     glGetTexImage(GL_TEXTURE_2D, 0 , GL_BGR, GL_UNSIGNED_BYTE, outTexture);
+    return mvp;
 }
