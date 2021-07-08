@@ -38,9 +38,10 @@ void Renderer::createFrameBuffer() {
     glDrawBuffers(1, DrawBuffers);
 }
 
-Renderer::Renderer(int argc, char** argv, unsigned int width, unsigned int height)
+Renderer::Renderer(unsigned int width, unsigned int height)
 {
-    glutInit(&argc, argv);
+    int argc;
+    glutInit(&argc, nullptr);
     resolution = glm::uvec2(width, height);
     //glutInitWindowSize(1, 1);
     //glutInitWindowPosition(10, 10);
@@ -52,7 +53,7 @@ Renderer::Renderer(int argc, char** argv, unsigned int width, unsigned int heigh
     //glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB | GLUT_DEPTH);
     glEnable(GL_DEPTH_TEST);
     setProj();
-    setModel();
+    setModel(SixDOF());
 
     glewInit();
     shader.loadShader(GL_VERTEX_SHADER, "src/Shaders/pass.vert");
@@ -67,12 +68,15 @@ void Renderer::setProj(float fov, float nearP, float farP)
 	Proj = glm::perspective(glm::radians(fov), (float)resolution.x/resolution.y, nearP, farP);
 }
 
-void Renderer::setModel(float x, float y, float z, float rotateX, float rotateY)
+void Renderer::setModel(SixDOF sixDOF)
 {
 	Model = glm::mat4(1.0f);
-	Model = glm::translate(Model, glm::vec3(x, y, z));
-	Model = glm::rotate(Model, rotateY, glm::vec3(0,1,0));
-	Model = glm::rotate(Model, rotateX, glm::vec3(1,0,0));
+	Model = glm::translate(Model, glm::vec3(sixDOF.position.x,
+                                            sixDOF.position.y,
+                                            sixDOF.position.z));
+	Model = glm::rotate(Model, sixDOF.orientation.p, glm::vec3(1,0,0));
+	Model = glm::rotate(Model, sixDOF.orientation.y, glm::vec3(0,1,0));
+	Model = glm::rotate(Model, sixDOF.orientation.r, glm::vec3(0,0,1));
 }
 
 glm::mat4 Renderer::renderModel(Geometry& geometry, unsigned char* depthMap, unsigned char* colorMap)

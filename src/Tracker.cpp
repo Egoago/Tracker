@@ -4,9 +4,9 @@
 
 int main(int argc, char** argv) {
     Object object("cube.STL");
-    std::cout << "M size: " << object.getM().size() << std::endl;
+    /*std::cout << "M size: " << object.getM().size() << std::endl;
     std::cout << "M_ size: " << object.getM_().size() << std::endl;
-    std::cout << "M size: " << object.getM_() << std::endl;
+    std::cout << "M size: " << object.getM_() << std::endl;*/
     /*Camera* cam = new OpenCVCamera();
     namedWindow("Original", WINDOW_NORMAL);
     resizeWindow("Original", cam->getWidth() / 2, cam->getHeight() / 2);

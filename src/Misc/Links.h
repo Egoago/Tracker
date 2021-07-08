@@ -1,3 +1,4 @@
+#pragma once
 #define CONFIG_FOLDER "Config/"
 #define MODELS_FOLDER "Models/"
 #define LOADED_OBJECTS_FOLDER "Models/Loaded/"

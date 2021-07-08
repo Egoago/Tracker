@@ -21,10 +21,10 @@ struct DirectedEdge {
 
 class ModelEdgeDetector
 {
-	Geometry& geometry;
+	const Geometry& geometry;
 	std::vector<DirectedEdge> edgePairs;
 public:
-	ModelEdgeDetector(Geometry& geometry);
+	ModelEdgeDetector(const Geometry& geometry);
     std::vector<Edge> detectOutlinerEdges(cv::Mat& edgeMap, cv::Mat& out, glm::mat4 MVP);
 
 };

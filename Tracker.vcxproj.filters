@@ -56,7 +56,7 @@
     <ClCompile Include="src\Misc\ConfigParser.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Misc\Links.cpp">
+    <ClCompile Include="src\Misc\Links.h">
       <Filter>Header Files\Misc</Filter>
     </ClCompile>
   </ItemGroup>
@@ -92,6 +92,9 @@
       <Filter>Header Files\Misc</Filter>
     </ClInclude>
     <ClInclude Include="src\Object\Object.h">
+      <Filter>Header Files\Object</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Object\Coordinates.h">
       <Filter>Header Files\Object</Filter>
     </ClInclude>
   </ItemGroup>

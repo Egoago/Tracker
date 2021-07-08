@@ -2,7 +2,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include "Links.cpp"
+#include "Links.h"
 
 using namespace std;
 

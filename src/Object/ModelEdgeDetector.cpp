@@ -4,7 +4,7 @@
 #include "opencv2/highgui/highgui.hpp"
 #include <opencv2/imgproc.hpp>
 
-std::vector<DirectedEdge> detectEdgePairs(Geometry& geometry) {
+std::vector<DirectedEdge> detectEdgePairs(const Geometry& geometry) {
     std::vector<DirectedEdge> pairs(geometry.getIndecesCount());
     unsigned int* indices = (unsigned int*)geometry.getIndices();
     Vertex* vertices = (Vertex*)geometry.getVertices();
@@ -41,7 +41,7 @@ std::vector<DirectedEdge> detectEdgePairs(Geometry& geometry) {
     return pairs;
 }
 
-ModelEdgeDetector::ModelEdgeDetector(Geometry& geometry) : geometry(geometry)
+ModelEdgeDetector::ModelEdgeDetector(const Geometry& geometry) : geometry(geometry)
 {
     edgePairs = detectEdgePairs(geometry);
 }

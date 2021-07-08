@@ -4,6 +4,6 @@
 class AssimpGeometry : public Geometry
 {
 public:
-	AssimpGeometry(const char* fileName);
+	AssimpGeometry(const std::string& fileName);
 };
 
