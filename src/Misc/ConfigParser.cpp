@@ -2,36 +2,86 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include "Links.cpp"
+
+using namespace std;
+
+vector<string> split(string str, string delimiter) {
+    vector<string> out;
+    size_t pos = 0;
+    while ((pos = str.find(delimiter)) != string::npos) {
+        string l = str.substr(0, pos);
+        if (l.length() > 0)
+            out.push_back(l);
+        str.erase(0, pos + delimiter.length());
+    }
+    if (str.length() > 0)
+        out.push_back(str);
+    return out;
+}
 
 ConfigParser::ConfigParser(const char* fileName) : fileName(fileName)
 {
-    std::ifstream file(Folder + std::string(fileName));
-    std::string line;
-    while (std::getline(file, line)) {
-        size_t del = line.find(delimeter);
-        std::string key = line.substr(0, del);
-        std::string value = line.substr(del+1);
-        map[key] = value;
+    ifstream file(CONFIG_FOLDER + string(fileName));
+    string line;
+    while (getline(file, line)) {
+        vector<string> tokens = split(line, delimiter);
+        if (tokens.size() > 1)
+            map[tokens[0]] = split(tokens[1], subDelimiter);
+        else if (tokens.size() == 1)
+            map[tokens[0]] = vector<string>();
     }
     file.close();
 }
 
-const char* ConfigParser::getEntry(const char* entryName)
-{
-    return map.at(entryName).c_str();
+string ConfigParser::getEntry(const string& entryName) {
+    return (*this)[entryName][0];
 }
 
-void ConfigParser::setEntry(const char* entryName, const char* value)
+string ConfigParser::getEntry(const string& entryName, const string& defaultValue)
 {
-    map[entryName] = value;
+    if (map.count(entryName) == 0)
+        map[entryName] = vector<string>{ defaultValue };
+    return getEntry(entryName);
+}
+
+void ConfigParser::setEntry(const string& entryName, const string& value)
+{
+    (*this)[entryName] = vector<string>{ value };
     save();
+}
+
+vector<string>& ConfigParser::getEntries(const string& entryName)
+{
+    return (*this)[entryName];
+}
+
+vector<string>& ConfigParser::getEntries(const string& entryName, const vector<string> defaultValues)
+{
+    if (map.count(entryName) == 0)
+        map[entryName] = defaultValues;
+    return getEntries(entryName);
+}
+
+vector<string>& ConfigParser::operator[](const string& entryName)
+{
+    return map[entryName];
 }
 
 void ConfigParser::save()
 {
-    std::ofstream file(Folder + std::string(fileName));
-    for (auto const& entry : map)
-        file << entry.first << delimeter << entry.second << std::endl;
+    ofstream file(CONFIG_FOLDER + string(fileName));
+    for (auto const& entry : map) {
+        bool first = true;
+        file << entry.first << delimiter;
+        for (auto const& value : entry.second)
+            if (first) {
+                file << value;
+                first = false;
+            }
+            else file << ';' << value;
+        file << endl;
+    }
     file.close();
 }
 

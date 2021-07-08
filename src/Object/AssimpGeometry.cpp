@@ -3,9 +3,10 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 #include <iostream>
+#include "../Misc/Links.cpp"
 
 AssimpGeometry::AssimpGeometry(const char* fileName) {
-	std::string path = "Models/" + std::string(fileName);
+	std::string path = MODELS_FOLDER + std::string(fileName);
 	Assimp::Importer importer;
 
 	const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_GenNormals);

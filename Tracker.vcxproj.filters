@@ -50,11 +50,14 @@
     <ClCompile Include="src\Object\Rasterizer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Object\ObjectLoader.cpp">
+    <ClCompile Include="src\Object\Object.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Misc\ConfigParser.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Misc\Links.cpp">
+      <Filter>Header Files\Misc</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -88,7 +91,7 @@
     <ClInclude Include="src\Misc\ConfigParser.h">
       <Filter>Header Files\Misc</Filter>
     </ClInclude>
-    <ClInclude Include="src\Object\ObjectLoader.h">
+    <ClInclude Include="src\Object\Object.h">
       <Filter>Header Files\Object</Filter>
     </ClInclude>
   </ItemGroup>

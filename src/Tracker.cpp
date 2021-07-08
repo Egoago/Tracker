@@ -1,11 +1,12 @@
 #include "Misc/ConfigParser.h"
 #include <iostream>
+#include "Object/Object.h"
+
 int main(int argc, char** argv) {
-    ConfigParser config("kacsa.conf");
-    config.setEntry("kacsa", "kecske");
-    config.setEntry("kacsa", "kacske");
-    config.setEntry("kacs", "kacske");
-    std::cout << config.getEntry("kacsa");
+    Object object("cube.STL");
+    std::cout << "M size: " << object.getM().size() << std::endl;
+    std::cout << "M_ size: " << object.getM_().size() << std::endl;
+    std::cout << "M size: " << object.getM_() << std::endl;
     /*Camera* cam = new OpenCVCamera();
     namedWindow("Original", WINDOW_NORMAL);
     resizeWindow("Original", cam->getWidth() / 2, cam->getHeight() / 2);
