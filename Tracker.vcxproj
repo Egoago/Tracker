@@ -127,7 +127,7 @@
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ConformanceMode>true</ConformanceMode>
+      <ConformanceMode>false</ConformanceMode>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -152,7 +152,7 @@ copy "$(SolutionDir)Common\glew-2.1.0\Bin\Release\x64\glew32.dll" "$(SolutionDir
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ConformanceMode>true</ConformanceMode>
+      <ConformanceMode>false</ConformanceMode>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -174,8 +174,11 @@ copy "$(SolutionDir)Common\glew-2.1.0\Bin\Release\x64\glew32.dll" "$(SolutionDir
   <ItemGroup>
     <ClCompile Include="src\Camera\OpenCVCamera.cpp" />
     <ClCompile Include="src\Camera\uEyeCamera.cpp" />
+    <ClCompile Include="src\Misc\ConfigParser.cpp" />
     <ClCompile Include="src\Object\AssimpGeometry.cpp" />
     <ClCompile Include="src\Object\ModelEdgeDetector.cpp" />
+    <ClCompile Include="src\Object\ObjectLoader.cpp" />
+    <ClCompile Include="src\Object\Rasterizer.cpp" />
     <ClCompile Include="src\Rendering\Renderer.cpp" />
     <ClCompile Include="src\Rendering\Shader.cpp" />
     <ClCompile Include="src\Tracker.cpp" />
@@ -184,9 +187,12 @@ copy "$(SolutionDir)Common\glew-2.1.0\Bin\Release\x64\glew32.dll" "$(SolutionDir
     <ClInclude Include="src\Camera\Camera.h" />
     <ClInclude Include="src\Camera\OpenCVCamera.h" />
     <ClInclude Include="src\Camera\uEyeCamera.h" />
+    <ClInclude Include="src\Misc\ConfigParser.h" />
     <ClInclude Include="src\Object\Geometry.h" />
     <ClInclude Include="src\Object\AssimpGeometry.h" />
     <ClInclude Include="src\Object\ModelEdgeDetector.h" />
+    <ClInclude Include="src\Object\ObjectLoader.h" />
+    <ClInclude Include="src\Object\Rasterizer.h" />
     <ClInclude Include="src\Rendering\Renderer.h" />
     <ClInclude Include="src\Rendering\Shader.h" />
   </ItemGroup>

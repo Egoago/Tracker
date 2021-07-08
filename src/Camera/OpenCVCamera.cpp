@@ -8,7 +8,7 @@ OpenCVCamera::OpenCVCamera(int id)
 {
     cap = new VideoCapture(id);
     VideoCapture* camera = (VideoCapture*) cap;
-    if (!cap or !camera->open(0)) {
+    if (!cap || !camera->open(0)) {
         std::cerr << "Couldn't open OpenCV camera";
         exit(1);
     }

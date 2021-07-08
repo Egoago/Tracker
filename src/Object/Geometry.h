@@ -1,28 +1,21 @@
 #pragma once
 #include <vector>
-
-struct Vec3 {
-	float x = 0, y = 0, z = 0;
-
-	bool operator==(const Vec3& other) {
-		const float epsilon = 1e-13f;
-		return
-			abs(x - other.x) < epsilon &&
-			abs(y - other.y) < epsilon &&
-			abs(z - other.z) < epsilon;
-	}
-};
+#include <glm/vec3.hpp>
+#include <glm/geometric.hpp>
 
 struct Vertex {
-	Vec3 position, normal;
+	glm::vec3 position, normal;
 
 	bool operator==(const Vertex& other) {
-		return position == other.position;
+		const float epsilon = 1e-13f;
+		return glm::distance(position, other.position) < epsilon;
 	}
 };
 
 struct Edge {
-	Vec3 a, b;
+	glm::vec3 a, b;
+
+	Edge(glm::vec3 a, glm::vec3 b) : a(a), b(b) {}
 };
 
 class Geometry

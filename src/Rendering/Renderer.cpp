@@ -44,7 +44,7 @@ Renderer::Renderer(int argc, char** argv, unsigned int width, unsigned int heigh
     resolution = glm::uvec2(width, height);
     //glutInitWindowSize(1, 1);
     //glutInitWindowPosition(10, 10);
-    glutCreateWindow("Assimp test");
+    glutCreateWindow("OpenGL");
     /*glutHideWindow();
     * can not hide window due to
     * main loop not being called*/

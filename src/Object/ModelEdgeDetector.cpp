@@ -53,38 +53,45 @@ glm::vec2 screenToNDC(glm::vec4 screen) {
     return glm::vec2(screen.x, 1.0f - screen.y);
 }
 
-bool testPoint(cv::Point b, cv::Mat& edgeMap) {
+bool testPoint(cv::Point b, cv::Mat& depthMap) {
+    return depthMap.at<bool>(b);
+}
+
+bool testArea(cv::Point b, cv::Mat& depthMap) {
     if (b.x - 1 < 0 || b.y - 1 < 0 ||
-        b.x + 1 > edgeMap.cols || b.y + 1 > edgeMap.rows)
+        b.x + 1 > depthMap.cols || b.y + 1 > depthMap.rows)
         return false;
     size_t sum = 0;
-    sum += edgeMap.at<bool>(b);
-    sum += edgeMap.at<bool>(b+cv::Point(0,1));
-    sum += edgeMap.at<bool>(b+cv::Point(1,0));
-    sum += edgeMap.at<bool>(b+cv::Point(0,-1));
-    sum += edgeMap.at<bool>(b+cv::Point(-1,0));
+    sum += testPoint(b, depthMap);
+    sum += testPoint(b + cv::Point(0, 1), depthMap);
+    sum += testPoint(b + cv::Point(1, 0), depthMap);
+    sum += testPoint(b + cv::Point(0, -1), depthMap);
+    sum += testPoint(b + cv::Point(-1, 0), depthMap);
     return sum > 1;
 }
 
-bool testLine(cv::Point a, cv::Point b, cv::Mat& edgeMap) {
-    return (testPoint(a, edgeMap) &&
-            testPoint((2*a+b)/3, edgeMap) &&
-            testPoint((a+2*b)/3, edgeMap) &&
-            testPoint(b, edgeMap));
+bool testLine(cv::Point a, cv::Point b, cv::Mat& depthMap) {
+    return (testArea(a, depthMap) &&
+            testArea((2*a+b)/3, depthMap) &&
+            testArea((a+2*b)/3, depthMap) &&
+            testArea(b, depthMap));
 }
 
-void ModelEdgeDetector::detectOutlinerEdges(cv::Mat& edgeMap, cv::Mat& out, glm::mat4 MVP)
+std::vector<Edge> ModelEdgeDetector::detectOutlinerEdges(cv::Mat& depthMap, cv::Mat& out, glm::mat4 MVP)
 {
-    cv::Mat edges;
+    std::vector<Edge> edges;
     //depthMap = cv::Scalar::all(0);
     for (size_t i = 0; i < edgePairs.size(); i += 2) {
-        Vec3 a = edgePairs[i+1].a.position;
-        Vec3 b = edgePairs[i+1].b.position;
-        glm::vec2 p1 = screenToNDC(MVP * glm::vec4(a.x,a.y,a.z,1.0));
-        glm::vec2 p2 = screenToNDC(MVP * glm::vec4(b.x, b.y, b.z, 1.0));
-        cv::Point P1(p1.x * edgeMap.cols, p1.y * edgeMap.rows);
-        cv::Point P2(p2.x * edgeMap.cols, p2.y * edgeMap.rows);
-        if(testLine(P1, P2, edgeMap))
+        glm::vec3 a = edgePairs[i+1].a.position;
+        glm::vec3 b = edgePairs[i+1].b.position;
+        glm::vec2 p1 = screenToNDC(MVP * glm::vec4(a,1.0));
+        glm::vec2 p2 = screenToNDC(MVP * glm::vec4(b, 1.0));
+        cv::Point2f P1(p1.x * depthMap.cols, p1.y * depthMap.rows);
+        cv::Point2f P2(p2.x * depthMap.cols, p2.y * depthMap.rows);
+        if (testLine(P1, P2, depthMap)) {
+            edges.push_back(Edge(a, b));
             cv::line(out, P1,P2, cv::Scalar(255.0, 255.0));
+        }
     }
+    return edges;
 }
