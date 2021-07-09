@@ -4,12 +4,12 @@
 #include "Object/Object.h"
 
 int main(int argc, char** argv) {
-    Object object, object2;
-    object.setName("kacsa");
+    Object object2;
+    /*object.configTest("kacsa");
     object.print();
     std::ofstream of("kacsa.txt");
     of << bits(object);
-    of.close();
+    of.close();*/
 
     std::ifstream ifs("kacsa.txt");
     ifs >> bits(object2);

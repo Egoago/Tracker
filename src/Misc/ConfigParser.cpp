@@ -22,16 +22,7 @@ vector<string> split(string str, string delimiter) {
 
 ConfigParser::ConfigParser(const char* fileName) : fileName(fileName)
 {
-    ifstream file(CONFIG_FOLDER + string(fileName));
-    string line;
-    while (getline(file, line)) {
-        vector<string> tokens = split(line, delimiter);
-        if (tokens.size() > 1)
-            map[tokens[0]] = split(tokens[1], subDelimiter);
-        else if (tokens.size() == 1)
-            map[tokens[0]] = vector<string>();
-    }
-    file.close();
+    load();
 }
 
 string ConfigParser::getEntry(const string& entryName) {
@@ -40,8 +31,8 @@ string ConfigParser::getEntry(const string& entryName) {
 
 string ConfigParser::getEntry(const string& entryName, const string& defaultValue)
 {
-    if (map.count(entryName) == 0)
-        map[entryName] = vector<string>{ defaultValue };
+    if (configuration.count(entryName) == 0)
+        configuration[entryName] = vector<string>{ defaultValue };
     return getEntry(entryName);
 }
 
@@ -58,20 +49,34 @@ vector<string>& ConfigParser::getEntries(const string& entryName)
 
 vector<string>& ConfigParser::getEntries(const string& entryName, const vector<string> defaultValues)
 {
-    if (map.count(entryName) == 0)
-        map[entryName] = defaultValues;
+    if (configuration.count(entryName) == 0)
+        configuration[entryName] = defaultValues;
     return getEntries(entryName);
 }
 
 vector<string>& ConfigParser::operator[](const string& entryName)
 {
-    return map[entryName];
+    return configuration[entryName];
+}
+
+void ConfigParser::load()
+{
+    ifstream file(CONFIG_FOLDER + string(fileName));
+    string line;
+    while (getline(file, line)) {
+        vector<string> tokens = split(line, delimiter);
+        if (tokens.size() > 1)
+            configuration[tokens[0]] = split(tokens[1], subDelimiter);
+        else if (tokens.size() == 1)
+            configuration[tokens[0]] = vector<string>();
+    }
+    file.close();
 }
 
 void ConfigParser::save()
 {
     ofstream file(CONFIG_FOLDER + string(fileName));
-    for (auto const& entry : map) {
+    for (auto const& entry : configuration) {
         bool first = true;
         file << entry.first << delimiter;
         for (auto const& value : entry.second)

@@ -38,17 +38,20 @@ public:
 	~Object() {}
 
 	void setName(const char* str) { objectName = str; }
+	void configTest(const char* str) { config.setEntry("test", str); }
 
 	friend std::ostream& operator<<(std::ostream& out, Bits<class Object&> object)
 	{
-		out << bits(object.t.objectName);
+		std::cout << "save object start" << std::endl;
+		out << bits(object.t.objectName) << bits(object.t.config);
+		std::cout << "save object end" << std::endl;
 		return (out);
 	}
 	friend std::istream& operator>>(std::istream& in, Bits<class Object&> object)
 	{
-		in >> bits(object.t.objectName);
+		in >> bits(object.t.objectName) >> bits(object.t.config);
 		return (in);
 	}
 
-	void print() { std::cout << objectName << std::endl; }
+	void print() { std::cout << config.getEntry("test") << std::endl; }
 };
