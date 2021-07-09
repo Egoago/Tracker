@@ -2,7 +2,7 @@
 #include <map>
 #include <string>
 #include <vector>
-#include <serializer.h>
+//TODO remove #include <serializer.h>
 
 class ConfigParser
 {
@@ -25,7 +25,7 @@ public:
 	std::vector<std::string>& ConfigParser::getEntries(const std::string& entryName, const std::vector<std::string> defaultValues);
 	~ConfigParser();
 
-	friend std::ostream& operator<<(std::ostream& out, Bits<class ConfigParser&> object)
+	/*friend std::ostream& operator<<(std::ostream& out, Bits<class ConfigParser&> object)
 	{
 		out << bits(object.t.fileName) << bits(object.t.configuration);
 		return (out);
@@ -35,6 +35,6 @@ public:
 		in >> bits(object.t.fileName) >> bits(object.t.configuration);
 		object.t.load();
 		return (in);
-	}
+	}*/
 };
 

@@ -1,25 +1,15 @@
-#include "Misc/ConfigParser.h"
-#include <iostream>
-#include <fstream>
 #include "Object/Object.h"
 
 int main(int argc, char** argv) {
-    Object object2;
-    /*object.configTest("kacsa");
-    object.print();
-    std::ofstream of("kacsa.txt");
-    of << bits(object);
-    of.close();*/
+    
+    Object object("cube.STL");
+    //object.print();
 
-    std::ifstream ifs("kacsa.txt");
+    /*std::ifstream ifs("kacsa.txt");
     ifs >> bits(object2);
     ifs.close();
-    object2.print();
+    object2.print();*/
 
-    //Object object("cube.STL");
-    /*std::cout << "M size: " << object.getM().size() << std::endl;
-    std::cout << "M_ size: " << object.getM_().size() << std::endl;
-    std::cout << "M size: " << object.getM_() << std::endl;*/
     /*Camera* cam = new OpenCVCamera();
     namedWindow("Original", WINDOW_NORMAL);
     resizeWindow("Original", cam->getWidth() / 2, cam->getHeight() / 2);

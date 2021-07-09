@@ -76,7 +76,7 @@ static inline std::ostream& operator<<(std::ostream &out,
 #ifdef DEBUG_C_PLUS_PLUS_SERIALIZER
     std::cout << "write const '" << v.t << "'" << std::endl;
 #endif
-    my_size_t sz = v.t.size();
+    my_size_t sz = (my_size_t)v.t.size();
     return out << bits(sz) << v.t;
 }
 
@@ -86,7 +86,7 @@ std::ostream& operator<<(std::ostream &out, Bits<std::string &> const v)
 #ifdef DEBUG_C_PLUS_PLUS_SERIALIZER
     std::cout << "write '" << v.t << "'" << std::endl;
 #endif
-    my_size_t sz = v.t.size();
+    my_size_t sz = (my_size_t)v.t.size();
     return out << bits(sz) << v.t;
 }
 
@@ -114,7 +114,7 @@ static inline std::istream& operator>>(std::istream& in, Bits<std::wstring &> v)
 static inline std::ostream& operator<<(std::ostream &out, 
                                        Bits<const std::wstring &> const v)
 {
-    my_size_t sz = v.t.size();
+    my_size_t sz = (my_size_t)v.t.size();
     out << bits(sz);
     for (auto tmp : v.t) {
         out << bits(tmp);
@@ -128,7 +128,7 @@ static inline std::ostream& operator<<(std::ostream &out,
 static inline
 std::ostream& operator<<(std::ostream &out, Bits<std::wstring &> const v)
 {
-    my_size_t sz = v.t.size();
+    my_size_t sz = (my_size_t)v.t.size();
     out << bits(sz);
     for (auto tmp : v.t) {
         out << bits(tmp);
@@ -249,7 +249,7 @@ static inline std::ostream& operator<<(std::ostream &out,
 #ifdef DEBUG_C_PLUS_PLUS_SERIALIZER
     std::cout << "write container<T> " << v.t.size() << " elems" << std::endl;
 #endif
-    my_size_t sz = v.t.size();
+    my_size_t sz = (my_size_t)v.t.size();
     out << bits(sz);
     for (auto i : v.t) { out << bits(i); }
     return (out);
@@ -264,7 +264,7 @@ static inline std::ostream& operator<<(std::ostream &out,
 #ifdef DEBUG_C_PLUS_PLUS_SERIALIZER
     std::cout << "write container<const T> " << v.t.size() << " elems" << std::endl;
 #endif
-    my_size_t sz = v.t.size();
+    my_size_t sz = (my_size_t)v.t.size();
     out << bits(sz);
     for (auto i : v.t) { out << bits(i); }
     return (out);
@@ -304,7 +304,7 @@ static inline std::ostream& operator<<(std::ostream &out,
 #ifdef DEBUG_C_PLUS_PLUS_SERIALIZER
     std::cout << "write array container<T> " << v.t.size() << " elems" << std::endl;
 #endif
-    my_size_t sz = v.t.size();
+    my_size_t sz = (my_size_t)v.t.size();
     out << bits(sz);
     for (auto i : v.t) { out << bits(i); }
     return (out);
@@ -320,7 +320,7 @@ static inline std::ostream& operator<<(std::ostream &out,
 #ifdef DEBUG_C_PLUS_PLUS_SERIALIZER
     std::cout << "write array container<const T> " << v.t.size() << " elems" << std::endl;
 #endif
-    my_size_t sz = v.t.size();
+    my_size_t sz = (my_size_t)v.t.size();
     out << bits(sz);
     for (auto i : v.t) { out << bits(i); }
     return (out);
@@ -366,7 +366,7 @@ static inline std::ostream& operator<<(std::ostream &out,
 #ifdef DEBUG_C_PLUS_PLUS_SERIALIZER
     std::cout << "write map<K,V> " << m.t.size() << " elems" << std::endl;
 #endif
-    my_size_t sz = m.t.size();
+    my_size_t sz = (my_size_t)m.t.size();
     out << bits(sz);
     for (auto i : m.t) { out << bits(i.first) << bits(i.second); }
     return (out);
@@ -386,7 +386,7 @@ static inline std::ostream& operator<<(std::ostream &out,
 #ifdef DEBUG_C_PLUS_PLUS_SERIALIZER
     std::cout << "write map<K,const V> " << m.t.size() << " elems" << std::endl;
 #endif
-    my_size_t sz = m.t.size();
+    my_size_t sz = (my_size_t)m.t.size();
     out << bits(sz);
     for (auto i : m.t) { out << bits(i.first) << bits(i.second); }
     return (out);
@@ -439,7 +439,7 @@ static inline std::ostream& operator<<(std::ostream &out,
 #ifdef DEBUG_C_PLUS_PLUS_SERIALIZER
     std::cout << "write unordered_map<K,V> " << m.t.size() << " elems" << std::endl;
 #endif
-    my_size_t sz = m.t.size();
+    my_size_t sz = (my_size_t)m.t.size();
     out << bits(sz);
     for (auto i : m.t) { out << bits(i.first) << bits(i.second); }
     return (out);

@@ -1,5 +1,6 @@
 #include "Object.h"
 #include <string>
+#include <serializer.h>
 #include "opencv2/opencv.hpp"
 //#include "opencv2/highgui/highgui.hpp"
 #include "../Misc/Links.h"
@@ -21,28 +22,32 @@ void getObjectName(string& fName, string& oName) {
 	else oName = fName.substr(0, dot);
 }
 
-void Object::loadObject(const string& objectName) {
-	ifstream is(LOADED_OBJECTS_FOLDER + objectName + ".data");
-	is >> bits(*this);
-	is.close();
+void Object::allocateRegistry() {
+	snapshots.resize(boost::extents[dimensions[0]]
+									[dimensions[1]]
+									[dimensions[2]]
+									[dimensions[3]]
+									[dimensions[4]]
+									[dimensions[5]]);
 }
 
 void Object::generate6DOFs() {
 	//TODO tune granularity
 	//TODO perspective distribution
-	Range width(config.getEntries("width", { "-40.0", "40.0", "8" }));
-	Range height(config.getEntries("height", { "-40.0", "40.0", "8" }));
-	Range depth(config.getEntries("depth", { "-2000.0", "200.0", "8" }));
+	Range width(config.getEntries("width", { "-40.0", "40.0", "2" }));
+	Range height(config.getEntries("height", { "-40.0", "40.0", "2" }));
+	Range depth(config.getEntries("depth", { "-2000.0", "-300.0", "2" }));
 	//TODO uniform sphere distr <=> homogenous tensor layout????
-	Range roll(config.getEntries("roll", { "0", "360", "4" }));
-	Range yaw(config.getEntries("yaw", { "0", "360", "8" }));
-	Range pitch(config.getEntries("pitch", { "0", "180", "4" }));
-	snapshots.resize(boost::extents[yaw.resolution]
-									[pitch.resolution]
-									[roll.resolution]
-									[width.resolution]
-									[height.resolution]
-									[depth.resolution]);
+	Range roll(config.getEntries("roll", { "0", "360", "2" }));
+	Range yaw(config.getEntries("yaw", { "0", "360", "2" }));
+	Range pitch(config.getEntries("pitch", { "0", "180", "2" }));
+	dimensions[0] = yaw.resolution;
+	dimensions[1] = pitch.resolution;
+	dimensions[2] = roll.resolution;
+	dimensions[3] = width.resolution;
+	dimensions[4] = height.resolution;
+	dimensions[5] = depth.resolution;
+	allocateRegistry();
 	for (size_t ya = 0; ya < yaw.resolution; ya++)
 	for (size_t p = 0; p < pitch.resolution; p++)
 	for (size_t r = 0; r < roll.resolution; r++)
@@ -60,26 +65,34 @@ void Object::generate6DOFs() {
 	}
 }
 
+cv::Point getResolution(ConfigParser& config) {
+	vector<string> str = config.getEntries("frame resolution", { "500", "500" });
+	return cv::Point(stoi(str[0]), stoi(str[1]));
+}
+
 void Object::generarteObject(const string& fileName) {
+	//TODO add loading bar
 	using namespace cv;
 	generate6DOFs();
 	Geometry geo = AssimpGeometry(fileName);
 	ModelEdgeDetector detector(geo);
-	Renderer renderer(500, 500);
+	Point resolution = getResolution(config);
+	
+	Renderer renderer(resolution.x, resolution.y);
 	namedWindow("OpenCV", cv::WINDOW_NORMAL);
-	resizeWindow("OpenCV", 500, 500);
-	moveWindow("OpenCV", 0, 500);
+	resizeWindow("OpenCV", resolution.x, resolution.y);
+	moveWindow("OpenCV", 0, resolution.y);
 	namedWindow("Canny", WINDOW_NORMAL);
-	resizeWindow("Canny", 500, 500);
-	moveWindow("Canny", 500, 500);
+	resizeWindow("Canny", resolution.x, resolution.y);
+	moveWindow("Canny", resolution.x, resolution.y);
 	namedWindow("Wireframe", WINDOW_NORMAL);
-	resizeWindow("Wireframe", 500, 500);
-	moveWindow("Wireframe", 1000, 500);
-	Mat depth(Size(500, 500), CV_32F);
-    Mat color(Size(500, 500), CV_8UC3);
-    Mat dst(Size(500, 500), CV_8U, Scalar(0));
-    Mat detected_edges(Size(500, 500), CV_8U);
-	int c = 0;
+	resizeWindow("Wireframe", resolution.x, resolution.y);
+	moveWindow("Wireframe", resolution.x * 2, resolution.y);
+	Mat depth(Size(resolution.x, resolution.y), CV_32F);
+    Mat color(Size(resolution.x, resolution.y), CV_8UC3);
+    Mat dst(Size(resolution.x, resolution.y), CV_8U, Scalar(0));
+    Mat detected_edges(Size(resolution.x, resolution.y), CV_8U);
+	int c = 1;
 	for (Snapshot* i = snapshots.data(); i < (snapshots.data() + snapshots.num_elements()); i++) {
 		SixDOF& sixDOF = i->sixDOF;
 		cout << "Rendered " << c++ << "\t frames out of " << snapshots.num_elements() << "\r";
@@ -92,28 +105,58 @@ void Object::generarteObject(const string& fileName) {
 		Canny(color, detected_edges, 10, 10 * 3, 3);
 		imshow("Canny", detected_edges);
 		dst = Scalar(0);
-		std::vector<Edge> edges = detector.detectOutlinerEdges(detected_edges, dst, mvp);
+		vector<Edge> edges = detector.detectOutlinerEdges(detected_edges, dst, mvp);
 		imshow("Wireframe", dst);
+		waitKey(1);
 		Rasterizer rasterizer(edges, 4.0f, 0.5f);
 		i->M = rasterizer.getM();
 		i->M_ = rasterizer.getM_();
-		//break;
-		waitKey(1);
 	}
-	ofstream os(LOADED_OBJECTS_FOLDER + objectName + ".data");
-	os << "jaj";
-	os.close();
+	cout << endl;
 }
 
-
-Object::Object(string fileName) : snapshots(Registry(boost::extents[0][0][0][0][0][0]))
+Object::Object(string fileName)
 {
 	getObjectName(fileName, objectName);
 	
 	vector<string> loadedObjects = config.getEntries("loaded objects");
 	if (loadedObjects.size() > 0 && find(loadedObjects.begin(), loadedObjects.end(), objectName) != loadedObjects.end())
-		loadObject(objectName);
-	else
+		load();
+	else {
 		generarteObject(fileName);
+		config.getEntries("loaded objects").push_back(objectName);
+		config.save();
+		save();
+	}
 }
 
+string getSavePath(const string& objectName) {
+	return LOADED_OBJECTS_FOLDER + objectName + ".txt";
+}
+
+void Object::save(std::string fileName) {
+	if (fileName.empty())
+		fileName = getSavePath(objectName);
+	ofstream out(fileName);
+	for (int i = 0; i < snapshots.dimensionality; i++)
+		out << bits(dimensions[i]);
+	for (Snapshot* i = snapshots.data(); i < (snapshots.data() + snapshots.num_elements()); i++)
+		out << bits(*i);
+	out.close();
+}
+
+void Object::load() {
+	ifstream in(getSavePath(objectName));
+	cout << "dim:";
+	for (int i = 0; i < snapshots.dimensionality; i++) {
+		in >> bits(dimensions[i]);
+		cout << " " << dimensions[i];
+	}
+	cout << endl;
+	allocateRegistry();
+	for (Snapshot* i = snapshots.data(); i < (snapshots.data() + snapshots.num_elements()); i++) {
+		in >> bits(*i);
+		i->sixDOF.print(cout);
+	}
+	in.close();
+}

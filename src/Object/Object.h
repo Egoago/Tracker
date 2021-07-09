@@ -2,56 +2,36 @@
 #include "../Misc/ConfigParser.h"
 #include "Coordinates.h"
 #include "boost/multi_array.hpp"
-#include <serializer.h>
 #include <iostream>
-//#include <boost/archive/binary_iarchive.hpp>
-//#include <boost/archive/binary_oarchive.hpp>
 
 class Object
 {
 	static ConfigParser config;
 	std::string objectName;
 	typedef boost::multi_array<Snapshot, 6> Registry;
-	typedef Registry::index invdex;
-	Registry& snapshots;
+	size_t dimensions[6];
+	boost::array<Registry::index, 3> shape = { { 3, 4, 2 } };
+	Registry snapshots;
 
-	void loadObject(const std::string& objectName);
 	void generarteObject(const std::string& fileName);
 	void generate6DOFs();
-
-	//friend class boost::serialization::access;
-	//// When the class Archive corresponds to an output archive, the
-	//// & operator is defined similar to <<.  Likewise, when the class Archive
-	//// is a type of input archive the & operator is defined similar to >>.
-	//template<class Archive>
-	//void serialize(Archive& ar, const unsigned int version)
-	//{
-	//	ar & objectName;
-	//}
+	void allocateRegistry();
 public:
 
-	Object() : snapshots(Registry(boost::extents[0][0][0][0][0][0])){}
 	Object(std::string name);
-	/*void print(std::stream& os) {
-		os << objectName << std::endl;
-	}*/
 	~Object() {}
 
+	void save(std::string fileName = "");
+	void load();
+
 	void setName(const char* str) { objectName = str; }
-	void configTest(const char* str) { config.setEntry("test", str); }
 
-	friend std::ostream& operator<<(std::ostream& out, Bits<class Object&> object)
-	{
-		std::cout << "save object start" << std::endl;
-		out << bits(object.t.objectName) << bits(object.t.config);
-		std::cout << "save object end" << std::endl;
-		return (out);
+	void print() {
+		std::cout << "dimensions:";
+		for (int i = 0; i < snapshots.dimensionality; i++)
+			std::cout << " " << dimensions[i];
+		std::cout << std::endl;
+		for (Snapshot* i = snapshots.data(); i < (snapshots.data() + snapshots.num_elements()); i++)
+			i->sixDOF.print(std::cout);
 	}
-	friend std::istream& operator>>(std::istream& in, Bits<class Object&> object)
-	{
-		in >> bits(object.t.objectName) >> bits(object.t.config);
-		return (in);
-	}
-
-	void print() { std::cout << config.getEntry("test") << std::endl; }
 };

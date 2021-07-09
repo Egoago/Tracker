@@ -86,11 +86,13 @@ std::vector<Edge> ModelEdgeDetector::detectOutlinerEdges(cv::Mat& depthMap, cv::
         glm::vec3 b = edgePairs[i+1].b.position;
         glm::vec2 p1 = screenToNDC(MVP * glm::vec4(a,1.0));
         glm::vec2 p2 = screenToNDC(MVP * glm::vec4(b, 1.0));
-        cv::Point2f P1(p1.x * depthMap.cols, p1.y * depthMap.rows);
-        cv::Point2f P2(p2.x * depthMap.cols, p2.y * depthMap.rows);
-        if (testLine(P1, P2, depthMap)) {
-            edges.push_back(Edge(a, b));
-            cv::line(out, P1,P2, cv::Scalar(255.0, 255.0));
+        cv::Point P1((int)(p1.x * (float)depthMap.cols), (int)(p1.y * (float)depthMap.rows));
+        cv::Point P2((int)(p2.x * (float)depthMap.cols), (int)(p2.y * (float)depthMap.rows));
+        if (cv::clipLine(cv::Size(depthMap.cols, depthMap.rows), P1, P2)) {
+            if (testLine(P1, P2, depthMap)) {
+                edges.push_back(Edge(a, b));
+                cv::line(out, P1, P2, cv::Scalar(255.0, 255.0));
+            }
         }
     }
     return edges;

@@ -68,7 +68,7 @@ void Renderer::setProj(float fov, float nearP, float farP)
 	Proj = glm::perspective(glm::radians(fov), (float)resolution.x/resolution.y, nearP, farP);
 }
 
-void Renderer::setModel(SixDOF sixDOF)
+void Renderer::setModel(SixDOF& sixDOF)
 {
 	Model = glm::mat4(1.0f);
 	Model = glm::translate(Model, glm::vec3(sixDOF.position.x,
