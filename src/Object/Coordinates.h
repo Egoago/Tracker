@@ -31,8 +31,8 @@ struct SixDOF {
 	void print(std::ostream& os) const {
 		os << "pos: "
 			<< position.x << ' '
-			<< position.x << ' '
 			<< position.y << ' '
+			<< position.z << ' '
 			<< std::endl << "ori: "
 			<< orientation.y << ' '
 			<< orientation.p << ' '
@@ -56,6 +56,11 @@ struct Range {
 		resolution(std::stoi(values[2])) {
 		step = (end - begin) / resolution;
 	};
+
+	float operator[](int index) {
+		float t = (float)index / (resolution-1);
+		return (1.0f-t)*begin + t*end;
+	}
 };
 
 struct Snapshot {

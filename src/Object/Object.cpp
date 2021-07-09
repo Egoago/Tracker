@@ -28,40 +28,42 @@ void Object::loadObject(const string& objectName) {
 	is.close();
 }
 
-void generate6DOFs(ConfigParser& config, vector<SixDOF>& sixDOFs) {
+void Object::generate6DOFs() {
 	//TODO tune granularity
 	//TODO perspective distribution
-	Range width(config.getEntries("width", { "-40.0", "40.0", "5" }));
-	Range height(config.getEntries("height", { "-40.0", "40.0", "5" }));
-	Range depth(config.getEntries("depth", { "-2000.0", "200.0", "5" }));
+	Range width(config.getEntries("width", { "-40.0", "40.0", "8" }));
+	Range height(config.getEntries("height", { "-40.0", "40.0", "8" }));
+	Range depth(config.getEntries("depth", { "-2000.0", "200.0", "8" }));
 	//TODO uniform sphere distr <=> homogenous tensor layout????
-	Range roll(config.getEntries("roll", { "0", "360", "3" }));
-	Range yaw(config.getEntries("yaw", { "0", "360", "6" }));
-	Range pitch(config.getEntries("pitch", { "0", "180", "3" }));
-	float x, y, z, ya, p, r;
-	x=y=z=ya=p=r=0.0f;
-	for (r = roll.begin; r < roll.end; r+= roll.step)
-	for (ya = yaw.begin; ya < yaw.end; ya+= yaw.step)
-	for (p = pitch.begin; p < pitch.end; p+= pitch.step)
-	for (y = height.begin; y < height.end; y+= height.step)
-	for (x = width.begin; x < width.end; x+= width.step)
-	for (z = depth.begin; z < depth.end; z+= depth.step)
+	Range roll(config.getEntries("roll", { "0", "360", "4" }));
+	Range yaw(config.getEntries("yaw", { "0", "360", "8" }));
+	Range pitch(config.getEntries("pitch", { "0", "180", "4" }));
+	snapshots.resize(boost::extents[yaw.resolution]
+									[pitch.resolution]
+									[roll.resolution]
+									[width.resolution]
+									[height.resolution]
+									[depth.resolution]);
+	for (size_t ya = 0; ya < yaw.resolution; ya++)
+	for (size_t p = 0; p < pitch.resolution; p++)
+	for (size_t r = 0; r < roll.resolution; r++)
+	for (size_t x = 0; x < width.resolution; x++)
+	for (size_t y = 0; y < height.resolution; y++)
+	for (size_t z = 0; z < depth.resolution; z++)
 	{
-		SixDOF sixDOF;
-		sixDOF.position.x = x;
-		sixDOF.position.y = y;
-		sixDOF.position.z = z;
-		sixDOF.orientation.y = ya;
-		sixDOF.orientation.p = p;
-		sixDOF.orientation.r = r;
-		sixDOFs.push_back(sixDOF);
+		SixDOF& sixDOF = snapshots[ya][p][r][x][y][z].sixDOF;
+		sixDOF.position.x = width[x];
+		sixDOF.position.y = height[y];
+		sixDOF.position.z = depth[z];
+		sixDOF.orientation.y = yaw[ya];
+		sixDOF.orientation.p = pitch[p];
+		sixDOF.orientation.r = roll[r];
 	}
 }
 
 void Object::generarteObject(const string& fileName) {
 	using namespace cv;
-
-	generate6DOFs(config, sixDOFs);
+	generate6DOFs();
 	Geometry geo = AssimpGeometry(fileName);
 	ModelEdgeDetector detector(geo);
 	Renderer renderer(500, 500);
@@ -78,30 +80,34 @@ void Object::generarteObject(const string& fileName) {
     Mat color(Size(500, 500), CV_8UC3);
     Mat dst(Size(500, 500), CV_8U, Scalar(0));
     Mat detected_edges(Size(500, 500), CV_8U);
-	cout << "6dof count: " << sixDOFs.size() << endl;
 	int c = 0;
-	for (const SixDOF& sixDOF : sixDOFs) {
-		cout << "Rendered " << c++ << "\t frames out of " << sixDOFs.size() << "\r";
+	for (Snapshot* i = snapshots.data(); i < (snapshots.data() + snapshots.num_elements()); i++) {
+		SixDOF& sixDOF = i->sixDOF;
+		cout << "Rendered " << c++ << "\t frames out of " << snapshots.num_elements() << "\r";
+		//sixDOF.print(cout);
 		renderer.setModel(sixDOF);
 		glm::mat4 mvp = renderer.renderModel(geo, depth.data, color.data);
 		cv::flip(color, color, 0);
 		cv::flip(depth, depth, 0);
-		//imshow("OpenCV", color);
+		imshow("OpenCV", color);
 		Canny(color, detected_edges, 10, 10 * 3, 3);
-		//imshow("Canny", detected_edges);
+		imshow("Canny", detected_edges);
 		dst = Scalar(0);
 		std::vector<Edge> edges = detector.detectOutlinerEdges(detected_edges, dst, mvp);
 		imshow("Wireframe", dst);
 		Rasterizer rasterizer(edges, 4.0f, 0.5f);
+		i->M = rasterizer.getM();
+		i->M_ = rasterizer.getM_();
 		//break;
-		waitKey(100);
+		waitKey(1);
 	}
 	ofstream os(LOADED_OBJECTS_FOLDER + objectName + ".data");
 	os << "jaj";
 	os.close();
 }
 
-Object::Object(string fileName)
+
+Object::Object(string fileName) : snapshots(Registry(boost::extents[0][0][0][0][0][0]))
 {
 	getObjectName(fileName, objectName);
 	
