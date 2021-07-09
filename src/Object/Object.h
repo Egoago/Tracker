@@ -2,6 +2,8 @@
 #include "../Misc/ConfigParser.h"
 #include "Coordinates.h"
 #include "boost/multi_array.hpp"
+#include <serializer.h>
+#include <iostream>
 //#include <boost/archive/binary_iarchive.hpp>
 //#include <boost/archive/binary_oarchive.hpp>
 
@@ -28,10 +30,25 @@ class Object
 	//}
 public:
 
-	//Object() {}
+	Object() : snapshots(Registry(boost::extents[0][0][0][0][0][0])){}
 	Object(std::string name);
 	/*void print(std::stream& os) {
 		os << objectName << std::endl;
 	}*/
 	~Object() {}
+
+	void setName(const char* str) { objectName = str; }
+
+	friend std::ostream& operator<<(std::ostream& out, Bits<class Object&> object)
+	{
+		out << bits(object.t.objectName);
+		return (out);
+	}
+	friend std::istream& operator>>(std::istream& in, Bits<class Object&> object)
+	{
+		in >> bits(object.t.objectName);
+		return (in);
+	}
+
+	void print() { std::cout << objectName << std::endl; }
 };

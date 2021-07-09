@@ -2,7 +2,6 @@
 #include <string>
 #include "opencv2/opencv.hpp"
 //#include "opencv2/highgui/highgui.hpp"
-#include <serializer.h>
 #include "../Misc/Links.h"
 #include "AssimpGeometry.h"
 #include "ModelEdgeDetector.h"

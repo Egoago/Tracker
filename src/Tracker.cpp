@@ -1,9 +1,22 @@
 #include "Misc/ConfigParser.h"
 #include <iostream>
+#include <fstream>
 #include "Object/Object.h"
 
 int main(int argc, char** argv) {
-    Object object("cube.STL");
+    Object object, object2;
+    object.setName("kacsa");
+    object.print();
+    std::ofstream of("kacsa.txt");
+    of << bits(object);
+    of.close();
+
+    std::ifstream ifs("kacsa.txt");
+    ifs >> bits(object2);
+    ifs.close();
+    object2.print();
+
+    //Object object("cube.STL");
     /*std::cout << "M size: " << object.getM().size() << std::endl;
     std::cout << "M_ size: " << object.getM_().size() << std::endl;
     std::cout << "M size: " << object.getM_() << std::endl;*/
