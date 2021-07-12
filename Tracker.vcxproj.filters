@@ -24,6 +24,9 @@
     <Filter Include="Header Files\Misc">
       <UniqueIdentifier>{affec106-5845-4373-ba08-3dd3dfe80770}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Detectors">
+      <UniqueIdentifier>{98dd9c26-e1e5-4423-b8f8-9c8195e61530}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">
@@ -47,9 +50,6 @@
     <ClCompile Include="src\Object\ModelEdgeDetector.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Object\Rasterizer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\Object\Object.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -58,6 +58,15 @@
     </ClCompile>
     <ClCompile Include="src\Misc\Links.h">
       <Filter>Header Files\Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Detectors\LSDDetector.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Detectors\lsd.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Detectors\CannyDetector.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -85,9 +94,6 @@
     <ClInclude Include="src\Object\ModelEdgeDetector.h">
       <Filter>Header Files\Object</Filter>
     </ClInclude>
-    <ClInclude Include="src\Object\Rasterizer.h">
-      <Filter>Header Files\Object</Filter>
-    </ClInclude>
     <ClInclude Include="src\Misc\ConfigParser.h">
       <Filter>Header Files\Misc</Filter>
     </ClInclude>
@@ -96,6 +102,18 @@
     </ClInclude>
     <ClInclude Include="src\Object\Coordinates.h">
       <Filter>Header Files\Object</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Detectors\EdgeDetector.h">
+      <Filter>Header Files\Detectors</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Detectors\LSDDetector.h">
+      <Filter>Header Files\Detectors</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Detectors\lsd.h">
+      <Filter>Header Files\Detectors</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Detectors\CannyDetector.h">
+      <Filter>Header Files\Detectors</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

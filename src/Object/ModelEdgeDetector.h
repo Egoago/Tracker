@@ -25,7 +25,7 @@ class ModelEdgeDetector
 	std::vector<DirectedEdge> edgePairs;
 public:
 	ModelEdgeDetector(const Geometry& geometry);
-    std::vector<Edge> detectOutlinerEdges(cv::Mat& edgeMap, cv::Mat& out, glm::mat4 MVP);
+    std::vector<Edge<>> detectOutlinerEdges(cv::Mat& edgeMap, cv::Mat& out, glm::mat4 MVP);
 
 };
 

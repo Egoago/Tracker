@@ -10,7 +10,7 @@ private:
 public:
 	UEyeCamera();
 	~UEyeCamera();
-	virtual char* getNextFrame();
-	virtual double getFPS() const;
-	virtual int getFormat() const;
+	virtual char* getNextFrame() override;
+	virtual double getFPS() const override;
+	virtual int getFormat() const override;
 };

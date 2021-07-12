@@ -77,9 +77,9 @@ bool testLine(cv::Point a, cv::Point b, cv::Mat& depthMap) {
             testArea(b, depthMap));
 }
 
-std::vector<Edge> ModelEdgeDetector::detectOutlinerEdges(cv::Mat& depthMap, cv::Mat& out, glm::mat4 MVP)
+std::vector<Edge<>> ModelEdgeDetector::detectOutlinerEdges(cv::Mat& depthMap, cv::Mat& out, glm::mat4 MVP)
 {
-    std::vector<Edge> edges;
+    std::vector<Edge<>> edges;
     //depthMap = cv::Scalar::all(0);
     for (size_t i = 0; i < edgePairs.size(); i += 2) {
         glm::vec3 a = edgePairs[i+1].a.position;
@@ -90,7 +90,7 @@ std::vector<Edge> ModelEdgeDetector::detectOutlinerEdges(cv::Mat& depthMap, cv::
         cv::Point P2((int)(p2.x * (float)depthMap.cols), (int)(p2.y * (float)depthMap.rows));
         if (cv::clipLine(cv::Size(depthMap.cols, depthMap.rows), P1, P2)) {
             if (testLine(P1, P2, depthMap)) {
-                edges.push_back(Edge(a, b));
+                edges.push_back(Edge<>(a, b));
                 cv::line(out, P1, P2, cv::Scalar(255.0, 255.0));
             }
         }

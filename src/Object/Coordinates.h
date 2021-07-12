@@ -42,11 +42,17 @@ struct SixDOF {
 	}
 };
 
+template <class PointType = glm::vec3>
 struct Edge {
-	glm::vec3 a, b;
+	PointType a, b;
 
-	Edge(glm::vec3 a, glm::vec3 b) : a(a), b(b) {}
+	Edge(PointType a, PointType b) : a(a), b(b) {}
 };
+
+inline float getOrientation(Edge<glm::vec2>& edge) {
+	glm::vec2 d = edge.a - edge.b;
+	return glm::atan(d.y / d.x) + glm::half_pi<float>();
+}
 
 struct Range {
 	float begin, end, step;

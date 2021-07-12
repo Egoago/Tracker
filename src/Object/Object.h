@@ -16,7 +16,7 @@ class Object
 	void generarteObject(const std::string& fileName);
 	void generate6DOFs();
 	void allocateRegistry();
-	void rasterize(const std::vector<Edge>& edges, Snapshot* snapshot);
+	void rasterize(const std::vector<Edge<>>& edges, Snapshot* snapshot);
 public:
 
 	Object(std::string name);

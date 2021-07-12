@@ -7,7 +7,6 @@
 #include "AssimpGeometry.h"
 #include "ModelEdgeDetector.h"
 #include "../Rendering/Renderer.h"
-#include "Rasterizer.h"
 
 using namespace std;
 
@@ -70,10 +69,10 @@ cv::Point getResolution(ConfigParser& config) {
 	return cv::Point(stoi(str[0]), stoi(str[1]));
 }
 
-void Object::rasterize(const vector<Edge>& edges, Snapshot* snapshot) {
+void Object::rasterize(const vector<Edge<>>& edges, Snapshot* snapshot) {
 	const static float step = stof(config.getEntry("rasterization step", "2.0"));
 	const static float d = stof(config.getEntry("rasterization offset", "0.5"));
-	for (const Edge& edge : edges)
+	for (const Edge<>& edge : edges)
 	{
 		glm::vec3 dir = glm::normalize(edge.b - edge.a);
 		float dist = glm::distance(edge.a, edge.b);
@@ -123,7 +122,7 @@ void Object::generarteObject(const string& fileName) {
 		Canny(color, detected_edges, 10, 10 * 3, 3);
 		//imshow("Canny", detected_edges);
 		dst = Scalar(0);
-		vector<Edge> edges = detector.detectOutlinerEdges(detected_edges, dst, mvp);
+		vector<Edge<>> edges = detector.detectOutlinerEdges(detected_edges, dst, mvp);
 		//imshow("Wireframe", dst);
 		//waitKey(1);
 		rasterize(edges, i);

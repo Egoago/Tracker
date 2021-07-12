@@ -128,6 +128,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
+      <LanguageStandard>stdcpp14</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -153,6 +154,7 @@ copy "$(SolutionDir)Common\glew-2.1.0\Bin\Release\x64\glew32.dll" "$(SolutionDir
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
+      <LanguageStandard>stdcpp14</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -174,12 +176,14 @@ copy "$(SolutionDir)Common\glew-2.1.0\Bin\Release\x64\glew32.dll" "$(SolutionDir
   <ItemGroup>
     <ClCompile Include="src\Camera\OpenCVCamera.cpp" />
     <ClCompile Include="src\Camera\uEyeCamera.cpp" />
+    <ClCompile Include="src\Detectors\CannyDetector.cpp" />
+    <ClCompile Include="src\Detectors\lsd.c" />
+    <ClCompile Include="src\Detectors\LSDDetector.cpp" />
     <ClCompile Include="src\Misc\ConfigParser.cpp" />
     <ClCompile Include="src\Misc\Links.h" />
     <ClCompile Include="src\Object\AssimpGeometry.cpp" />
     <ClCompile Include="src\Object\ModelEdgeDetector.cpp" />
     <ClCompile Include="src\Object\Object.cpp" />
-    <ClCompile Include="src\Object\Rasterizer.cpp" />
     <ClCompile Include="src\Rendering\Renderer.cpp" />
     <ClCompile Include="src\Rendering\Shader.cpp" />
     <ClCompile Include="src\main.cpp" />
@@ -188,13 +192,16 @@ copy "$(SolutionDir)Common\glew-2.1.0\Bin\Release\x64\glew32.dll" "$(SolutionDir
     <ClInclude Include="src\Camera\Camera.h" />
     <ClInclude Include="src\Camera\OpenCVCamera.h" />
     <ClInclude Include="src\Camera\uEyeCamera.h" />
+    <ClInclude Include="src\Detectors\CannyDetector.h" />
+    <ClInclude Include="src\Detectors\EdgeDetector.h" />
+    <ClInclude Include="src\Detectors\lsd.h" />
+    <ClInclude Include="src\Detectors\LSDDetector.h" />
     <ClInclude Include="src\Misc\ConfigParser.h" />
     <ClInclude Include="src\Object\Coordinates.h" />
     <ClInclude Include="src\Object\Geometry.h" />
     <ClInclude Include="src\Object\AssimpGeometry.h" />
     <ClInclude Include="src\Object\ModelEdgeDetector.h" />
     <ClInclude Include="src\Object\Object.h" />
-    <ClInclude Include="src\Object\Rasterizer.h" />
     <ClInclude Include="src\Rendering\Renderer.h" />
     <ClInclude Include="src\Rendering\Shader.h" />
   </ItemGroup>
