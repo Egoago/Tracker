@@ -34,12 +34,12 @@ void Object::allocateRegistry() {
 void Object::generate6DOFs() {
 	//TODO tune granularity
 	//TODO perspective distribution
-	Range width(config.getEntries("width", { "-40.0", "40.0", "2" }));
-	Range height(config.getEntries("height", { "-40.0", "40.0", "2" }));
+	Range width(config.getEntries("width", { "-40.0", "40.0", "4" }));
+	Range height(config.getEntries("height", { "-40.0", "40.0", "4" }));
 	Range depth(config.getEntries("depth", { "-2000.0", "-300.0", "2" }));
 	//TODO uniform sphere distr <=> homogenous tensor layout????
-	Range roll(config.getEntries("roll", { "0", "360", "2" }));
-	Range yaw(config.getEntries("yaw", { "0", "360", "2" }));
+	Range roll(config.getEntries("roll", { "0", "360", "4" }));
+	Range yaw(config.getEntries("yaw", { "0", "360", "4" }));
 	Range pitch(config.getEntries("pitch", { "0", "180", "2" }));
 	dimensions[0] = yaw.resolution;
 	dimensions[1] = pitch.resolution;
@@ -66,8 +66,25 @@ void Object::generate6DOFs() {
 }
 
 cv::Point getResolution(ConfigParser& config) {
-	vector<string> str = config.getEntries("frame resolution", { "500", "500" });
+	vector<string> str = config.getEntries("frame resolution", { "1000", "1000" });
 	return cv::Point(stoi(str[0]), stoi(str[1]));
+}
+
+void Object::rasterize(const vector<Edge>& edges, Snapshot* snapshot) {
+	const static float step = stof(config.getEntry("rasterization step", "2.0"));
+	const static float d = stof(config.getEntry("rasterization offset", "0.5"));
+	for (const Edge& edge : edges)
+	{
+		glm::vec3 dir = glm::normalize(edge.b - edge.a);
+		float dist = glm::distance(edge.a, edge.b);
+		glm::vec3 p = edge.a;
+		while (dist > 0) {
+			snapshot->M.push_back(p);
+			snapshot->M_.push_back(p + d * dir);
+			p += step * dir;
+			dist -= step;
+		}
+	}
 }
 
 void Object::generarteObject(const string& fileName) {
@@ -76,22 +93,23 @@ void Object::generarteObject(const string& fileName) {
 	generate6DOFs();
 	Geometry geo = AssimpGeometry(fileName);
 	ModelEdgeDetector detector(geo);
-	Point resolution = getResolution(config);
+	Point renderRes = getResolution(config);
+	Point windowRes = renderRes /2;
 	
-	Renderer renderer(resolution.x, resolution.y);
+	Renderer renderer(renderRes.x, renderRes.y);
 	namedWindow("OpenCV", cv::WINDOW_NORMAL);
-	resizeWindow("OpenCV", resolution.x, resolution.y);
-	moveWindow("OpenCV", 0, resolution.y);
+	resizeWindow("OpenCV", windowRes.x, windowRes.y);
+	moveWindow("OpenCV", 0, windowRes.y);
 	namedWindow("Canny", WINDOW_NORMAL);
-	resizeWindow("Canny", resolution.x, resolution.y);
-	moveWindow("Canny", resolution.x, resolution.y);
+	resizeWindow("Canny", windowRes.x, windowRes.y);
+	moveWindow("Canny", windowRes.x, windowRes.y);
 	namedWindow("Wireframe", WINDOW_NORMAL);
-	resizeWindow("Wireframe", resolution.x, resolution.y);
-	moveWindow("Wireframe", resolution.x * 2, resolution.y);
-	Mat depth(Size(resolution.x, resolution.y), CV_32F);
-    Mat color(Size(resolution.x, resolution.y), CV_8UC3);
-    Mat dst(Size(resolution.x, resolution.y), CV_8U, Scalar(0));
-    Mat detected_edges(Size(resolution.x, resolution.y), CV_8U);
+	resizeWindow("Wireframe", windowRes.x, windowRes.y);
+	moveWindow("Wireframe", windowRes.x * 2, windowRes.y);
+	Mat depth(Size(renderRes.x, renderRes.y), CV_32F);
+    Mat color(Size(renderRes.x, renderRes.y), CV_8UC3);
+    Mat dst(Size(renderRes.x, renderRes.y), CV_8U, Scalar(0));
+    Mat detected_edges(Size(renderRes.x, renderRes.y), CV_8U);
 	int c = 1;
 	for (Snapshot* i = snapshots.data(); i < (snapshots.data() + snapshots.num_elements()); i++) {
 		SixDOF& sixDOF = i->sixDOF;
@@ -101,16 +119,14 @@ void Object::generarteObject(const string& fileName) {
 		glm::mat4 mvp = renderer.renderModel(geo, depth.data, color.data);
 		cv::flip(color, color, 0);
 		cv::flip(depth, depth, 0);
-		imshow("OpenCV", color);
+		//imshow("OpenCV", color);
 		Canny(color, detected_edges, 10, 10 * 3, 3);
-		imshow("Canny", detected_edges);
+		//imshow("Canny", detected_edges);
 		dst = Scalar(0);
 		vector<Edge> edges = detector.detectOutlinerEdges(detected_edges, dst, mvp);
-		imshow("Wireframe", dst);
-		waitKey(1);
-		Rasterizer rasterizer(edges, 4.0f, 0.5f);
-		i->M = rasterizer.getM();
-		i->M_ = rasterizer.getM_();
+		//imshow("Wireframe", dst);
+		//waitKey(1);
+		rasterize(edges, i);
 	}
 	cout << endl;
 }
@@ -147,16 +163,10 @@ void Object::save(std::string fileName) {
 
 void Object::load() {
 	ifstream in(getSavePath(objectName));
-	cout << "dim:";
-	for (int i = 0; i < snapshots.dimensionality; i++) {
+	for (int i = 0; i < snapshots.dimensionality; i++)
 		in >> bits(dimensions[i]);
-		cout << " " << dimensions[i];
-	}
-	cout << endl;
 	allocateRegistry();
-	for (Snapshot* i = snapshots.data(); i < (snapshots.data() + snapshots.num_elements()); i++) {
+	for (Snapshot* i = snapshots.data(); i < (snapshots.data() + snapshots.num_elements()); i++)
 		in >> bits(*i);
-		i->sixDOF.print(cout);
-	}
 	in.close();
 }

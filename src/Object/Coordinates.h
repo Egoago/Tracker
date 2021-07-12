@@ -40,19 +40,6 @@ struct SixDOF {
 			<< orientation.p << ' '
 			<< orientation.r << std::endl;
 	}
-
-	/*friend std::ostream& operator<<(std::ostream& out, Bits<struct SixDOF&> o)
-	{
-		out << bits(o.t.position)
-			<< bits(o.t.orientation);
-		return (out);
-	}
-	friend std::istream& operator>>(std::istream& in, Bits<SixDOF&> o)
-	{
-		in  >> bits(o.t.position)
-			>> bits(o.t.orientation);
-		return (in);
-	}*/
 };
 
 struct Edge {
@@ -81,30 +68,19 @@ struct Snapshot {
 	SixDOF sixDOF;
 	std::vector<glm::vec3> M, M_;
 
-	//friend std::ostream& operator<<(std::ostream& out, Bits<struct Snapshot&> o) {
-	//	out << bits(o.t.sixDOF)
-	//		<< bits(o.t.M.size());
-	//	std::cout << "M size: " << o.t.M.size() << std::endl;
-	//	/*for (size_t i = 0; i < o.t.M.size(); i++) {
-	//		out << bits(o.t.M[i]);
-	//		out << bits(o.t.M_[i]);
-	//	}*/
-	//	return (out);
-	//}
+	friend std::ostream& operator<<(std::ostream& out, Bits<struct Snapshot&> o) {
+		out << bits(o.t.sixDOF)
+			<< bits(o.t.M)
+			<< bits(o.t.M_);
+		return (out);
+	}
 
-	//friend std::istream& operator>>(std::istream& in, Bits<struct Snapshot&> o) {
-	//	size_t size;
-	//	in  >> bits(o.t.sixDOF)
-	//		>> bits(size);
-	//	std::cout << "M size: " << size << std::endl;
-	//	o.t.M.resize(size);
-	//	o.t.M_.resize(size);
-	//	/*for (size_t i = 0; i < size; i++) {
-	//		in >> bits(o.t.M[i]);
-	//		in >> bits(o.t.M_[i]);
-	//	}*/
-	//	return (in);
-	//}
+	friend std::istream& operator>>(std::istream& in, Bits<struct Snapshot&> o) {
+		in >> bits(o.t.sixDOF)
+			>> bits(o.t.M)
+			>> bits(o.t.M_);
+		return (in);
+	}
 };
 
 
