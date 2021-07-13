@@ -9,6 +9,6 @@ public:
 
 	LSDDetector(float scale = 0.8f):scale(scale) {}
 
-	virtual std::vector<Edge<glm::vec2>> detectEdges(cv::Mat& img) const override;
+	virtual void detectEdges(cv::Mat& img, std::vector<Edge<glm::vec2>>& edges) const override;
 };
 

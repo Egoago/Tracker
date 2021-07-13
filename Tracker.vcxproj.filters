@@ -68,6 +68,9 @@
     <ClCompile Include="src\Detectors\CannyDetector.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\DCDT3Generator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Camera\Camera.h">
@@ -114,6 +117,9 @@
     </ClInclude>
     <ClInclude Include="src\Detectors\CannyDetector.h">
       <Filter>Header Files\Detectors</Filter>
+    </ClInclude>
+    <ClInclude Include="src\DCDT3Generator.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

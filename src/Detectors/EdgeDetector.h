@@ -7,6 +7,6 @@
 class EdgeDetector
 {
 public:
-	virtual std::vector<Edge<glm::vec2>> detectEdges(cv::Mat& img) const = 0;
+	virtual void detectEdges(cv::Mat& img, std::vector<Edge<glm::vec2>>& edges) const = 0;
 };
 

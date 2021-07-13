@@ -2,5 +2,5 @@
 #include "EdgeDetector.h"
 class CannyDetector : public EdgeDetector
 {
-	virtual std::vector<Edge<glm::vec2>> detectEdges(cv::Mat& img) const override;
+	virtual void detectEdges(cv::Mat& img, std::vector<Edge<glm::vec2>>& edges) const override;
 };

@@ -49,9 +49,12 @@ struct Edge {
 	Edge(PointType a, PointType b) : a(a), b(b) {}
 };
 
-inline float getOrientation(Edge<glm::vec2>& edge) {
+inline float getOrientation(const Edge<glm::vec2>& edge) {
 	glm::vec2 d = edge.a - edge.b;
-	return glm::atan(d.y / d.x) + glm::half_pi<float>();
+	float angle = glm::atan(d.y / d.x);
+	if (angle < 0.0f)
+		angle += glm::pi<float>();
+	return angle;
 }
 
 struct Range {
@@ -88,5 +91,3 @@ struct Snapshot {
 		return (in);
 	}
 };
-
-

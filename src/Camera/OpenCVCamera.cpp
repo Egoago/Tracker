@@ -6,18 +6,14 @@ using namespace cv;
 
 OpenCVCamera::OpenCVCamera(int id)
 {
-    std::cout << "opening video capture" << std::endl;
     cap = new VideoCapture(id);
     VideoCapture* camera = (VideoCapture*) cap;
     if (!cap || !camera->open(0)) {
         std::cerr << "Couldn't open OpenCV camera";
         exit(1);
     }
-    std::cout << "fetching camera information" << std::endl;
     width = (int)camera->get(CAP_PROP_FRAME_WIDTH);
-    std::cout << width << std::endl;
     height = (int)camera->get(CAP_PROP_FRAME_HEIGHT);
-    std::cout << height << std::endl;
     nBitsPerPixel = 24;
 }
 
