@@ -49,6 +49,10 @@ struct Edge {
 	Edge(PointType a, PointType b) : a(a), b(b) {}
 };
 
+inline glm::vec2 project(const glm::vec3& point, const SixDOF& pose) {
+
+}
+
 inline float getOrientation(const Edge<glm::vec2>& edge) {
 	glm::vec2 d = edge.a - edge.b;
 	float angle = glm::atan(d.y / d.x);
@@ -73,21 +77,27 @@ struct Range {
 	}
 };
 
-struct Snapshot {
+struct Template {
 	SixDOF sixDOF;
 	std::vector<glm::vec3> M, M_;
 
-	friend std::ostream& operator<<(std::ostream& out, Bits<struct Snapshot&> o) {
+	friend std::ostream& operator<<(std::ostream& out, Bits<struct Template&> o) {
 		out << bits(o.t.sixDOF)
 			<< bits(o.t.M)
 			<< bits(o.t.M_);
 		return (out);
 	}
 
-	friend std::istream& operator>>(std::istream& in, Bits<struct Snapshot&> o) {
+	friend std::istream& operator>>(std::istream& in, Bits<struct Template&> o) {
 		in >> bits(o.t.sixDOF)
 			>> bits(o.t.M)
 			>> bits(o.t.M_);
 		return (in);
 	}
 };
+
+constexpr inline int quantizedIndex(const float value, const size_t q) {
+	const constexpr float pi = glm::pi<float>();
+	const float d = pi / q;
+	return (int)(value / d) % q;
+}

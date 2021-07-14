@@ -184,7 +184,8 @@ copy "$(SolutionDir)Common\glew-2.1.0\Bin\Release\x64\glew32.dll" "$(SolutionDir
     <ClCompile Include="src\Misc\Links.h" />
     <ClCompile Include="src\Object\AssimpGeometry.cpp" />
     <ClCompile Include="src\Object\ModelEdgeDetector.cpp" />
-    <ClCompile Include="src\Object\Object.cpp" />
+    <ClCompile Include="src\Object\Model.cpp" />
+    <ClCompile Include="src\PoseEstimation\PoseEstimator.cpp" />
     <ClCompile Include="src\Rendering\Renderer.cpp" />
     <ClCompile Include="src\Rendering\Shader.cpp" />
     <ClCompile Include="src\main.cpp" />
@@ -203,7 +204,8 @@ copy "$(SolutionDir)Common\glew-2.1.0\Bin\Release\x64\glew32.dll" "$(SolutionDir
     <ClInclude Include="src\Object\Geometry.h" />
     <ClInclude Include="src\Object\AssimpGeometry.h" />
     <ClInclude Include="src\Object\ModelEdgeDetector.h" />
-    <ClInclude Include="src\Object\Object.h" />
+    <ClInclude Include="src\Object\Model.h" />
+    <ClInclude Include="src\PoseEstimation\PoseEstimator.h" />
     <ClInclude Include="src\Rendering\Renderer.h" />
     <ClInclude Include="src\Rendering\Shader.h" />
   </ItemGroup>

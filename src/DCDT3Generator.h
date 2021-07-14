@@ -20,8 +20,6 @@ private:
 	cv::Mat tmp;
 	float* costs;
 
-	float quantize(float value) const;
-	int quantizedIndex(float value) const;
 	void directedDistanceTransform();
 	void gaussianBlur();
 	void swapBuffers();

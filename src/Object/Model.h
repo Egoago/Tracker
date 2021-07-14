@@ -2,37 +2,39 @@
 #include "../Misc/ConfigParser.h"
 #include "Coordinates.h"
 #include "boost/multi_array.hpp"
+
+//TODO remove monitoring
 #include <iostream>
 
-class Object
+class Model
 {
 	static ConfigParser config;
 	std::string objectName;
-	typedef boost::multi_array<Snapshot, 6> Registry;
 	size_t dimensions[6];
-	boost::array<Registry::index, 3> shape = { { 3, 4, 2 } };
-	Registry snapshots;
-
+	boost::multi_array<Template, 6> templates;
+	
 	void generarteObject(const std::string& fileName);
 	void generate6DOFs();
 	void allocateRegistry();
-	void rasterize(const std::vector<Edge<>>& edges, Snapshot* snapshot);
+	void rasterize(const std::vector<Edge<>>& edges, Template* templates);
+	void load();
 public:
 
-	Object(std::string name);
-	~Object() {}
-
+	Model(std::string name);
+	~Model() {}
+	
 	void save(std::string fileName = "");
-	void load();
 
 	void setName(const char* str) { objectName = str; }
 
-	void print() {
+	auto& getTemplates() const { return templates; }
+	
+	void print() const {
 		std::cout << "dimensions:";
-		for (int i = 0; i < snapshots.dimensionality; i++)
+		for (int i = 0; i < templates.dimensionality; i++)
 			std::cout << " " << dimensions[i];
 		std::cout << std::endl;
-		for (Snapshot* i = snapshots.data(); i < (snapshots.data() + snapshots.num_elements()); i++)
+		for (const Template* i = templates.data(); i < (templates.data() + templates.num_elements()); i++)
 			i->sixDOF.print(std::cout);
 	}
 };

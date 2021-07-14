@@ -45,19 +45,7 @@ DCDT3Generator::DCDT3Generator(size_t width, size_t height)
 void DCDT3Generator::swapBuffers() {
      dcdt3 = (first) ? buffer2 : buffer1;
      other = (!first) ? buffer2 : buffer1;
-     first != first;
-}
-
-int DCDT3Generator::quantizedIndex(float value) const {
-    const constexpr float pi = glm::pi<float>();
-    const float d = pi / q;
-    return (int)(value / d) % q;
-}
-
-float DCDT3Generator::quantize(float value) const {
-    const constexpr float pi = glm::pi<float>();
-    const float d = pi / q;
-    return quantizedIndex(value) * d + d/2.0f;
+     first = !first;
 }
 
 std::vector<cv::Mat>& DCDT3Generator::setFrame(cv::Mat& nextFrame)
@@ -67,7 +55,7 @@ std::vector<cv::Mat>& DCDT3Generator::setFrame(cv::Mat& nextFrame)
     for (auto& container : quantizedEdges)
         container.clear();
     for (Edge<glm::vec2>& edge : edges)
-        quantizedEdges[quantizedIndex(getOrientation(edge))].push_back(edge);
+        quantizedEdges[quantizedIndex(getOrientation(edge), q)].push_back(edge);
 
     for (size_t i = 0; i < q; i++) {
         tmp = Scalar::all(255.0);

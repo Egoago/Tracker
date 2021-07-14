@@ -1,8 +1,7 @@
-#include "Object.h"
+#include "Model.h"
 #include <string>
 #include <serializer.h>
 #include "opencv2/opencv.hpp"
-//#include "opencv2/highgui/highgui.hpp"
 #include "../Misc/Links.h"
 #include "AssimpGeometry.h"
 #include "ModelEdgeDetector.h"
@@ -10,7 +9,7 @@
 
 using namespace std;
 
-ConfigParser Object::config(OBJ_CONFIG_FILE);
+ConfigParser Model::config(OBJ_CONFIG_FILE);
 
 void getObjectName(string& fName, string& oName) {
 	size_t dot = fName.find('.');
@@ -21,8 +20,8 @@ void getObjectName(string& fName, string& oName) {
 	else oName = fName.substr(0, dot);
 }
 
-void Object::allocateRegistry() {
-	snapshots.resize(boost::extents[dimensions[0]]
+void Model::allocateRegistry() {
+	templates.resize(boost::extents[dimensions[0]]
 									[dimensions[1]]
 									[dimensions[2]]
 									[dimensions[3]]
@@ -30,7 +29,7 @@ void Object::allocateRegistry() {
 									[dimensions[5]]);
 }
 
-void Object::generate6DOFs() {
+void Model::generate6DOFs() {
 	//TODO tune granularity
 	//TODO perspective distribution
 	Range width(config.getEntries("width", { "-40.0", "40.0", "4" }));
@@ -54,7 +53,7 @@ void Object::generate6DOFs() {
 	for (size_t y = 0; y < height.resolution; y++)
 	for (size_t z = 0; z < depth.resolution; z++)
 	{
-		SixDOF& sixDOF = snapshots[ya][p][r][x][y][z].sixDOF;
+		SixDOF& sixDOF = templates[ya][p][r][x][y][z].sixDOF;
 		sixDOF.position.x = width[x];
 		sixDOF.position.y = height[y];
 		sixDOF.position.z = depth[z];
@@ -69,7 +68,7 @@ cv::Point getResolution(ConfigParser& config) {
 	return cv::Point(stoi(str[0]), stoi(str[1]));
 }
 
-void Object::rasterize(const vector<Edge<>>& edges, Snapshot* snapshot) {
+void Model::rasterize(const vector<Edge<>>& edges, Template* snapshot) {
 	const static float step = stof(config.getEntry("rasterization step", "2.0"));
 	const static float d = stof(config.getEntry("rasterization offset", "0.5"));
 	for (const Edge<>& edge : edges)
@@ -86,7 +85,7 @@ void Object::rasterize(const vector<Edge<>>& edges, Snapshot* snapshot) {
 	}
 }
 
-void Object::generarteObject(const string& fileName) {
+void Model::generarteObject(const string& fileName) {
 	//TODO add loading bar
 	using namespace cv;
 	generate6DOFs();
@@ -110,9 +109,10 @@ void Object::generarteObject(const string& fileName) {
     Mat dst(Size(renderRes.x, renderRes.y), CV_8U, Scalar(0));
     Mat detected_edges(Size(renderRes.x, renderRes.y), CV_8U);
 	int c = 1;
-	for (Snapshot* i = snapshots.data(); i < (snapshots.data() + snapshots.num_elements()); i++) {
+	for (Template* i = templates.data(); i < (templates.data() + templates.num_elements()); i++) {
 		SixDOF& sixDOF = i->sixDOF;
-		cout << "Rendered " << c++ << "\t frames out of " << snapshots.num_elements() << "\r";
+		//TODO remove monitoring
+		cout << "Rendered " << c++ << "\t frames out of " << templates.num_elements() << "\r";
 		//sixDOF.print(cout);
 		renderer.setModel(sixDOF);
 		glm::mat4 mvp = renderer.renderModel(geo, depth.data, color.data);
@@ -130,7 +130,7 @@ void Object::generarteObject(const string& fileName) {
 	cout << endl;
 }
 
-Object::Object(string fileName)
+Model::Model(string fileName)
 {
 	getObjectName(fileName, objectName);
 	
@@ -149,23 +149,23 @@ string getSavePath(const string& objectName) {
 	return LOADED_OBJECTS_FOLDER + objectName + ".txt";
 }
 
-void Object::save(std::string fileName) {
+void Model::save(std::string fileName) {
 	if (fileName.empty())
 		fileName = getSavePath(objectName);
 	ofstream out(fileName);
-	for (int i = 0; i < snapshots.dimensionality; i++)
+	for (int i = 0; i < templates.dimensionality; i++)
 		out << bits(dimensions[i]);
-	for (Snapshot* i = snapshots.data(); i < (snapshots.data() + snapshots.num_elements()); i++)
+	for (Template* i = templates.data(); i < (templates.data() + templates.num_elements()); i++)
 		out << bits(*i);
 	out.close();
 }
 
-void Object::load() {
+void Model::load() {
 	ifstream in(getSavePath(objectName));
-	for (int i = 0; i < snapshots.dimensionality; i++)
+	for (int i = 0; i < templates.dimensionality; i++)
 		in >> bits(dimensions[i]);
 	allocateRegistry();
-	for (Snapshot* i = snapshots.data(); i < (snapshots.data() + snapshots.num_elements()); i++)
+	for (Template* i = templates.data(); i < (templates.data() + templates.num_elements()); i++)
 		in >> bits(*i);
 	in.close();
 }

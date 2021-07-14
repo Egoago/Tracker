@@ -24,8 +24,11 @@
     <Filter Include="Header Files\Misc">
       <UniqueIdentifier>{affec106-5845-4373-ba08-3dd3dfe80770}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\Detectors">
+    <Filter Include="Header Files\EdgeDetectors">
       <UniqueIdentifier>{98dd9c26-e1e5-4423-b8f8-9c8195e61530}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\PoseEstimation">
+      <UniqueIdentifier>{8a886d80-2865-41d0-a921-c3713c602c2e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -50,7 +53,7 @@
     <ClCompile Include="src\Object\ModelEdgeDetector.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Object\Object.cpp">
+    <ClCompile Include="src\Object\Model.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Misc\ConfigParser.cpp">
@@ -69,6 +72,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\DCDT3Generator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PoseEstimation\PoseEstimator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -100,26 +106,29 @@
     <ClInclude Include="src\Misc\ConfigParser.h">
       <Filter>Header Files\Misc</Filter>
     </ClInclude>
-    <ClInclude Include="src\Object\Object.h">
-      <Filter>Header Files\Object</Filter>
-    </ClInclude>
     <ClInclude Include="src\Object\Coordinates.h">
       <Filter>Header Files\Object</Filter>
     </ClInclude>
     <ClInclude Include="src\Detectors\EdgeDetector.h">
-      <Filter>Header Files\Detectors</Filter>
+      <Filter>Header Files\EdgeDetectors</Filter>
     </ClInclude>
     <ClInclude Include="src\Detectors\LSDDetector.h">
-      <Filter>Header Files\Detectors</Filter>
+      <Filter>Header Files\EdgeDetectors</Filter>
     </ClInclude>
     <ClInclude Include="src\Detectors\lsd.h">
-      <Filter>Header Files\Detectors</Filter>
+      <Filter>Header Files\EdgeDetectors</Filter>
     </ClInclude>
     <ClInclude Include="src\Detectors\CannyDetector.h">
-      <Filter>Header Files\Detectors</Filter>
+      <Filter>Header Files\EdgeDetectors</Filter>
+    </ClInclude>
+    <ClInclude Include="src\PoseEstimation\PoseEstimator.h">
+      <Filter>Header Files\PoseEstimation</Filter>
     </ClInclude>
     <ClInclude Include="src\DCDT3Generator.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\PoseEstimation</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Object\Model.h">
+      <Filter>Header Files\Object</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

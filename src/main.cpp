@@ -1,22 +1,17 @@
-#include "Camera/OpenCVCamera.h"
-#include "DCDT3Generator.h"
+#include "Misc/Links.h"
+#include "PoseEstimation/PoseEstimator.h"
+#include <opencv2/highgui.hpp>
 
 using namespace cv;
 using namespace std;
 
 int main(int argc, char** argv) {
-    Camera& cam = OpenCVCamera();
-    DCDT3Generator generator(cam.getWidth(), cam.getHeight());
+    Mat frame = imread(TEST_FRAME);
+    Model model("cube.stl");
+    PoseEstimator poseEstimator(frame.cols, frame.rows, model);
     namedWindow("jep");
-
-    while (1)
-    {
-        char* frame = cam.getNextFrame();
-        Mat wrapped(Size(cam.getWidth(), cam.getHeight()), cam.getFormat(), frame);
-        Mat tmp = generator.setFrame(wrapped)[0];
-        normalize(tmp, tmp, 0.0, 1.0, NORM_MINMAX);
-        imshow("jep", tmp);
-        waitKey(1);
-    }
+    imshow("jep", frame);
+    waitKey(1);
+    poseEstimator.getPose(frame).print(std::cout);
     return 0;
 }
