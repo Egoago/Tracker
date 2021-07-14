@@ -4,11 +4,11 @@
 #include <glm/mat4x4.hpp>
 
 struct DirectedEdge {
-    Vertex a, b;
-    DirectedEdge(Vertex a = Vertex(), Vertex b = Vertex()) : a(a), b(b) {}
+    glm::vec3 a, b;
+    DirectedEdge(glm::vec3 a = glm::vec3(), glm::vec3 b = glm::vec3()) : a(a), b(b) {}
 
     DirectedEdge& flip() {
-        Vertex c = a;
+        const glm::vec3 c = a;
         a = b;
         b = c;
         return *this;

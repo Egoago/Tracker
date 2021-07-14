@@ -9,7 +9,7 @@ AssimpGeometry::AssimpGeometry(const std::string& fileName) {
 	std::string path = MODELS_FOLDER + fileName;
 	Assimp::Importer importer;
 
-	const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_GenNormals);
+	const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate);
 	if (scene == nullptr) {
 		std::cerr << "Failed to load obj file " << path << ". Assimp error message: " << importer.GetErrorString();
 		exit(1);
@@ -21,16 +21,12 @@ AssimpGeometry::AssimpGeometry(const std::string& fileName) {
 	indices.reserve(mesh->mNumFaces*3);
 	vertices.reserve(mesh->mNumVertices);
 
-	Vertex v;
+	glm::vec3 v;
 
 	for (unsigned int i = 0; i < mesh->mNumVertices; ++i) {
-		v.position.x = mesh->mVertices[i].x;
-		v.position.y = mesh->mVertices[i].y;
-		v.position.z = mesh->mVertices[i].z;
-
-		v.normal.x = mesh->mNormals[i].x;
-		v.normal.y = mesh->mNormals[i].y;
-		v.normal.z = mesh->mNormals[i].z;
+		v.x = mesh->mVertices[i].x;
+		v.y = mesh->mVertices[i].y;
+		v.z = mesh->mVertices[i].z;
 
 		vertices.emplace_back(v);
 	}

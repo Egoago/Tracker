@@ -6,14 +6,14 @@ class Geometry
 {
 protected:
 	std::vector<unsigned int> indices;
-	std::vector<Vertex> vertices;
+	std::vector<glm::vec3> vertices;
 
 public:
-	const void* getVertices() const { return &vertices[0]; }
-	const void* getIndices() const { return &indices[0]; }
-	size_t getIndexSize() const { return sizeof(unsigned int); }
-	size_t getIndecesCount() const { return indices.size(); }
-	size_t getVertexSize() const { return sizeof(Vertex); }
-	size_t getVerticesCount() const { return vertices.size(); }
+	const glm::vec3* getVertices() const { return vertices.data(); }
+	const unsigned int* getIndices() const { return indices.data(); }
+	constexpr unsigned int getIndexSize() const { return sizeof(unsigned int); }
+	unsigned int getIndecesCount() const { return indices.size(); }
+	constexpr unsigned int getVertexSize() const { return sizeof(glm::vec3); }
+	unsigned int getVerticesCount() const { return vertices.size(); }
 };
 

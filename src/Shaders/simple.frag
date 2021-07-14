@@ -1,10 +1,13 @@
 #version 460
 precision highp float;
 
-out vec4 fragmentColor; // output goes to frame buffer
+layout (location = 0) out vec3 outPosition;
+layout (location = 1) out uint outIndex;
 
-in vec3 norm;
+in vec3 position;
+flat in uint index;
 
 void main() {
-	fragmentColor = vec4((norm+1.0)/2.0,1);
+	outPosition = position;
+	outIndex = index;
 }

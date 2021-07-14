@@ -12,7 +12,7 @@ using namespace std;
 ConfigParser Model::config(OBJ_CONFIG_FILE);
 
 void getObjectName(string& fName, string& oName) {
-	size_t dot = fName.find('.');
+	unsigned int dot = fName.find('.');
 	if (dot == string::npos) {
 		oName = fName;
 		fName += ".STL";
@@ -46,12 +46,12 @@ void Model::generate6DOFs() {
 	dimensions[4] = height.resolution;
 	dimensions[5] = depth.resolution;
 	allocateRegistry();
-	for (size_t ya = 0; ya < yaw.resolution; ya++)
-	for (size_t p = 0; p < pitch.resolution; p++)
-	for (size_t r = 0; r < roll.resolution; r++)
-	for (size_t x = 0; x < width.resolution; x++)
-	for (size_t y = 0; y < height.resolution; y++)
-	for (size_t z = 0; z < depth.resolution; z++)
+	for (unsigned int ya = 0; ya < yaw.resolution; ya++)
+	for (unsigned int p = 0; p < pitch.resolution; p++)
+	for (unsigned int r = 0; r < roll.resolution; r++)
+	for (unsigned int x = 0; x < width.resolution; x++)
+	for (unsigned int y = 0; y < height.resolution; y++)
+	for (unsigned int z = 0; z < depth.resolution; z++)
 	{
 		SixDOF& sixDOF = templates[ya][p][r][x][y][z].sixDOF;
 		sixDOF.position.x = width[x];
@@ -92,7 +92,7 @@ void Model::generarteObject(const string& fileName) {
 	Geometry geo = AssimpGeometry(fileName);
 	ModelEdgeDetector detector(geo);
 	Point renderRes = getResolution(config);
-	Point windowRes = renderRes /2;
+	Point windowRes = renderRes/2;
 	
 	Renderer renderer(renderRes.x, renderRes.y);
 	namedWindow("OpenCV", cv::WINDOW_NORMAL);
@@ -104,8 +104,9 @@ void Model::generarteObject(const string& fileName) {
 	namedWindow("Wireframe", WINDOW_NORMAL);
 	resizeWindow("Wireframe", windowRes.x, windowRes.y);
 	moveWindow("Wireframe", windowRes.x * 2, windowRes.y);
-	Mat depth(Size(renderRes.x, renderRes.y), CV_32F);
-    Mat color(Size(renderRes.x, renderRes.y), CV_8UC3);
+	Mat posMap(Size(renderRes.x, renderRes.y), CV_32FC3);
+    Mat indexMap(Size(renderRes.x, renderRes.y), CV_32S);
+    Mat normalMap(Size(renderRes.x, renderRes.y), CV_8UC3);
     Mat dst(Size(renderRes.x, renderRes.y), CV_8U, Scalar(0));
     Mat detected_edges(Size(renderRes.x, renderRes.y), CV_8U);
 	int c = 1;
@@ -115,16 +116,16 @@ void Model::generarteObject(const string& fileName) {
 		cout << "Rendered " << c++ << "\t frames out of " << templates.num_elements() << "\r";
 		//sixDOF.print(cout);
 		renderer.setModel(sixDOF);
-		glm::mat4 mvp = renderer.renderModel(geo, depth.data, color.data);
+		glm::mat4 mvp = renderer.renderModel(geo, posMap.data, color.data);
 		cv::flip(color, color, 0);
 		cv::flip(depth, depth, 0);
-		//imshow("OpenCV", color);
+		imshow("OpenCV", color);
 		Canny(color, detected_edges, 10, 10 * 3, 3);
-		//imshow("Canny", detected_edges);
+		imshow("Canny", detected_edges);
 		dst = Scalar(0);
 		vector<Edge<>> edges = detector.detectOutlinerEdges(detected_edges, dst, mvp);
-		//imshow("Wireframe", dst);
-		//waitKey(1);
+		imshow("Wireframe", dst);
+		waitKey(1000000);
 		rasterize(edges, i);
 	}
 	cout << endl;

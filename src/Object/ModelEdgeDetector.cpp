@@ -7,17 +7,17 @@
 std::vector<DirectedEdge> detectEdgePairs(const Geometry& geometry) {
     std::vector<DirectedEdge> pairs(geometry.getIndecesCount());
     unsigned int* indices = (unsigned int*)geometry.getIndices();
-    Vertex* vertices = (Vertex*)geometry.getVertices();
+    glm::vec3* vertices = (glm::vec3*)geometry.getVertices();
     //TODO implement a more sohpisticated algorithm
     //like leave out edges on same triangle
     //or match triangles
-    size_t pairCount = 0, singleCount = 0;
-    for (size_t i = 0; i < geometry.getIndecesCount()/3; i++) {
-        for (size_t k = 0; k < 3; k++) {
+    unsigned int pairCount = 0, singleCount = 0;
+    for (unsigned int i = 0; i < geometry.getIndecesCount()/3; i++) {
+        for (unsigned int k = 0; k < 3; k++) {
             DirectedEdge edge = DirectedEdge(vertices[indices[3*i + k]],    //1.
                                              vertices[indices[3*i + (1+k)%3]]);
             bool foundPair = false;
-            for (size_t l = pairCount; l < (singleCount + pairCount); l++) {//2.
+            for (unsigned int l = pairCount; l < (singleCount + pairCount); l++) {//2.
                 if (pairs[2 * l] == edge ||                                 //3.
                     pairs[2 * l] == edge.flip()) {
                     pairs[2 * pairCount + 1] = pairs[2 * l];                //4.
@@ -61,7 +61,7 @@ bool testArea(cv::Point b, cv::Mat& depthMap) {
     if (b.x - 1 < 0 || b.y - 1 < 0 ||
         b.x + 1 > depthMap.cols || b.y + 1 > depthMap.rows)
         return false;
-    size_t sum = 0;
+    unsigned int sum = 0;
     sum += testPoint(b, depthMap);
     sum += testPoint(b + cv::Point(0, 1), depthMap);
     sum += testPoint(b + cv::Point(1, 0), depthMap);
@@ -81,7 +81,7 @@ std::vector<Edge<>> ModelEdgeDetector::detectOutlinerEdges(cv::Mat& depthMap, cv
 {
     std::vector<Edge<>> edges;
     //depthMap = cv::Scalar::all(0);
-    for (size_t i = 0; i < edgePairs.size(); i += 2) {
+    for (unsigned int i = 0; i < edgePairs.size(); i += 2) {
         glm::vec3 a = edgePairs[i+1].a.position;
         glm::vec3 b = edgePairs[i+1].b.position;
         glm::vec2 p1 = screenToNDC(MVP * glm::vec4(a,1.0));

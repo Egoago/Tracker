@@ -8,7 +8,7 @@ using namespace std;
 
 vector<string> split(string str, string delimiter) {
     vector<string> out;
-    size_t pos = 0;
+    unsigned int pos = 0;
     while ((pos = str.find(delimiter)) != string::npos) {
         string l = str.substr(0, pos);
         if (l.length() > 0)

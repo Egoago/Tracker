@@ -17,7 +17,7 @@ uint64_t constexpr my_hash(const char* m) {
 
 ConfigParser DCDT3Generator::config(DCDT3_CONFIG_FILE);
 
-size_t getQ(ConfigParser& config) {
+unsigned int getQ(ConfigParser& config) {
     return std::stoi(config.getEntry("orientation quantization", "60"));
 }
 
@@ -29,7 +29,7 @@ EdgeDetector* getEdgeDetector(ConfigParser& config) {
     }
 }
 
-DCDT3Generator::DCDT3Generator(size_t width, size_t height)
+DCDT3Generator::DCDT3Generator(unsigned int width, unsigned int height)
     :q(getQ(config)),
      edgeDetector(getEdgeDetector(config)),
     dcdt3(buffer1),
@@ -57,7 +57,7 @@ std::vector<cv::Mat>& DCDT3Generator::setFrame(cv::Mat& nextFrame)
     for (Edge<glm::vec2>& edge : edges)
         quantizedEdges[quantizedIndex(getOrientation(edge), q)].push_back(edge);
 
-    for (size_t i = 0; i < q; i++) {
+    for (unsigned int i = 0; i < q; i++) {
         tmp = Scalar::all(255.0);
         for (Edge<glm::vec2>& edge : quantizedEdges[i]) {
             const Point A((int)edge.a.x, (int)edge.a.y), B((int)edge.b.x, (int)edge.b.y);
@@ -77,9 +77,9 @@ void DCDT3Generator::gaussianBlur() {
     //TODO parallelization
     for (int x = 0; x < dcdt3[0].cols; x++)
         for (int y = 0; y < dcdt3[0].rows; y++) {
-            for (size_t dir = 0; dir < q; dir++) {
-                const size_t prev = (dir == 0) ? q-1 : dir - 1;
-                const size_t next = (dir == q-1) ? 0 : dir + 1;
+            for (unsigned int dir = 0; dir < q; dir++) {
+                const unsigned int prev = (dir == 0) ? q-1 : dir - 1;
+                const unsigned int next = (dir == q-1) ? 0 : dir + 1;
                 //TODO localization
                 other[dir].at<float>(y, x) =
                     dcdt3[prev].at<float>(y, x) * 0.25f +
@@ -99,7 +99,7 @@ void DCDT3Generator::directedDistanceTransform() {
     //TODO buffer swap
 	for (int x = 0; x < dcdt3[0].cols; x++)
 	for (int y = 0; y < dcdt3[0].rows; y++) {
-		for (size_t i = 0; i < q; i++) {
+		for (unsigned int i = 0; i < q; i++) {
 			costs[i] = dcdt3[i].at<float>(y,x);
 			if (costs[i] > maxCost)
 				costs[i] = maxCost;
@@ -108,13 +108,13 @@ void DCDT3Generator::directedDistanceTransform() {
 		//forward pass
 		if (costs[0] > costs[q - 1] + dirCost)
 			costs[0] = costs[q - 1] + dirCost;
-		for (size_t i = 1; i < q; i++)
+		for (unsigned int i = 1; i < q; i++)
 			if (costs[i] > costs[i - 1] + dirCost)
 				costs[i] = costs[i - 1] + dirCost;
 
 		if (costs[0] > costs[q - 1] + dirCost)
 			costs[0] = costs[q - 1] + dirCost;
-		for (size_t i = 1; i < q; i++)
+		for (unsigned int i = 1; i < q; i++)
 			if (costs[i] > costs[i - 1] + dirCost)
 				costs[i] = costs[i - 1] + dirCost;
 			else break;
@@ -122,18 +122,18 @@ void DCDT3Generator::directedDistanceTransform() {
 		//backward pass
 		if (costs[q - 1] > costs[0] + dirCost)
 			costs[q - 1] = costs[0] + dirCost;
-		for (size_t i = q - 1; i > 0; i--)
+		for (unsigned int i = q - 1; i > 0; i--)
 			if (costs[i - 1] > costs[i] + dirCost)
 				costs[i - 1] = costs[i] + dirCost;
 
 		if (costs[q - 1] > costs[0] + dirCost)
 			costs[q - 1] = costs[0] + dirCost;
-		for (size_t i = q - 1; i > 0; i--)
+		for (unsigned int i = q - 1; i > 0; i--)
 			if (costs[i - 1] > costs[i] + dirCost)
 				costs[i - 1] = costs[i] + dirCost;
 			else break;
 
-		for (size_t i = 0; i < q; i++)
+		for (unsigned int i = 0; i < q; i++)
             dcdt3[i].at<float>(y,x) = costs[i];
 	}
 }

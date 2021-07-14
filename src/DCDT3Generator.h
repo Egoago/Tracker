@@ -8,7 +8,7 @@ class DCDT3Generator
 {
 private:
 	static ConfigParser config;
-	const size_t q;
+	const unsigned int q;
 	std::vector<cv::Mat>& dcdt3;
 	const EdgeDetector* edgeDetector;
 
@@ -24,7 +24,7 @@ private:
 	void gaussianBlur();
 	void swapBuffers();
 public:
-	DCDT3Generator(size_t width, size_t height);
+	DCDT3Generator(unsigned int width, unsigned int height);
 	~DCDT3Generator() {
 		delete edgeDetector;
 		delete[] costs;

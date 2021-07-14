@@ -10,7 +10,7 @@ class Model
 {
 	static ConfigParser config;
 	std::string objectName;
-	size_t dimensions[6];
+	unsigned int dimensions[6];
 	boost::multi_array<Template, 6> templates;
 	
 	void generarteObject(const std::string& fileName);

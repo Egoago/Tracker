@@ -6,15 +6,6 @@
 #include <iostream>
 #include <serializer.h>
 
-struct Vertex {
-	glm::vec3 position, normal;
-
-	bool operator==(const Vertex& other) {
-		const float epsilon = 1e-13f;
-		return glm::distance(position, other.position) < epsilon;
-	}
-};
-
 struct SixDOF {
 	glm::vec3 position, orientation;
 
@@ -71,7 +62,7 @@ struct Range {
 		step = (end - begin) / resolution;
 	};
 
-	float operator[](size_t index) {
+	float operator[](unsigned int index) {
 		float t = (float)index / (resolution-1.0f);
 		return (1.0f-t)*begin + t*end;
 	}
@@ -96,7 +87,7 @@ struct Template {
 	}
 };
 
-constexpr inline int quantizedIndex(const float value, const size_t q) {
+constexpr inline int quantizedIndex(const float value, const unsigned int q) {
 	const constexpr float pi = glm::pi<float>();
 	const float d = pi / q;
 	return (int)(value / d) % q;
