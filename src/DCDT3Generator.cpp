@@ -1,5 +1,4 @@
 #include "DCDT3Generator.h"
-#include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp>
 #include "Misc/Links.h"
 #include "Detectors/LSDDetector.h"
@@ -30,36 +29,23 @@ EdgeDetector* getEdgeDetector(ConfigParser& config) {
     }
 }
 
-DCDT3Generator::DCDT3Generator()
+DCDT3Generator::DCDT3Generator(size_t width, size_t height)
     :q(getQ(config)),
-     edgeDetector(getEdgeDetector(config)) {
-    config.save();
-    dcdt3.resize(q);
+     edgeDetector(getEdgeDetector(config)),
+    dcdt3(buffer1),
+    other(buffer2) {
+    buffer1.resize(q);
+    buffer2.resize(q, Mat((int)height, (int)width, CV_32F));
+    first = true;
+    quantizedEdges.resize(q);
+    tmp = Mat((int)height, (int)width, CV_8U);
+    costs = new float[q];
+}
 
-    /*namedWindow("Original", WINDOW_NORMAL);
-    resizeWindow("Original", 400, 300);
-    moveWindow("Original", 50, 50);
-    namedWindow("LSD", WINDOW_NORMAL);
-    resizeWindow("LSD", 400, 300);
-    moveWindow("LSD", 400 + 50, 50);*/
-    namedWindow("Quantized", WINDOW_NORMAL);
-    resizeWindow("Quantized", 400, 300);
-    moveWindow("Quantized", 0, 50);
-    namedWindow("Quantized 2", WINDOW_NORMAL);
-    resizeWindow("Quantized 2", 400, 300);
-    moveWindow("Quantized 2", 400, 50);
-    namedWindow("Distance transform", WINDOW_NORMAL);
-    resizeWindow("Distance transform", 400, 300);
-    moveWindow("Distance transform", 800, 50);
-    namedWindow("Distance transform 2", WINDOW_NORMAL);
-    resizeWindow("Distance transform 2", 400, 300);
-    moveWindow("Distance transform 2", 1200, 50);
-    namedWindow("Directional Distance transform", WINDOW_NORMAL);
-    resizeWindow("Directional Distance transform", 400, 300);
-    moveWindow("Directional Distance transform", 400, 450);
-    namedWindow("Directional Distance transform 2", WINDOW_NORMAL);
-    resizeWindow("Directional Distance transform 2", 400, 300);
-    moveWindow("Directional Distance transform 2", 800, 450);
+void DCDT3Generator::swapBuffers() {
+     dcdt3 = (first) ? buffer2 : buffer1;
+     other = (!first) ? buffer2 : buffer1;
+     first != first;
 }
 
 int DCDT3Generator::quantizedIndex(float value) const {
@@ -74,30 +60,14 @@ float DCDT3Generator::quantize(float value) const {
     return quantizedIndex(value) * d + d/2.0f;
 }
 
-void DCDT3Generator::setFrame(cv::Mat& nextFrame)
+std::vector<cv::Mat>& DCDT3Generator::setFrame(cv::Mat& nextFrame)
 {
-    //TODO move temp holders to class fields
-    //imshow("Original", nextFrame);
-
     vector<Edge<glm::vec2>> edges;
     edgeDetector->detectEdges(nextFrame, edges);
-
-    vector<vector<Edge<glm::vec2>>> quantizedEdges(q);
+    for (auto& container : quantizedEdges)
+        container.clear();
     for (Edge<glm::vec2>& edge : edges)
         quantizedEdges[quantizedIndex(getOrientation(edge))].push_back(edge);
-    Mat tmp(nextFrame.rows,nextFrame.cols, CV_8U);
-    tmp = Scalar::all(0);
-    for (Edge<glm::vec2>& edge : quantizedEdges[2]) {
-        Point A((int)edge.a.x, (int)edge.a.y), B((int)edge.b.x, (int)edge.b.y);
-        line(tmp, A, B, Scalar(255.0), 1, FILLED, LINE_8);
-    }
-    imshow("Quantized", tmp);
-    tmp = Scalar::all(0);
-    for (Edge<glm::vec2>& edge : quantizedEdges[6]) {
-        Point A((int)edge.a.x, (int)edge.a.y), B((int)edge.b.x, (int)edge.b.y);
-        line(tmp, A, B, Scalar(255.0), 1, FILLED, LINE_8);
-    }
-    imshow("Quantized 2", tmp);
 
     for (size_t i = 0; i < q; i++) {
         tmp = Scalar::all(255.0);
@@ -107,31 +77,41 @@ void DCDT3Generator::setFrame(cv::Mat& nextFrame)
         }
         distanceTransform(tmp, dcdt3[i], DIST_L2, DIST_MASK_PRECISE);
     }
-    normalize(dcdt3[2], tmp, 0.0, 1.0, NORM_MINMAX);
-    imshow("Distance transform", tmp);
-    normalize(dcdt3[6], tmp, 0.0, 1.0, NORM_MINMAX);
-    imshow("Distance transform 2", tmp);
+
     directedDistanceTransform();
 
-    normalize(dcdt3[2], tmp, 0.0, 1.0, NORM_MINMAX);
-    imshow("Directional Distance transform", tmp);
-    normalize(dcdt3[6], tmp, 0.0, 1.0, NORM_MINMAX);
-    imshow("Directional Distance transform 2", tmp);
-    waitKey(1);
+    gaussianBlur();
+    return dcdt3;
+}
 
+//TODO merge blur with ddt?
+void DCDT3Generator::gaussianBlur() {
+    //TODO parallelization
+    for (int x = 0; x < dcdt3[0].cols; x++)
+        for (int y = 0; y < dcdt3[0].rows; y++) {
+            for (size_t dir = 0; dir < q; dir++) {
+                const size_t prev = (dir == 0) ? q-1 : dir - 1;
+                const size_t next = (dir == q-1) ? 0 : dir + 1;
+                //TODO localization
+                other[dir].at<float>(y, x) =
+                    dcdt3[prev].at<float>(y, x) * 0.25f +
+                    dcdt3[dir].at<float>(y, x) * 0.5f +
+                    dcdt3[next].at<float>(y, x) * 0.25f;
+            }
+        }
+    swapBuffers();
 }
 
 void DCDT3Generator::directedDistanceTransform() {
-	float* costs;
-	costs = new float[q];
-    const float maxCost = 3000.0f;
-    const float lambda = 100.0f;
+    const static float maxCost = stof(config.getEntry("max cost","3000.0"));
+    const static float lambda = stof(config.getEntry("lambda", "100.0"));
     const float dirCost = lambda*glm::pi<float>()/q;
 
     //TODO parallelization
+    //TODO buffer swap
 	for (int x = 0; x < dcdt3[0].cols; x++)
 	for (int y = 0; y < dcdt3[0].rows; y++) {
-		for (int i = 0; i < q; i++) {
+		for (size_t i = 0; i < q; i++) {
 			costs[i] = dcdt3[i].at<float>(y,x);
 			if (costs[i] > maxCost)
 				costs[i] = maxCost;
@@ -140,13 +120,13 @@ void DCDT3Generator::directedDistanceTransform() {
 		//forward pass
 		if (costs[0] > costs[q - 1] + dirCost)
 			costs[0] = costs[q - 1] + dirCost;
-		for (int i = 1; i < q; i++)
+		for (size_t i = 1; i < q; i++)
 			if (costs[i] > costs[i - 1] + dirCost)
 				costs[i] = costs[i - 1] + dirCost;
 
 		if (costs[0] > costs[q - 1] + dirCost)
 			costs[0] = costs[q - 1] + dirCost;
-		for (int i = 1; i < q; i++)
+		for (size_t i = 1; i < q; i++)
 			if (costs[i] > costs[i - 1] + dirCost)
 				costs[i] = costs[i - 1] + dirCost;
 			else break;
@@ -154,20 +134,18 @@ void DCDT3Generator::directedDistanceTransform() {
 		//backward pass
 		if (costs[q - 1] > costs[0] + dirCost)
 			costs[q - 1] = costs[0] + dirCost;
-		for (int i = q - 1; i > 0; i--)
+		for (size_t i = q - 1; i > 0; i--)
 			if (costs[i - 1] > costs[i] + dirCost)
 				costs[i - 1] = costs[i] + dirCost;
 
 		if (costs[q - 1] > costs[0] + dirCost)
 			costs[q - 1] = costs[0] + dirCost;
-		for (int i = q - 1; i > 0; i--)
+		for (size_t i = q - 1; i > 0; i--)
 			if (costs[i - 1] > costs[i] + dirCost)
 				costs[i - 1] = costs[i] + dirCost;
 			else break;
 
-		for (int i = 0; i < q; i++)
+		for (size_t i = 0; i < q; i++)
             dcdt3[i].at<float>(y,x) = costs[i];
 	}
-
-	delete[] costs;
 }

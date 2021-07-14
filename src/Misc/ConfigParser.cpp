@@ -31,8 +31,10 @@ string ConfigParser::getEntry(const string& entryName) {
 
 string ConfigParser::getEntry(const string& entryName, const string& defaultValue)
 {
-    if (configuration.count(entryName) == 0)
+    if (configuration.count(entryName) == 0) {
         configuration[entryName] = vector<string>{ defaultValue };
+        save();
+    }
     return getEntry(entryName);
 }
 
