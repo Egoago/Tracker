@@ -125,7 +125,7 @@ glm::mat4 Renderer::renderModel(Geometry& geometry, void* posMap, void* indexMap
     glDrawElements(GL_TRIANGLES, (GLsizei)geometry.getIndecesCount(), GL_UNSIGNED_INT, 0);
     glDisableVertexAttribArray(0);
     glDisableVertexAttribArray(1);
-    glDeleteBuffers(1, buffers);
+    glDeleteBuffers(3, buffers);
 
     shader.disable();
     glFlush();

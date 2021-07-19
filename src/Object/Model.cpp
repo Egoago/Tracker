@@ -12,7 +12,7 @@ using namespace std;
 ConfigParser Model::config(OBJ_CONFIG_FILE);
 
 void getObjectName(string& fName, string& oName) {
-	unsigned int dot = fName.find('.');
+	size_t dot = fName.find('.');
 	if (dot == string::npos) {
 		oName = fName;
 		fName += ".STL";
@@ -116,17 +116,19 @@ void Model::generarteObject(const string& fileName) {
 		cout << "Rendered " << c++ << "\t frames out of " << templates.num_elements() << "\r";
 		//sixDOF.print(cout);
 		renderer.setModel(sixDOF);
-		glm::mat4 mvp = renderer.renderModel(geo, posMap.data, color.data);
-		cv::flip(color, color, 0);
-		cv::flip(depth, depth, 0);
-		imshow("OpenCV", color);
-		Canny(color, detected_edges, 10, 10 * 3, 3);
+		glm::mat4 mvp = renderer.renderModel(geo, posMap.data, indexMap.data);
+		cv::flip(posMap, posMap, 0);
+		cv::flip(indexMap, indexMap, 0);
+		normalize(posMap, posMap, 0, 1, NORM_MINMAX);
+		imshow("OpenCV", posMap);
+		//imshow("Canny", indexMap);
+		/*Canny(color, detected_edges, 10, 10 * 3, 3);
 		imshow("Canny", detected_edges);
 		dst = Scalar(0);
 		vector<Edge<>> edges = detector.detectOutlinerEdges(detected_edges, dst, mvp);
-		imshow("Wireframe", dst);
-		waitKey(1000000);
-		rasterize(edges, i);
+		imshow("Wireframe", dst);*/
+		waitKey(1000);
+		//rasterize(edges, i);
 	}
 	cout << endl;
 }

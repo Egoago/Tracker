@@ -21,14 +21,10 @@ AssimpGeometry::AssimpGeometry(const std::string& fileName) {
 	indices.reserve(mesh->mNumFaces*3);
 	vertices.reserve(mesh->mNumVertices);
 
-	glm::vec3 v;
-
 	for (unsigned int i = 0; i < mesh->mNumVertices; ++i) {
-		v.x = mesh->mVertices[i].x;
-		v.y = mesh->mVertices[i].y;
-		v.z = mesh->mVertices[i].z;
-
-		vertices.emplace_back(v);
+		vertices.emplace_back(mesh->mVertices[i].x,
+							mesh->mVertices[i].y,
+							mesh->mVertices[i].z);
 	}
 
 	for (unsigned int i = 0; i < mesh->mNumFaces; ++i) {

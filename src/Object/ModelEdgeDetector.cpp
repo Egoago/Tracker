@@ -4,18 +4,18 @@
 #include "opencv2/highgui/highgui.hpp"
 #include <opencv2/imgproc.hpp>
 
-std::vector<DirectedEdge> detectEdgePairs(const Geometry& geometry) {
-    std::vector<DirectedEdge> pairs(geometry.getIndecesCount());
-    unsigned int* indices = (unsigned int*)geometry.getIndices();
-    glm::vec3* vertices = (glm::vec3*)geometry.getVertices();
+std::vector<Edge<>> detectEdgePairs(const Geometry& geometry) {
+    std::vector<Edge<>> pairs(geometry.getIndecesCount());
+    const unsigned int* indices = geometry.getIndices();
+    const glm::vec3* vertices = geometry.getVertices();
     //TODO implement a more sohpisticated algorithm
     //like leave out edges on same triangle
     //or match triangles
     unsigned int pairCount = 0, singleCount = 0;
-    for (unsigned int i = 0; i < geometry.getIndecesCount()/3; i++) {
+    for (unsigned int i = 0; i < geometry.getFacesCount(); i++) {
         for (unsigned int k = 0; k < 3; k++) {
-            DirectedEdge edge = DirectedEdge(vertices[indices[3*i + k]],    //1.
-                                             vertices[indices[3*i + (1+k)%3]]);
+            Edge<> edge = Edge<>(vertices[indices[3*i + k]],    //1.
+                                vertices[indices[3*i + (1+k)%3]]);
             bool foundPair = false;
             for (unsigned int l = pairCount; l < (singleCount + pairCount); l++) {//2.
                 if (pairs[2 * l] == edge ||                                 //3.
@@ -82,8 +82,8 @@ std::vector<Edge<>> ModelEdgeDetector::detectOutlinerEdges(cv::Mat& depthMap, cv
     std::vector<Edge<>> edges;
     //depthMap = cv::Scalar::all(0);
     for (unsigned int i = 0; i < edgePairs.size(); i += 2) {
-        glm::vec3 a = edgePairs[i+1].a.position;
-        glm::vec3 b = edgePairs[i+1].b.position;
+        glm::vec3 a = edgePairs[i+1].a;
+        glm::vec3 b = edgePairs[i+1].b;
         glm::vec2 p1 = screenToNDC(MVP * glm::vec4(a,1.0));
         glm::vec2 p2 = screenToNDC(MVP * glm::vec4(b, 1.0));
         cv::Point P1((int)(p1.x * (float)depthMap.cols), (int)(p1.y * (float)depthMap.rows));

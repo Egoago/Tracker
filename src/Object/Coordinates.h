@@ -37,12 +37,22 @@ template <class PointType = glm::vec3>
 struct Edge {
 	PointType a, b;
 
-	Edge(PointType a, PointType b) : a(a), b(b) {}
+	Edge(PointType a = PointType(), PointType b = PointType()) : a(a), b(b) {}
+
+	Edge& flip() {
+		const PointType c = a;
+		a = b;
+		b = c;
+		return *this;
+	}
+
+	bool operator==(const Edge& other) {
+		const float epsilon = 1e-13f;
+		return
+			glm::distance(a, other.a) < epsilon &&
+			glm::distance(b, other.b) < epsilon;
+	}
 };
-
-inline glm::vec2 project(const glm::vec3& point, const SixDOF& pose) {
-
-}
 
 inline float getOrientation(const Edge<glm::vec2>& edge) {
 	glm::vec2 d = edge.a - edge.b;
