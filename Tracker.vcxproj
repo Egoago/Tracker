@@ -183,6 +183,7 @@ copy "$(SolutionDir)Common\glew-2.1.0\Bin\Release\x64\glew32.dll" "$(SolutionDir
     <ClCompile Include="src\Misc\ConfigParser.cpp" />
     <ClCompile Include="src\Misc\Links.h" />
     <ClCompile Include="src\Object\AssimpGeometry.cpp" />
+    <ClCompile Include="src\Object\Geometry.cpp" />
     <ClCompile Include="src\Object\ModelEdgeDetector.cpp" />
     <ClCompile Include="src\Object\Model.cpp" />
     <ClCompile Include="src\PoseEstimation\PoseEstimator.cpp" />
@@ -210,8 +211,10 @@ copy "$(SolutionDir)Common\glew-2.1.0\Bin\Release\x64\glew32.dll" "$(SolutionDir
     <ClInclude Include="src\Rendering\Shader.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="src\Shaders\pass.vert" />
-    <None Include="src\Shaders\simple.frag" />
+    <None Include="src\Shaders\face.vert" />
+    <None Include="src\Shaders\edge.vert" />
+    <None Include="src\Shaders\edge.frag" />
+    <None Include="src\Shaders\face.frag" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

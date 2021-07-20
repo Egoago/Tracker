@@ -77,6 +77,9 @@
     <ClCompile Include="src\PoseEstimation\PoseEstimator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\Object\Geometry.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Camera\Camera.h">
@@ -132,11 +135,13 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="src\Shaders\pass.vert">
+    <None Include="src\Shaders\face.vert">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="src\Shaders\simple.frag">
+    <None Include="src\Shaders\face.frag">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="src\Shaders\edge.vert" />
+    <None Include="src\Shaders\edge.frag" />
   </ItemGroup>
 </Project>

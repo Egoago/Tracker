@@ -4,46 +4,8 @@
 #include "opencv2/highgui/highgui.hpp"
 #include <opencv2/imgproc.hpp>
 
-std::vector<Edge<>> detectEdgePairs(const Geometry& geometry) {
-    std::vector<Edge<>> pairs(geometry.getIndecesCount());
-    const unsigned int* indices = geometry.getIndices();
-    const glm::vec3* vertices = geometry.getVertices();
-    //TODO implement a more sohpisticated algorithm
-    //like leave out edges on same triangle
-    //or match triangles
-    unsigned int pairCount = 0, singleCount = 0;
-    for (unsigned int i = 0; i < geometry.getFacesCount(); i++) {
-        for (unsigned int k = 0; k < 3; k++) {
-            Edge<> edge = Edge<>(vertices[indices[3*i + k]],    //1.
-                                vertices[indices[3*i + (1+k)%3]]);
-            bool foundPair = false;
-            for (unsigned int l = pairCount; l < (singleCount + pairCount); l++) {//2.
-                if (pairs[2 * l] == edge ||                                 //3.
-                    pairs[2 * l] == edge.flip()) {
-                    pairs[2 * pairCount + 1] = pairs[2 * l];                //4.
-                    pairs[2 * l] = pairs[2 * pairCount];                    //5.
-                    pairs[2 * pairCount] = edge;                            //6.
-                    pairCount++;                                            //7.
-                    singleCount--;
-                    foundPair = true;
-                    break;
-                }
-            }
-            if (!foundPair) {
-                pairs[2 * (singleCount + pairCount)] = edge;
-                singleCount++;
-            }
-        }
-    }
-    std::cout << "edges: " << geometry.getIndecesCount() << std::endl;
-    std::cout << "pairs: " << pairCount << std::endl;
-    std::cout << "missed: " << singleCount << std::endl;
-    return pairs;
-}
-
 ModelEdgeDetector::ModelEdgeDetector(const Geometry& geometry) : geometry(geometry)
 {
-    edgePairs = detectEdgePairs(geometry);
 }
 
 glm::vec2 screenToNDC(glm::vec4 screen) {

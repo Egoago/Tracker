@@ -1,6 +1,7 @@
 #include "Model.h"
 #include <string>
 #include <serializer.h>
+#include <mutex>
 #include "opencv2/opencv.hpp"
 #include "../Misc/Links.h"
 #include "AssimpGeometry.h"
@@ -11,7 +12,8 @@ using namespace std;
 
 ConfigParser Model::config(OBJ_CONFIG_FILE);
 
-void getObjectName(string& fName, string& oName) {
+void getObjectName(string& fName, string& oName
+) {
 	size_t dot = fName.find('.');
 	if (dot == string::npos) {
 		oName = fName;
@@ -92,42 +94,55 @@ void Model::generarteObject(const string& fileName) {
 	Geometry geo = AssimpGeometry(fileName);
 	ModelEdgeDetector detector(geo);
 	Point renderRes = getResolution(config);
-	Point windowRes = renderRes/2;
+	Point windowRes = renderRes/3;
 	
 	Renderer renderer(renderRes.x, renderRes.y);
-	namedWindow("OpenCV", cv::WINDOW_NORMAL);
-	resizeWindow("OpenCV", windowRes.x, windowRes.y);
-	moveWindow("OpenCV", 0, windowRes.y);
+	renderer.setGeometry(geo);
+	namedWindow("Normal", cv::WINDOW_NORMAL);
+	resizeWindow("Normal", windowRes.x, windowRes.y);
+	moveWindow("Normal", 0, 50);
+	namedWindow("Pos", WINDOW_NORMAL);
+	resizeWindow("Pos", windowRes.x, windowRes.y);
+	moveWindow("Pos", windowRes.x, 50);
 	namedWindow("Canny", WINDOW_NORMAL);
 	resizeWindow("Canny", windowRes.x, windowRes.y);
-	moveWindow("Canny", windowRes.x, windowRes.y);
-	namedWindow("Wireframe", WINDOW_NORMAL);
-	resizeWindow("Wireframe", windowRes.x, windowRes.y);
-	moveWindow("Wireframe", windowRes.x * 2, windowRes.y);
+	moveWindow("Canny", windowRes.x * 2, 50);
 	Mat posMap(Size(renderRes.x, renderRes.y), CV_32FC3);
-    Mat indexMap(Size(renderRes.x, renderRes.y), CV_32S);
-    Mat normalMap(Size(renderRes.x, renderRes.y), CV_8UC3);
-    Mat dst(Size(renderRes.x, renderRes.y), CV_8U, Scalar(0));
-    Mat detected_edges(Size(renderRes.x, renderRes.y), CV_8U);
+	Mat normalMap(Size(renderRes.x, renderRes.y), CV_8UC3);
+    Mat dirMap(Size(renderRes.x, renderRes.y), CV_32FC3);
+    //Mat indexMap(Size(renderRes.x, renderRes.y), CV_32S);
+    //Mat detected_edges(Size(renderRes.x, renderRes.y), CV_8U);
 	int c = 1;
 	for (Template* i = templates.data(); i < (templates.data() + templates.num_elements()); i++) {
-		SixDOF& sixDOF = i->sixDOF;
+		//TODO use CUDA with OpenGL directly on GPU
+		// instead moving textures to CPU and using OpenCV
 		//TODO remove monitoring
 		cout << "Rendered " << c++ << "\t frames out of " << templates.num_elements() << "\r";
-		//sixDOF.print(cout);
-		renderer.setModel(sixDOF);
-		glm::mat4 mvp = renderer.renderModel(geo, posMap.data, indexMap.data);
+		//i->sixDOF.print(cout);
+		renderer.setModel(i->sixDOF);
+		glm::mat4 mvp = renderer.render(posMap.data, normalMap.data, dirMap.data);
+		//TODO remove unnecessary flip
 		cv::flip(posMap, posMap, 0);
-		cv::flip(indexMap, indexMap, 0);
-		normalize(posMap, posMap, 0, 1, NORM_MINMAX);
-		imshow("OpenCV", posMap);
+		cv::flip(normalMap, normalMap, 0);
+		cv::flip(dirMap, dirMap, 0);
+		posMap.convertTo(posMap, CV_32FC3, 1.0 / 32.5, 0.0);
+		imshow("Normal", normalMap);
+		imshow("Pos", posMap);
+		//imshow("Canny", dirMap+ posMap);
 		//imshow("Canny", indexMap);
-		/*Canny(color, detected_edges, 10, 10 * 3, 3);
-		imshow("Canny", detected_edges);
-		dst = Scalar(0);
+		Mat detected_edges(Size(renderRes.x, renderRes.y), CV_8U);
+		Canny(normalMap, detected_edges, 130, 150, 5);
+		Mat out(Size(renderRes.x, renderRes.y), CV_8U, Scalar(0));
+		detected_edges.forEach<uchar>(
+			[&out, &dirMap, &posMap](uchar& pixel, const int* p) -> void {
+				if (pixel > 200)
+				out.at<uchar>(p[0], p[1]) = (uchar)(posMap.at<cv::Point3f>(p[0],p[1]).y*255.0f);
+			});
+		imshow("Canny", out);
+		/*dst = Scalar(0);
 		vector<Edge<>> edges = detector.detectOutlinerEdges(detected_edges, dst, mvp);
 		imshow("Wireframe", dst);*/
-		waitKey(1000);
+		waitKey(1000000000);
 		//rasterize(edges, i);
 	}
 	cout << endl;
