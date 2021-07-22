@@ -121,24 +121,30 @@ void Model::generarteObject(const string& fileName) {
 		//i->sixDOF.print(cout);
 		renderer.setModel(i->sixDOF);
 		glm::mat4 mvp = renderer.render(posMap.data, normalMap.data, dirMap.data);
+		Mat out(Size(renderRes.x, renderRes.y), CV_8U, Scalar(0));
 		//TODO remove unnecessary flip
 		cv::flip(posMap, posMap, 0);
 		cv::flip(normalMap, normalMap, 0);
 		cv::flip(dirMap, dirMap, 0);
 		posMap.convertTo(posMap, CV_32FC3, 1.0 / 32.5, 0.0);
 		imshow("Normal", normalMap);
-		imshow("Pos", posMap);
+		threshold(posMap, out, 1e-6, 255, THRESH_BINARY);
+		cvtColor(normalMap, out, COLOR_BGR2GRAY);
+		imshow("Pos", out);
+		vector<vector<Point> > contours;
+		findContours(out, contours, RETR_EXTERNAL, CHAIN_APPROX_NONE);
+		drawContours(normalMap, contours, 0, Scalar(255, 255, 255));
+		imshow("Canny", normalMap);
 		//imshow("Canny", dirMap+ posMap);
 		//imshow("Canny", indexMap);
-		Mat detected_edges(Size(renderRes.x, renderRes.y), CV_8U);
-		Canny(normalMap, detected_edges, 130, 150, 5);
-		Mat out(Size(renderRes.x, renderRes.y), CV_8U, Scalar(0));
+		/*Mat detected_edges(Size(renderRes.x, renderRes.y), CV_8U);
+		Canny(normalMap, detected_edges, 100, 150, 3);
 		detected_edges.forEach<uchar>(
 			[&out, &dirMap, &posMap](uchar& pixel, const int* p) -> void {
 				if (pixel > 200)
 				out.at<uchar>(p[0], p[1]) = (uchar)(posMap.at<cv::Point3f>(p[0],p[1]).y*255.0f);
 			});
-		imshow("Canny", out);
+		imshow("Canny", out);*/
 		/*dst = Scalar(0);
 		vector<Edge<>> edges = detector.detectOutlinerEdges(detected_edges, dst, mvp);
 		imshow("Wireframe", dst);*/
