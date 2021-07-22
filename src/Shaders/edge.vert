@@ -10,6 +10,8 @@ out vec3 direction;
 
 void main(){
 	gl_Position = MVP * vec4(inPosition, 1);
+	//offset for z buffer reuse
+	gl_Position.z -= 0.01;
 	direction = inDirection;
 	//index = inIndex;
 }

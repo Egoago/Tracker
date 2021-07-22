@@ -41,21 +41,21 @@ void Model::generate6DOFs() {
 	Range roll(config.getEntries("roll", { "0", "360", "4" }));
 	Range yaw(config.getEntries("yaw", { "0", "360", "4" }));
 	Range pitch(config.getEntries("pitch", { "0", "180", "2" }));
-	dimensions[0] = yaw.resolution;
-	dimensions[1] = pitch.resolution;
-	dimensions[2] = roll.resolution;
-	dimensions[3] = width.resolution;
-	dimensions[4] = height.resolution;
-	dimensions[5] = depth.resolution;
+	dimensions[0] = width.resolution;
+	dimensions[1] = height.resolution;
+	dimensions[2] = depth.resolution;
+	dimensions[3] = yaw.resolution;
+	dimensions[4] = pitch.resolution;
+	dimensions[5] = roll.resolution;
 	allocateRegistry();
-	for (unsigned int ya = 0; ya < yaw.resolution; ya++)
-	for (unsigned int p = 0; p < pitch.resolution; p++)
-	for (unsigned int r = 0; r < roll.resolution; r++)
 	for (unsigned int x = 0; x < width.resolution; x++)
 	for (unsigned int y = 0; y < height.resolution; y++)
 	for (unsigned int z = 0; z < depth.resolution; z++)
+	for (unsigned int ya = 0; ya < yaw.resolution; ya++)
+	for (unsigned int p = 0; p < pitch.resolution; p++)
+	for (unsigned int r = 0; r < roll.resolution; r++)
 	{
-		SixDOF& sixDOF = templates[ya][p][r][x][y][z].sixDOF;
+		SixDOF& sixDOF = templates[x][y][z][ya][p][r].sixDOF;
 		sixDOF.position.x = width[x];
 		sixDOF.position.y = height[y];
 		sixDOF.position.z = depth[z];
@@ -96,7 +96,8 @@ void Model::generarteObject(const string& fileName) {
 	Point renderRes = getResolution(config);
 	Point windowRes = renderRes/3;
 	
-	Renderer renderer(renderRes.x, renderRes.y);
+	const float angleThreshold = glm::radians(stof(config.getEntry("angle threshold", "30.0")));
+	Renderer renderer(angleThreshold, renderRes.x, renderRes.y);
 	renderer.setGeometry(geo);
 	namedWindow("Normal", cv::WINDOW_NORMAL);
 	resizeWindow("Normal", windowRes.x, windowRes.y);
@@ -128,13 +129,14 @@ void Model::generarteObject(const string& fileName) {
 		cv::flip(dirMap, dirMap, 0);
 		posMap.convertTo(posMap, CV_32FC3, 1.0 / 32.5, 0.0);
 		imshow("Normal", normalMap);
-		threshold(posMap, out, 1e-6, 255, THRESH_BINARY);
-		cvtColor(normalMap, out, COLOR_BGR2GRAY);
-		imshow("Pos", out);
-		vector<vector<Point> > contours;
+		//threshold(posMap, out, 1e-6, 255, THRESH_BINARY);
+		//transform(posMap, out, cv::Matx13f(1, 1, 1));
+		//cvtColor(posMap, out, COLOR_BGR2GRAY);
+		imshow("Pos", posMap);
+		/*vector<vector<Point> > contours;
 		findContours(out, contours, RETR_EXTERNAL, CHAIN_APPROX_NONE);
 		drawContours(normalMap, contours, 0, Scalar(255, 255, 255));
-		imshow("Canny", normalMap);
+		imshow("Canny", dirMap);*/
 		//imshow("Canny", dirMap+ posMap);
 		//imshow("Canny", indexMap);
 		/*Mat detected_edges(Size(renderRes.x, renderRes.y), CV_8U);

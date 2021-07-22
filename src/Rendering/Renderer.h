@@ -16,8 +16,9 @@ private:
 	Shader faceShader, edgeShader;
 	glm::uvec2 resolution;
 	void createFrameBuffers();
+	const float angleThreshold;
 public:
-	Renderer(unsigned int width = 1000, unsigned int height = 1000);
+	Renderer(float angleThreshold, unsigned int width = 1000, unsigned int height = 1000);
 	~Renderer();
 	void setGeometry(const Geometry& geometry);
 	void setProj(float fov = 45.0f, float nearP = 1.0f, float farP = 10000.0f);

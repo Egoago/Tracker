@@ -30,6 +30,7 @@ void Renderer::createFrameBuffers() {
     glGenRenderbuffers(1, &depthBuffer);
     glBindRenderbuffer(GL_RENDERBUFFER, depthBuffer);
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, resolution.x, resolution.y);
+    glDepthFunc(GL_LEQUAL);
 
     //Frame buffer
     glGenFramebuffers(1, &faceFrameBuffer);
@@ -52,9 +53,9 @@ void Renderer::createFrameBuffers() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
     //Depth buffer
-    glGenRenderbuffers(1, &depthBuffer);
-    glBindRenderbuffer(GL_RENDERBUFFER, depthBuffer);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, resolution.x, resolution.y);
+    //glGenRenderbuffers(1, &depthBuffer);
+    //glBindRenderbuffer(GL_RENDERBUFFER, depthBuffer);
+    //glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, resolution.x, resolution.y);
 
     //Frame buffer
     glGenFramebuffers(1, &edgeFrameBuffer);
@@ -67,8 +68,10 @@ void Renderer::createFrameBuffers() {
     glDrawBuffer(GL_COLOR_ATTACHMENT0);
 }
 
-Renderer::Renderer(unsigned int width, unsigned int height)
+Renderer::Renderer(float angleThreshold, unsigned int width, unsigned int height) :
+    angleThreshold(angleThreshold)
 {
+    //TODO add back-face culling
     int argc;
     glutInit(&argc, nullptr);
     resolution = glm::uvec2(width, height);
@@ -133,33 +136,39 @@ void Renderer::setGeometry(const Geometry& geometry)
     faceCount = geometry.getFaceCount();
 
     //====== edge buffers =======
-    edgeCount = geometry.getEdgeCount();
     glGenVertexArrays(1, &edgeVAO);
     glBindVertexArray(edgeVAO);
+
+    //generating outliner edges
+    std::vector<glm::vec3> edges, directions;
+    for(unsigned int i = 0; i < geometry.getEdgeCount(); i++)
+        if (geometry.getCurvatures()[i] > angleThreshold) {
+            glm::vec3 a = geometry.getEdges()[2 * i];
+            glm::vec3 b = geometry.getEdges()[2 * i + 1];
+            edges.push_back(a);
+            edges.push_back(b);
+            glm::vec3 dir = -glm::normalize(a - b);
+            //opposite directions are the same
+            if (glm::dot(glm::normalize(glm::vec3(0.9f, 0.65f, 0.56f)), dir) < 0.0f)
+                dir = -dir;
+            directions.push_back(dir);
+            directions.push_back(dir);
+        }
+    edgeCount = edges.size()/2;
 
     //vertices
     glGenBuffers(1, &buffer);
     glBindBuffer(GL_ARRAY_BUFFER, buffer);
-    glBufferData(GL_ARRAY_BUFFER, edgeCount * geometry.getVertexSize() * 2, geometry.getEdges(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, edgeCount * 2 * sizeof(glm::vec3), edges.data(), GL_STATIC_DRAW);
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
     //directions
     glGenBuffers(1, &buffer);
     glBindBuffer(GL_ARRAY_BUFFER, buffer);
-    glm::vec3* directions = new glm::vec3[edgeCount * 2];
-    for(unsigned int i = 0; i < edgeCount; i++) {
-        glm::vec3 a = geometry.getEdges()[2 * i];
-        glm::vec3 b = geometry.getEdges()[2 * i + 1];
-        glm::vec3 dir = glm::normalize(a - b);
-        directions[2 * i] = dir;
-        directions[2 * i + 1] = dir;
-    }
-    glBufferData(GL_ARRAY_BUFFER, edgeCount * 2 * sizeof(glm::vec3), directions, GL_STATIC_DRAW);
-    delete[] directions;
+    glBufferData(GL_ARRAY_BUFFER, edgeCount * 2 * sizeof(glm::vec3), directions.data(), GL_STATIC_DRAW);
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
-
 }
 
 void Renderer::setProj(float fov, float nearP, float farP)
@@ -185,19 +194,20 @@ glm::mat4 Renderer::render(void* posMap, void* normalMap, void* dirMap)
     //render faces
     glBindFramebuffer(GL_FRAMEBUFFER, faceFrameBuffer);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    static const float max = std::numeric_limits<float>::max()/10;
+    static const float background[] = { 32.5 ,32.5 ,32.5 };
+    glClearTexImage(posMapBuffer, 0, GL_RGB32F, GL_FLOAT, background);
     faceShader.enable();
-    glLineWidth(1.0);
     faceShader.registerMVP(&MVP[0][0]);
     glBindVertexArray(faceVAO);
     glDrawElements(GL_TRIANGLES, (GLsizei)faceCount*3, GL_UNSIGNED_INT, 0);
-    glDrawArrays(GL_LINES, 0, edgeCount * 2);
     faceShader.disable();
     
     //render edges
     glBindFramebuffer(GL_FRAMEBUFFER, edgeFrameBuffer);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT);
     edgeShader.enable();
-    glLineWidth(3.0);
     edgeShader.registerMVP(&MVP[0][0]);
     glBindVertexArray(edgeVAO);
     glDrawArrays(GL_LINES, 0, edgeCount * 2);
