@@ -8,8 +8,15 @@
 class Renderer
 {
 private:
-	enum Pipeline {
+
+	enum Pipeline{
 		POS = 0, MASK, DIR
+	};
+	const GLuint textureFormats[12] = {
+//tex:	internal	format	type				
+		GL_RGB32F,	GL_RGB,	GL_FLOAT,			GL_BGR,	//pos
+		GL_R8,		GL_RED, GL_UNSIGNED_BYTE,	GL_RED,	//mask
+		GL_RGB32F,	GL_RGB,	GL_FLOAT,			GL_BGR	//dir
 	};
 
 	glm::mat4 ProjMtx, ViewModelMtx;
@@ -29,6 +36,6 @@ public:
 	void setProj(float fov = 45.0f, float nearP = 200.0f, float farP = 5000.0f);
 	const glm::mat4 getMVP() const { return ProjMtx * ViewModelMtx; }
 	void setModel(SixDOF& sixDOF);
-	glm::mat4 render(void* posMap, void* maskMap, void* dirMap);
+	glm::mat4 render(void** outTextures);
 };
 

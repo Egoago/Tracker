@@ -12,8 +12,7 @@ using namespace std;
 
 ConfigParser Model::config(OBJ_CONFIG_FILE);
 
-void getObjectName(string& fName, string& oName
-) {
+void getObjectName(string& fName, string& oName) {
 	size_t dot = fName.find('.');
 	if (dot == string::npos) {
 		oName = fName;
@@ -99,7 +98,7 @@ void Model::generarteObject(const string& fileName) {
 	//TODO create render config
 	// - thresholds, resolution...
 	const float highThreshold = glm::radians(stof(config.getEntry("high threshold", "30.0")));
-	const float lowThreshold = glm::radians(stof(config.getEntry("low threshold", "1.0")));
+	const float lowThreshold = glm::radians(stof(config.getEntry("low threshold", "1e-3f")));
 	Renderer renderer(highThreshold, lowThreshold, renderRes.x, renderRes.y);
 	renderer.setGeometry(geo);
 	//TODO remove monitoring
@@ -116,16 +115,17 @@ void Model::generarteObject(const string& fileName) {
 	Mat maskMap(Size(renderRes.x, renderRes.y), CV_8U);
 	Mat posSum(Size(renderRes.x, renderRes.y), CV_32F);
     Mat dirMap(Size(renderRes.x, renderRes.y), CV_32FC3);
+	Mat out(Size(renderRes.x, renderRes.y), CV_8U);
+	void* textures[] = { posMap.data, maskMap.data, dirMap.data };
 	int c = 1;
 	for (Template* i = templates.data(); i < (templates.data() + templates.num_elements()); i++) {
 		//TODO use CUDA with OpenGL directly on GPU
 		// instead moving textures to CPU and using OpenCV
 		//TODO remove monitoring
-		cout << "Rendered " << c++ << "\t frames out of " << templates.num_elements() << "\r";
+		//cout << "Rendered " << c++ << "\t frames out of " << templates.num_elements() << "\r";
 		//i->sixDOF.print(cout);
 		renderer.setModel(i->sixDOF);
-		glm::mat4 mvp = renderer.render(posMap.data, maskMap.data, dirMap.data);
-		Mat out(Size(renderRes.x, renderRes.y), CV_8U);
+		glm::mat4 mvp = renderer.render(textures);
 		//TODO remove unnecessary flip
 		cv::flip(posMap, posMap, 0);
 		cv::flip(maskMap, maskMap, 0);
@@ -133,20 +133,30 @@ void Model::generarteObject(const string& fileName) {
 		posMap.convertTo(posMap, CV_32FC3, 1.0 / 32.5, 0.0);
 		//cvtColor(posMap, out, COLOR_BGR2GRAY);
 		imshow("Pos", posMap);
-		imshow("Mask", maskMap);
+		imshow("Directions", dirMap);
 
 		//TODO simplify xyz->binary transformation
 		// - use OpenGL instead of OpenCV
-		/*transform(posMap, posSum, cv::Matx13f(0.5, 0.5, 0.5));
-		threshold(posSum, out, 10000.0*32.5, 255, THRESH_BINARY_INV);
-		vector<vector<Point> > contours;
+		transform(dirMap, posSum, cv::Matx13f(0.5, 0.5, 0.5));
+		threshold(posSum, out, 1e-3, 255, THRESH_BINARY);
 		out.convertTo(out, CV_8U);
+		vector<vector<Point> > contours;
 		findContours(out, contours, RETR_EXTERNAL, CHAIN_APPROX_NONE);
 		out = Scalar::all(0);
 		drawContours(out, contours, 0, Scalar(255, 255, 255));
-		imshow("Contour", out);*/
-		imshow("Directions", dirMap);
+		threshold(maskMap, maskMap, 1e-3, 255, THRESH_BINARY);
 
+		maskMap += out;
+		std::vector<cv::Mat> channels;
+		Mat alpha, rgba;
+		maskMap.convertTo(maskMap, CV_32F, 1/2.0);
+		posMap.convertTo(posMap, CV_32FC3, 1/2.0);
+		split(posMap, channels);
+		channels.at(2) += maskMap;
+		merge(channels, posMap);
+		imshow("Mask", posMap);
+		maskMap.convertTo(maskMap, CV_8U);
+		posMap.convertTo(posMap, CV_32FC3);
 		//imshow("Canny", dirMap);
 		//imshow("Canny", dirMap+ posMap);
 		//imshow("Canny", indexMap);
@@ -161,7 +171,7 @@ void Model::generarteObject(const string& fileName) {
 		/*dst = Scalar(0);
 		vector<Edge<>> edges = detector.detectOutlinerEdges(detected_edges, dst, mvp);
 		imshow("Wireframe", dst);*/
-		waitKey(1);
+		waitKey(10000);
 		//rasterize(edges, i);
 	}
 	cout << endl;

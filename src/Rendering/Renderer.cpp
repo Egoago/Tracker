@@ -13,60 +13,36 @@ void Renderer::createFrameBuffers() {
     glGenTextures(3, mapBuffers);
     glGenFramebuffers(3, frameBuffers);
 
-    //====== Pos buffers =======
-    //Position buffer
-    glBindTexture(GL_TEXTURE_2D, mapBuffers[POS]);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, resolution.x, resolution.y, 0, GL_RGB, GL_FLOAT, 0);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    
-    //Depth buffer
+    // Z buffer
     GLuint depthBuffer;
     glGenRenderbuffers(1, &depthBuffer);
     glBindRenderbuffer(GL_RENDERBUFFER, depthBuffer);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT32F, resolution.x, resolution.y);
-    //glDepthFunc(GL_LEQUAL);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, resolution.x, resolution.y);
+    glDepthFunc(GL_LEQUAL);
 
-    //Frame buffer
-    glBindFramebuffer(GL_FRAMEBUFFER, frameBuffers[POS]);
-    glViewport(0, 0, resolution.x, resolution.y);
+    for (unsigned int i = POS; i <= DIR; i ++) {
+        //Render target
+        glBindTexture(GL_TEXTURE_2D, mapBuffers[i]);
+        glTexImage2D(GL_TEXTURE_2D, 0,
+                    textureFormats[4 * i],
+                    resolution.x,
+                    resolution.y,
+                    0,
+                    textureFormats[4 * i + 1],
+                    textureFormats[4 * i + 2],
+                    0);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
-    //Bind
-    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, mapBuffers[POS], 0);
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthBuffer);
-    glDrawBuffer(GL_COLOR_ATTACHMENT0);
+        //Frame buffer
+        glBindFramebuffer(GL_FRAMEBUFFER, frameBuffers[i]);
+        glViewport(0, 0, resolution.x, resolution.y);
 
-    //====== Mask frame buffers =======
-    //Direction buffer
-    glBindTexture(GL_TEXTURE_2D, mapBuffers[MASK]);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, resolution.x, resolution.y, 0, GL_RED, GL_UNSIGNED_BYTE, 0);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-
-    //Frame buffer
-    glBindFramebuffer(GL_FRAMEBUFFER, frameBuffers[MASK]);
-    glViewport(0, 0, resolution.x, resolution.y);
-
-    //Bind
-    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, mapBuffers[MASK], 0);
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthBuffer);
-    glDrawBuffer(GL_COLOR_ATTACHMENT0);
-
-    //====== Dir frame buffers =======
-    //Direction buffer
-    glBindTexture(GL_TEXTURE_2D, mapBuffers[DIR]);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, resolution.x, resolution.y, 0, GL_RGB, GL_FLOAT, 0);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-
-    //Frame buffer
-    glBindFramebuffer(GL_FRAMEBUFFER, frameBuffers[DIR]);
-    glViewport(0, 0, resolution.x, resolution.y);
-
-    //Bind
-    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, mapBuffers[DIR], 0);
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthBuffer);
-    glDrawBuffer(GL_COLOR_ATTACHMENT0);
+        //Bind
+        glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, mapBuffers[i], 0);
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthBuffer);
+        glDrawBuffer(GL_COLOR_ATTACHMENT0);
+    }
 }
 
 Renderer::Renderer(float highThreshold, float lowThreshold, unsigned int width, unsigned int height) :
@@ -215,17 +191,11 @@ void Renderer::setModel(SixDOF& sixDOF)
 	ViewModelMtx = glm::rotate(ViewModelMtx, sixDOF.orientation.r, glm::vec3(0,0,1));
 }
 
-glm::mat4 Renderer::render(void* posMap, void* maskMap,void* dirMap)
+glm::mat4 Renderer::render(void** outTextures)
 {
     //render pos
     glBindFramebuffer(GL_FRAMEBUFFER, frameBuffers[POS]);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    int bits = 0;
-    glGetIntegerv(GL_DEPTH_BITS, &bits);
-    //TODO remove unnecessary pos background
-    static const float max = 1000000.0f * 32.5f;
-    static const float background[] =  { max, max, max };
-    glClearTexImage(mapBuffers[POS], 0, GL_RGBA, GL_FLOAT, background);
     faceShader->enable();
     faceShader->registerFloat4x4("P", &ProjMtx[0][0]);
     faceShader->registerFloat4x4("VM", &ViewModelMtx[0][0]);
@@ -257,11 +227,13 @@ glm::mat4 Renderer::render(void* posMap, void* maskMap,void* dirMap)
     glFlush();
     
     //Copy from frameBuffer to opencv mat
-    glBindTexture(GL_TEXTURE_2D, mapBuffers[POS]);
-    glGetTexImage(GL_TEXTURE_2D, 0, GL_BGR, GL_FLOAT, posMap);
-    glBindTexture(GL_TEXTURE_2D, mapBuffers[MASK]);
-    glGetTexImage(GL_TEXTURE_2D, 0, GL_RED, GL_UNSIGNED_BYTE, maskMap);
-    glBindTexture(GL_TEXTURE_2D, mapBuffers[DIR]);
-    glGetTexImage(GL_TEXTURE_2D, 0, GL_BGR, GL_FLOAT, dirMap);
+    for (unsigned int i = POS; i <= DIR; i++) {
+        glBindTexture(GL_TEXTURE_2D, mapBuffers[i]);
+        glGetTexImage(GL_TEXTURE_2D,
+            0,
+            textureFormats[4 * i + 3],
+            textureFormats[4 * i + 2],
+            outTextures[i]);
+    }
     return getMVP();
 }
