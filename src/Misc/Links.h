@@ -5,3 +5,4 @@
 #define OBJ_CONFIG_FILE "obj.conf"
 #define DCDT3_CONFIG_FILE "dcdt3.conf"
 #define TEST_FRAME "Resources/testFrame.bmp"
+#define SHADERS_FOLDER "src/Shaders/"

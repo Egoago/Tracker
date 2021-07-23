@@ -4,15 +4,20 @@
 
 class Shader
 {
+private:
 	GLuint ID, vID, fID;
 	std::string vShader, fShader;
+	const char* name;
 	bool compiled = false;
-public:
 	void loadShader(GLuint type, std::string filename);
 	bool compile();
+public:
+	Shader(const char* name);
+	~Shader();
 	bool enable();
 	bool disable();
-	void registerMVP(GLfloat* m);
-	void registerVec4(std::string name, float f1, float f2, float f3, float f4);
+	void registerFloat4x4(const char* name, float mtx[]);
+	void registerFloat4(const char* name, float f1, float f2, float f3, float f4);
+	void registerFloat(const char* name, float value);
 };
 

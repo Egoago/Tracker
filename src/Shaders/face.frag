@@ -2,10 +2,8 @@
 precision highp float;
 
 layout (location = 0) out vec3 outPosition;
-layout (location = 1) out vec3 outNormal;
 
 in vec3 position;
-in vec3 normal;
 //flat in uint index;
 
 //out vec4 FragColor;
@@ -21,7 +19,6 @@ in vec3 normal;
 
 void main() {
 	outPosition = position;
-	outNormal = normal;
 	//outPosition = vec3(1.0,1.0,1.0);
 	//outIndex = index;            
 //    float depth = LinearizeDepth(gl_FragCoord.z) / far; // divide by far for demonstration

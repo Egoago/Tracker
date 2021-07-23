@@ -8,22 +8,27 @@
 class Renderer
 {
 private:
-	glm::mat4 Proj, Model, MVP;
-	GLuint faceFrameBuffer, edgeFrameBuffer;
-	GLuint normalMapBuffer, posMapBuffer, dirMapBuffer;
-	GLuint faceVAO, edgeVAO;
-	unsigned int faceCount, edgeCount;
-	Shader faceShader, edgeShader;
+	enum Pipeline {
+		POS = 0, MASK, DIR
+	};
+
+	glm::mat4 ProjMtx, ViewModelMtx;
+	GLuint frameBuffers[3];
+	GLuint mapBuffers[3];
+	GLuint VAOs[3];
+	unsigned int faceCount, highEgdeCount, lowEdgeCount;
+	Shader *faceShader, *edgeShader;
 	glm::uvec2 resolution;
 	void createFrameBuffers();
-	const float angleThreshold;
+	const float highThreshold, lowThreshold;
+	float nearP, farP;
 public:
-	Renderer(float angleThreshold, unsigned int width = 1000, unsigned int height = 1000);
+	Renderer(float highThreshold, float lowThreshold, unsigned int width = 1000, unsigned int height = 1000);
 	~Renderer();
 	void setGeometry(const Geometry& geometry);
-	void setProj(float fov = 45.0f, float nearP = 1.0f, float farP = 10000.0f);
-	const glm::mat4& getMVP() const { return MVP; }
+	void setProj(float fov = 45.0f, float nearP = 200.0f, float farP = 5000.0f);
+	const glm::mat4 getMVP() const { return ProjMtx * ViewModelMtx; }
 	void setModel(SixDOF& sixDOF);
-	glm::mat4 render(void* posMap, void* normalMap, void* dirMap);
+	glm::mat4 render(void* posMap, void* maskMap, void* dirMap);
 };
 

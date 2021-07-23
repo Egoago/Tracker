@@ -2,18 +2,20 @@
 precision highp float;
 
 layout (location = 0) in vec3 inPosition;
-layout (location = 1) in vec3 inNormal;
-//layout (location = 1) in uint inIndex;
 
-uniform mat4  MVP; // MVP, Model, Model-inverse
+uniform mat4  P, VM;
+uniform float near, far;
 
 out vec3 position;
-out vec3 normal;
-//flat out uint index;
+
+float getNDCDepth(float cDepth){
+	return (-cDepth-near)/(far-near)*2.0-1.0;
+}
 
 void main(){
-	gl_Position = MVP * vec4(inPosition, 1);
+	//uniform depth distribution
+	vec4 cPos = VM * vec4(inPosition, 1);
+	gl_Position = P * cPos;
+	gl_Position.z = getNDCDepth(cPos.z)*gl_Position.w;
 	position = inPosition;
-	normal = inNormal*0.49+0.51;
-	//index = inIndex;
 }

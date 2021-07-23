@@ -95,24 +95,27 @@ void Model::generarteObject(const string& fileName) {
 	ModelEdgeDetector detector(geo);
 	Point renderRes = getResolution(config);
 	Point windowRes = renderRes/3;
-	
-	const float angleThreshold = glm::radians(stof(config.getEntry("angle threshold", "30.0")));
-	Renderer renderer(angleThreshold, renderRes.x, renderRes.y);
+
+	//TODO create render config
+	// - thresholds, resolution...
+	const float highThreshold = glm::radians(stof(config.getEntry("high threshold", "30.0")));
+	const float lowThreshold = glm::radians(stof(config.getEntry("low threshold", "1.0")));
+	Renderer renderer(highThreshold, lowThreshold, renderRes.x, renderRes.y);
 	renderer.setGeometry(geo);
-	namedWindow("Normal", cv::WINDOW_NORMAL);
-	resizeWindow("Normal", windowRes.x, windowRes.y);
-	moveWindow("Normal", 0, 50);
-	namedWindow("Pos", WINDOW_NORMAL);
+	//TODO remove monitoring
+	namedWindow("Pos", cv::WINDOW_NORMAL);
 	resizeWindow("Pos", windowRes.x, windowRes.y);
-	moveWindow("Pos", windowRes.x, 50);
-	namedWindow("Canny", WINDOW_NORMAL);
-	resizeWindow("Canny", windowRes.x, windowRes.y);
-	moveWindow("Canny", windowRes.x * 2, 50);
+	moveWindow("Pos", 0, 50);
+	namedWindow("Mask", WINDOW_NORMAL);
+	resizeWindow("Mask", windowRes.x, windowRes.y);
+	moveWindow("Mask", windowRes.x, 50);
+	namedWindow("Directions", WINDOW_NORMAL);
+	resizeWindow("Directions", windowRes.x, windowRes.y);
+	moveWindow("Directions", windowRes.x * 2, 50);
 	Mat posMap(Size(renderRes.x, renderRes.y), CV_32FC3);
-	Mat normalMap(Size(renderRes.x, renderRes.y), CV_8UC3);
+	Mat maskMap(Size(renderRes.x, renderRes.y), CV_8U);
+	Mat posSum(Size(renderRes.x, renderRes.y), CV_32F);
     Mat dirMap(Size(renderRes.x, renderRes.y), CV_32FC3);
-    //Mat indexMap(Size(renderRes.x, renderRes.y), CV_32S);
-    //Mat detected_edges(Size(renderRes.x, renderRes.y), CV_8U);
 	int c = 1;
 	for (Template* i = templates.data(); i < (templates.data() + templates.num_elements()); i++) {
 		//TODO use CUDA with OpenGL directly on GPU
@@ -121,22 +124,30 @@ void Model::generarteObject(const string& fileName) {
 		cout << "Rendered " << c++ << "\t frames out of " << templates.num_elements() << "\r";
 		//i->sixDOF.print(cout);
 		renderer.setModel(i->sixDOF);
-		glm::mat4 mvp = renderer.render(posMap.data, normalMap.data, dirMap.data);
-		Mat out(Size(renderRes.x, renderRes.y), CV_8U, Scalar(0));
+		glm::mat4 mvp = renderer.render(posMap.data, maskMap.data, dirMap.data);
+		Mat out(Size(renderRes.x, renderRes.y), CV_8U);
 		//TODO remove unnecessary flip
 		cv::flip(posMap, posMap, 0);
-		cv::flip(normalMap, normalMap, 0);
+		cv::flip(maskMap, maskMap, 0);
 		cv::flip(dirMap, dirMap, 0);
 		posMap.convertTo(posMap, CV_32FC3, 1.0 / 32.5, 0.0);
-		imshow("Normal", normalMap);
-		//threshold(posMap, out, 1e-6, 255, THRESH_BINARY);
-		//transform(posMap, out, cv::Matx13f(1, 1, 1));
 		//cvtColor(posMap, out, COLOR_BGR2GRAY);
 		imshow("Pos", posMap);
-		/*vector<vector<Point> > contours;
+		imshow("Mask", maskMap);
+
+		//TODO simplify xyz->binary transformation
+		// - use OpenGL instead of OpenCV
+		/*transform(posMap, posSum, cv::Matx13f(0.5, 0.5, 0.5));
+		threshold(posSum, out, 10000.0*32.5, 255, THRESH_BINARY_INV);
+		vector<vector<Point> > contours;
+		out.convertTo(out, CV_8U);
 		findContours(out, contours, RETR_EXTERNAL, CHAIN_APPROX_NONE);
-		drawContours(normalMap, contours, 0, Scalar(255, 255, 255));
-		imshow("Canny", dirMap);*/
+		out = Scalar::all(0);
+		drawContours(out, contours, 0, Scalar(255, 255, 255));
+		imshow("Contour", out);*/
+		imshow("Directions", dirMap);
+
+		//imshow("Canny", dirMap);
 		//imshow("Canny", dirMap+ posMap);
 		//imshow("Canny", indexMap);
 		/*Mat detected_edges(Size(renderRes.x, renderRes.y), CV_8U);
@@ -150,7 +161,7 @@ void Model::generarteObject(const string& fileName) {
 		/*dst = Scalar(0);
 		vector<Edge<>> edges = detector.detectOutlinerEdges(detected_edges, dst, mvp);
 		imshow("Wireframe", dst);*/
-		waitKey(1000000000);
+		waitKey(1);
 		//rasterize(edges, i);
 	}
 	cout << endl;
