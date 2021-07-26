@@ -34,7 +34,7 @@ Renderer::Renderer(const Geometry& geometry) {
     
     readConfig();
 
-    textureMaps.push_back(new TextureMap(CV_8U, resolution));
+    textureMaps.push_back(new TextureMap(CV_32F, resolution));
     textureMaps.push_back(new TextureMap(CV_32FC3, resolution));
     textureMaps.push_back(new TextureMap(CV_32FC3, resolution));
 
@@ -51,17 +51,20 @@ Renderer::Renderer(const Geometry& geometry) {
                                     std::vector<TextureMap*>{},
                                     GL_TRIANGLES,
                                     GL_DEPTH_BUFFER_BIT,
-                                    depthBuffer));
+                                    depthBuffer,
+                                    true));
     pipelines.push_back(new Pipeline("highThresh",
                                     {textureMaps.at(0)},
                                     GL_LINES,
                                     GL_COLOR_BUFFER_BIT,
-                                    depthBuffer));
+                                    depthBuffer,
+                                    true));
     pipelines.push_back(new Pipeline("lowThresh",
                                     {textureMaps.at(1), textureMaps.at(2)},
                                     GL_LINES,
                                     GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT,
-                                    depthBuffer));
+                                    depthBuffer,
+                                    false));
     setGeometry(geometry);
     setProj(fov, nearP, farP, aspect);
 }
@@ -125,50 +128,80 @@ void Renderer::setGeometry(const Geometry& geometry)
     //register
     pipelines.at(0)->setGeometry(VAO, geometry.getIndexCount());
 
-    //====== High tresh buffers =======
-    glGenVertexArrays(1, &VAO);
-    glBindVertexArray(VAO);
+    //============================================================
+    //============================================================
+    //============================================================
 
     //generating outliner edges
     std::vector<glm::vec3> edges, directions;
+    std::vector<unsigned int> highIndices, lowIndices;
+    const float lowThreshold = std::stof(config.getEntry("low threshold", "1e-3"));
     const float highThreshold = std::stof(config.getEntry("high threshold", "30.0"));
-    getOutlinerEdges(geometry, edges, directions, highThreshold);
-    std::cout << "edges: " << edges.size() << std::endl;
+    for (unsigned int i = 0; i < geometry.getEdgeCount(); i++) {
+        float curvature = geometry.getCurvatures()[i];
+        if (curvature > glm::radians(lowThreshold)) {
+            if (curvature > glm::radians(highThreshold))
+                highIndices.push_back((unsigned int)edges.size()/2);
+            glm::vec3 a = geometry.getEdges()[2 * i];
+            glm::vec3 b = geometry.getEdges()[2 * i + 1];
+            edges.push_back(a);
+            edges.push_back(b);
+            glm::vec3 dir = -glm::normalize(a - b);
+            //opposite directions are the same
+            if (glm::dot(glm::normalize(glm::vec3(0.9f, 0.65f, 0.56f)), dir) < 0.0f)
+                dir = -dir;
+            directions.push_back(dir);
+            directions.push_back(dir);
+        }
+    }
 
-    //vertices
-    glGenBuffers(1, &buffer);
-    glBindBuffer(GL_ARRAY_BUFFER, buffer);
+    //upload to GPU
+    GLuint posBuffer, dirBuffer, indicesBuffer;
+    glGenBuffers(1, &posBuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, posBuffer);
     glBufferData(GL_ARRAY_BUFFER, edges.size() * sizeof(glm::vec3), edges.data(), GL_STATIC_DRAW);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    glGenBuffers(1, &dirBuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, dirBuffer);
+    glBufferData(GL_ARRAY_BUFFER, edges.size() * sizeof(glm::vec3), directions.data(), GL_STATIC_DRAW);
 
-    //register
-    pipelines.at(1)->setGeometry(VAO, (unsigned int)edges.size());
 
     //====== Low Thresh buffers =======
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
 
-    //generating outliner edges
-    const float lowThreshold = std::stof(config.getEntry("low threshold", "1e-3"));
-    getOutlinerEdges(geometry, edges, directions, lowThreshold);
-
     //vertices
-    glGenBuffers(1, &buffer);
-    glBindBuffer(GL_ARRAY_BUFFER, buffer);
-    glBufferData(GL_ARRAY_BUFFER, edges.size() * sizeof(glm::vec3), edges.data(), GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, posBuffer);
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
     //directions
-    glGenBuffers(1, &buffer);
-    glBindBuffer(GL_ARRAY_BUFFER, buffer);
-    glBufferData(GL_ARRAY_BUFFER, edges.size() * sizeof(glm::vec3), directions.data(), GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, dirBuffer);
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
     //register
     pipelines.at(2)->setGeometry(VAO, (unsigned int)edges.size());
+
+    //====== High tresh buffers =======
+    glGenVertexArrays(1, &VAO);
+    glBindVertexArray(VAO);
+
+    //vertices
+    glBindBuffer(GL_ARRAY_BUFFER, posBuffer);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+    //indices
+    glGenBuffers(1, &indicesBuffer);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indicesBuffer);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, highIndices.size() * sizeof(unsigned int), highIndices.data(), GL_STATIC_DRAW);
+
+    //register
+    pipelines.at(1)->setGeometry(VAO, (unsigned int)highIndices.size());
+
+    //============================================================
+    //============================================================
+    //============================================================
 }
 
 void Renderer::updatePipelines()

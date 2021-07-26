@@ -8,10 +8,12 @@ Pipeline::Pipeline(
     const std::vector<TextureMap*>& textureMaps,
     GLenum drawPrimitive,
     GLbitfield clearMask,
-    GLuint depthBuffer) :
+    GLuint depthBuffer,
+    bool drawElements) :
     textureMaps(textureMaps),
     drawPrimitive(drawPrimitive),
-    clearMask(clearMask) {
+    clearMask(clearMask),
+    drawElements(drawElements) {
     shader = new Shader(name);
 
     //Frame buffer
@@ -45,10 +47,10 @@ void Pipeline::render(std::vector<cv::Mat*>& outTextures)
     glClear(clearMask);
     shader->enable();
     glBindVertexArray(VAO);
-    if (drawPrimitive == GL_LINES)
-        glDrawArrays(drawPrimitive, 0, primitiveCount);
-    else
+    if (drawElements)
         glDrawElements(drawPrimitive, primitiveCount, GL_UNSIGNED_INT, 0);
+    else
+        glDrawArrays(drawPrimitive, 0, primitiveCount);
     shader->disable();
     glFlush();
 

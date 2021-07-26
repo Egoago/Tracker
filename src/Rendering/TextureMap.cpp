@@ -14,6 +14,9 @@ TextureMap::TextureMap(int cvType, glm::uvec2 resolution) :
 	case CV_8U:
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, resolution.x, resolution.y, 0, GL_RED, GL_UNSIGNED_BYTE, 0);
 		break;
+	case CV_32F:
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, resolution.x, resolution.y, 0, GL_RED, GL_FLOAT, 0);
+		break;
 	default: {
 		std::cerr << "not supported texture type: " << cvType << std::endl;
 		exit(1);
@@ -37,6 +40,9 @@ cv::Mat* TextureMap::copy() {
 		break;
 	case CV_8U:
 		glGetTexImage(GL_TEXTURE_2D, 0, GL_RED, GL_UNSIGNED_BYTE, data);
+		break;
+	case CV_32F:
+		glGetTexImage(GL_TEXTURE_2D, 0, GL_RED, GL_FLOAT, data);
 		break;
 	default: {
 		std::cerr << "not supported texture type: " << cvType << std::endl;
