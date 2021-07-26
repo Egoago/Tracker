@@ -53,12 +53,12 @@ Renderer::Renderer(const Geometry& geometry) {
                                     GL_DEPTH_BUFFER_BIT,
                                     depthBuffer));
     pipelines.push_back(new Pipeline("highThresh",
-                                    std::vector<TextureMap*>{textureMaps.at(0)},
+                                    {textureMaps.at(0)},
                                     GL_LINES,
                                     GL_COLOR_BUFFER_BIT,
                                     depthBuffer));
     pipelines.push_back(new Pipeline("lowThresh",
-                                    std::vector<TextureMap*>{textureMaps.at(1), textureMaps.at(2)},
+                                    {textureMaps.at(1), textureMaps.at(2)},
                                     GL_LINES,
                                     GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT,
                                     depthBuffer));
@@ -81,7 +81,7 @@ void getOutlinerEdges(const Geometry& geometry,
     edges.clear();
     directions.clear();
     for (unsigned int i = 0; i < geometry.getEdgeCount(); i++)
-        if (geometry.getCurvatures()[i] > threshold) {
+        if (geometry.getCurvatures()[i] > glm::radians(threshold)) {
             glm::vec3 a = geometry.getEdges()[2 * i];
             glm::vec3 b = geometry.getEdges()[2 * i + 1];
             edges.push_back(a);
@@ -133,6 +133,7 @@ void Renderer::setGeometry(const Geometry& geometry)
     std::vector<glm::vec3> edges, directions;
     const float highThreshold = std::stof(config.getEntry("high threshold", "30.0"));
     getOutlinerEdges(geometry, edges, directions, highThreshold);
+    std::cout << "edges: " << edges.size() << std::endl;
 
     //vertices
     glGenBuffers(1, &buffer);
@@ -140,13 +141,6 @@ void Renderer::setGeometry(const Geometry& geometry)
     glBufferData(GL_ARRAY_BUFFER, edges.size() * sizeof(glm::vec3), edges.data(), GL_STATIC_DRAW);
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-
-    //directions
-    glGenBuffers(1, &buffer);
-    glBindBuffer(GL_ARRAY_BUFFER, buffer);
-    glBufferData(GL_ARRAY_BUFFER, edges.size() * sizeof(glm::vec3), directions.data(), GL_STATIC_DRAW);
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
     //register
     pipelines.at(1)->setGeometry(VAO, (unsigned int)edges.size());
@@ -156,7 +150,7 @@ void Renderer::setGeometry(const Geometry& geometry)
     glBindVertexArray(VAO);
 
     //generating outliner edges
-    const float lowThreshold = std::stof(config.getEntry("low threshold", "0.1"));
+    const float lowThreshold = std::stof(config.getEntry("low threshold", "1e-3"));
     getOutlinerEdges(geometry, edges, directions, lowThreshold);
 
     //vertices

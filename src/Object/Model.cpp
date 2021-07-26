@@ -92,12 +92,12 @@ void Model::generarteObject(const string& fileName) {
 	glm::uvec2 windowRes = renderRes / glm::uvec2(3,3);
 	
 	//TODO remove monitoring
-	namedWindow("Pos", WINDOW_NORMAL);
-	resizeWindow("Pos", windowRes.x, windowRes.y);
-	moveWindow("Pos", 0, 50);
 	namedWindow("Mask", WINDOW_NORMAL);
 	resizeWindow("Mask", windowRes.x, windowRes.y);
-	moveWindow("Mask", windowRes.x, 50);
+	moveWindow("Mask", 0, 50);
+	namedWindow("Pos", WINDOW_NORMAL);
+	resizeWindow("Pos", windowRes.x, windowRes.y);
+	moveWindow("Pos", windowRes.x, 50);
 	namedWindow("Directions", WINDOW_NORMAL);
 	resizeWindow("Directions", windowRes.x, windowRes.y);
 	moveWindow("Directions", windowRes.x * 2, 50);
@@ -112,41 +112,39 @@ void Model::generarteObject(const string& fileName) {
 		//i->sixDOF.print(cout);
 		renderer.setModel(i->sixDOF);
 		std::vector<cv::Mat*> textureMaps = renderer.render();
-		textureMaps.at(1)->convertTo(*textureMaps.at(1), CV_32FC3, 1.0 / 32.5, 0.0);
-		//cvtColor(posMap, out, COLOR_BGR2GRAY);
-		imshow("Mask", *textureMaps.at(0));
-		imshow("Pos", *textureMaps.at(1));
-		imshow("Directions", *textureMaps.at(2));
+		Mat& maskMap = *textureMaps.at(0);
+		Mat& posMap = *textureMaps.at(1);
+		Mat& dirMap = *textureMaps.at(2);
+		posMap.convertTo(posMap, CV_32FC3, 1.0 / 32.5, 0.0);
 
-		/////////////////////////
-
-		//imshow("Directions", dirMap);
-
-		////TODO simplify xyz->binary transformation
-		//// - use OpenGL instead of OpenCV
-		//transform(posMap, posSum, cv::Matx13f(0.5, 0.5, 0.5));
-		//threshold(posSum, out, 1e-3, 255, THRESH_BINARY);
-		//out.convertTo(out, CV_8U);
-		//vector<vector<Point> > contours;
-		//findContours(out, contours, RETR_EXTERNAL, CHAIN_APPROX_NONE);
-		//out = Scalar::all(0);
-		//drawContours(out, contours, 0, Scalar(255, 255, 255));
-		//threshold(maskMap, maskMap, 1e-3, 255, THRESH_BINARY);
+		//TODO simplify xyz->binary transformation
+		// - use OpenGL instead of OpenCV
+		transform(posMap, posSum, cv::Matx13f(0.5, 0.5, 0.5));
+		threshold(posSum, out, 1e-3, 255, THRESH_BINARY);
+		out.convertTo(out, CV_8U);
+		vector<vector<Point> > contours;
+		findContours(out, contours, RETR_EXTERNAL, CHAIN_APPROX_NONE);
+		imshow("Mask", maskMap);
+		out = Scalar::all(0);
+		drawContours(out, contours, 0, Scalar(255, 255, 255), 1, LINE_8, noArray(), 1, Point(1,1));
 
 		//maskMap += out;
-		//std::vector<cv::Mat> channels;
-		//Mat alpha, rgba;
+		std::vector<cv::Mat> channels;
+		Mat alpha, rgba;
 		//maskMap.convertTo(maskMap, CV_32F, 1/2.0);
-		//posMap.convertTo(posMap, CV_32FC3, 1/2.0);
-		//split(posMap, channels);
-		//channels.at(2) += maskMap;
-		//merge(channels, posMap);
-		//imshow("Mask", posMap);
-		//maskMap.convertTo(maskMap, CV_8U);
-		//posMap.convertTo(posMap, CV_32FC3);
+		posMap.convertTo(posMap, CV_32FC3, 1/2.0);
+		split(posMap, channels);
+		channels.at(2) += maskMap;
+		merge(channels, posMap);
+		
+		imshow("Pos", posMap);
+		imshow("Directions", dirMap);
+
+		maskMap.convertTo(maskMap, CV_8U);
+		posMap.convertTo(posMap, CV_32FC3);
 
 		/////////////////////////
-		waitKey(10000);
+		waitKey(30000);
 		//rasterize(edges, i);
 	}
 	cout << endl;

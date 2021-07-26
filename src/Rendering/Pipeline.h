@@ -2,6 +2,7 @@
 #include <vector>
 #include "TextureMap.h"
 #include "Shader.h"
+#include <iostream>
 
 class Pipeline {
 	GLuint frameBuffer;
@@ -14,7 +15,8 @@ class Pipeline {
 public:
 	inline void setGeometry(GLuint vao, unsigned int primitiveCount) {
 		VAO = vao;
-		primitiveCount = primitiveCount;
+		this->primitiveCount = primitiveCount;
+		std::cout << "primitives: " << primitiveCount << std::endl;
 	}
 
 	Shader* getShader() { return shader; }
