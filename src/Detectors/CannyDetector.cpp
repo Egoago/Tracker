@@ -8,5 +8,8 @@ void CannyDetector::detectEdges(cv::Mat& img, std::vector<Edge<glm::vec2>>& edge
     blur(img, img, Size(3, 3));
     Canny(img, img, 60,180,3);
     //TODO implement edge extraction
-    throw "Not implemented";
+    {
+        std::cerr << "Not implemented" << std::endl;
+        exit(1);
+    }
 }

@@ -6,7 +6,11 @@
 
 std::string readFile(std::string filename)
 {
-	std::ifstream stream(filename, std::ios::in);
+	std::ifstream stream(filename);
+	if (!stream.is_open()) {
+		std::cerr << "File " << filename << " not found.\n";
+		exit(1);
+	}
 	std::string str((std::istreambuf_iterator<char>(stream)),
 		(std::istreambuf_iterator<char>()));
 	return str;
@@ -32,8 +36,10 @@ void Shader::loadShader(GLuint type, std::string filename)
 		fID = glCreateShader(GL_FRAGMENT_SHADER);
 		fShader = readFile(filename);
 		break;
-	default:
-		throw "Not implemented shader type: " + type;
+	default: {
+		std::cerr << "Not implemented shader type: " << type << std::endl;
+		exit(1);
+	}
 	}
 }
 
@@ -67,7 +73,7 @@ bool Shader::compile()
 		glGetShaderiv(fID, GL_INFO_LOG_LENGTH, &InfoLogLength);
 		std::vector<char> fragmentShaderErrorMessage(InfoLogLength);
 		glGetShaderInfoLog(fID, InfoLogLength, NULL, &fragmentShaderErrorMessage[0]);
-		std::cout << "Fragment shader: " << fragmentShaderErrorMessage.data() << std::endl;
+		std::cerr << "Fragment shader: " << fragmentShaderErrorMessage.data() << std::endl;
 	}
 	
 	ID = glCreateProgram();
@@ -84,7 +90,7 @@ bool Shader::compile()
 		glGetProgramiv(ID, GL_INFO_LOG_LENGTH, &InfoLogLength);
 		std::vector<char> programErrorMessage(InfoLogLength);
 		glGetProgramInfoLog(ID, InfoLogLength, NULL, &programErrorMessage[0]);
-		std::cout << "Link: " << programErrorMessage.data() << std::endl;
+		std::cerr << "Link: " << programErrorMessage.data() << std::endl;
 	}
 	else compiled = true;
 
@@ -109,6 +115,7 @@ bool Shader::disable()
 
 Shader::~Shader()
 {
+	std::cout << "deleting shader " << name << std::endl;
 	glDeleteProgram(ID);
 }
 

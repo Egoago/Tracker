@@ -7,6 +7,7 @@ layout (location = 1) in vec3 inDirection;
 uniform mat4  P, VM;
 uniform float near, far;
 
+out vec3 position;
 out vec3 direction;
 
 float getNDCDepth(float cDepth){
@@ -17,9 +18,8 @@ void main(){
 	//uniform depth distribution
 	//TODO use linear algebra
 	vec4 cPos = VM * vec4(inPosition, 1);
-	//offset for z buffer reuse
-	cPos.z += 1.5;
 	gl_Position = P * cPos;
 	gl_Position.z = getNDCDepth(cPos.z)*gl_Position.w;
+	position = inPosition;
 	direction = inDirection;
 }

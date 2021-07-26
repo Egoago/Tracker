@@ -80,6 +80,12 @@
     <ClCompile Include="src\Object\Geometry.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\Rendering\TextureMap.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Rendering\Pipeline.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Camera\Camera.h">
@@ -133,15 +139,23 @@
     <ClInclude Include="src\Object\Model.h">
       <Filter>Header Files\Object</Filter>
     </ClInclude>
+    <ClInclude Include="src\Rendering\TextureMap.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Rendering\Pipeline.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="src\Shaders\face.vert">
+    <None Include="src\Shaders\mesh.vert">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="src\Shaders\face.frag">
+    <None Include="src\Shaders\mesh.frag">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="src\Shaders\edge.vert" />
-    <None Include="src\Shaders\edge.frag" />
+    <None Include="src\Shaders\highThresh.vert" />
+    <None Include="src\Shaders\highThresh.frag" />
+    <None Include="src\Shaders\lowThresh.frag" />
+    <None Include="src\Shaders\lowThresh.vert" />
   </ItemGroup>
 </Project>

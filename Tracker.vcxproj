@@ -129,6 +129,7 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
       <LanguageStandard>stdcpp14</LanguageStandard>
+      <BrowseInformation>true</BrowseInformation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -145,6 +146,9 @@ copy "$(SolutionDir)Common\glew-2.1.0\Bin\Release\x64\glew32.dll" "$(SolutionDir
     <CustomBuildStep>
       <Outputs>$(SolutionDir)Bin\$(Platform)\$(Configuration)\opencv_world452d.dll;$(SolutionDir)Bin\$(Platform)\$(Configuration)\freeglut.dll;$(SolutionDir)Bin\$(Platform)\$(Configuration)\assimp-vc142-mtd.dll;$(SolutionDir)Bin\$(Platform)\$(Configuration)\glew32.dll</Outputs>
     </CustomBuildStep>
+    <Bscmake>
+      <PreserveSbr>true</PreserveSbr>
+    </Bscmake>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -189,9 +193,11 @@ copy "$(SolutionDir)Common\glew-2.1.0\Bin\Release\x64\glew32.dll" "$(SolutionDir
     <ClCompile Include="src\Object\ModelEdgeDetector.cpp" />
     <ClCompile Include="src\Object\Model.cpp" />
     <ClCompile Include="src\PoseEstimation\PoseEstimator.cpp" />
+    <ClCompile Include="src\Rendering\Pipeline.cpp" />
     <ClCompile Include="src\Rendering\Renderer.cpp" />
     <ClCompile Include="src\Rendering\Shader.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\Rendering\TextureMap.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Camera\Camera.h" />
@@ -209,14 +215,18 @@ copy "$(SolutionDir)Common\glew-2.1.0\Bin\Release\x64\glew32.dll" "$(SolutionDir
     <ClInclude Include="src\Object\ModelEdgeDetector.h" />
     <ClInclude Include="src\Object\Model.h" />
     <ClInclude Include="src\PoseEstimation\PoseEstimator.h" />
+    <ClInclude Include="src\Rendering\Pipeline.h" />
     <ClInclude Include="src\Rendering\Renderer.h" />
     <ClInclude Include="src\Rendering\Shader.h" />
+    <ClInclude Include="src\Rendering\TextureMap.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="src\Shaders\face.vert" />
-    <None Include="src\Shaders\edge.vert" />
-    <None Include="src\Shaders\edge.frag" />
-    <None Include="src\Shaders\face.frag" />
+    <None Include="src\Shaders\lowThresh.frag" />
+    <None Include="src\Shaders\lowThresh.vert" />
+    <None Include="src\Shaders\mesh.vert" />
+    <None Include="src\Shaders\highThresh.vert" />
+    <None Include="src\Shaders\highThresh.frag" />
+    <None Include="src\Shaders\mesh.frag" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

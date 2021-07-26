@@ -6,9 +6,8 @@ using namespace cv;
 using namespace std;
 
 int main(int argc, char** argv) {
-    //TODO debug occasional release startup failure
     Mat frame = imread(TEST_FRAME);
-    Model model("cylinder.stl");
+    Model model("cube.stl");
     /*PoseEstimator poseEstimator(frame.cols, frame.rows, model);
     namedWindow("jep");
     imshow("jep", frame);
