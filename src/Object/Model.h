@@ -17,7 +17,7 @@ class Model
 	void generarteObject(const std::string& fileName);
 	void generate6DOFs();
 	void allocateRegistry();
-	void rasterize(const cv::Mat& maskMap, const cv::Mat& posMap, const cv::Mat& dirMap, Template* templ);
+	void extractValidPoints(const cv::Mat& maskMap, const cv::Mat& posMap, const cv::Mat& dirMap, Template* templ, const glm::mat4 MVP);
 	void load();
 public:
 

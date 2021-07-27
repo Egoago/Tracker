@@ -14,8 +14,6 @@ void main(){
 	//uniform depth distribution
 	//TODO use linear algebra
 	vec4 cPos = VM * vec4(inPosition, 1);
-	//offset for z buffer reuse
-	cPos.z += 1.5;
 	gl_Position = P * cPos;
 	gl_Position.z = getNDCDepth(cPos.z)*gl_Position.w;
 }

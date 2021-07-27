@@ -36,7 +36,7 @@ cv::Mat* TextureMap::copy() {
 	glBindTexture(GL_TEXTURE_2D, glBuffer);
 	switch (cvType) {
 	case CV_32FC3:
-		glGetTexImage(GL_TEXTURE_2D, 0, GL_BGR, GL_FLOAT, data);
+		glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_FLOAT, data);
 		break;
 	case CV_8U:
 		glGetTexImage(GL_TEXTURE_2D, 0, GL_RED, GL_UNSIGNED_BYTE, data);

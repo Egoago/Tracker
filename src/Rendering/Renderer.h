@@ -13,6 +13,7 @@ private:
 	std::vector<Pipeline*> pipelines;
 	std::vector<TextureMap*> textureMaps;
 
+	//TODO simplify to one matrix
 	glm::mat4 ProjMtx, ViewModelMtx;
 
 	void updatePipelines();
@@ -25,6 +26,8 @@ public:
 	~Renderer();
 	void setProj(float fov, float nearP, float farP, float aspect);
 	void setModel(SixDOF& sixDOF);
+	glm::mat4 getMVP() const { return ProjMtx*ViewModelMtx; }
+	glm::mat4 getVM() const { return ViewModelMtx; }
 	glm::uvec2 getResolution() { return resolution; }
 	std::vector<cv::Mat*> render();
 };

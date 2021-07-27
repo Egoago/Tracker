@@ -1,13 +1,13 @@
 #version 460
 precision highp float;
 
-layout (location = 0) out vec3 outPosition;
-layout (location = 1) out vec3 outDirection;
+layout (location = 0) out vec3 outPos;
+layout (location = 1) out vec3 outOffsetPos;
 
-in vec3 position;
-in vec3 direction;
+in vec3 pos;
+in vec3 offsetPos;
 
 void main() {
-	outPosition = position;
-	outDirection = direction;
+	outPos = pos;
+	outOffsetPos = offsetPos;
 }

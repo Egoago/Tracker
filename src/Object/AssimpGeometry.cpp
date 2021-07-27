@@ -5,6 +5,7 @@
 //TODO remove logging
 #include <iostream>
 #include "../Misc/Links.h"
+#include <glm/geometric.hpp>
 
 AssimpGeometry::AssimpGeometry(const std::string& fileName) {
 	std::string path = MODELS_FOLDER + fileName;
@@ -33,9 +34,10 @@ AssimpGeometry::AssimpGeometry(const std::string& fileName) {
 		vertices.emplace_back(mesh->mVertices[i].x,
 							mesh->mVertices[i].y,
 							mesh->mVertices[i].z);
-		normals.emplace_back(mesh->mNormals[i].x,
-							mesh->mNormals[i].y,
-							mesh->mNormals[i].z);
+		glm::vec3 normal(mesh->mNormals[i].x,
+						mesh->mNormals[i].y,
+						mesh->mNormals[i].z);
+		normals.emplace_back(glm::normalize(normal));
 	}
 
 	for (unsigned int i = 0; i < mesh->mNumFaces; ++i) {

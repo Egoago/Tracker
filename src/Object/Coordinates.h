@@ -80,19 +80,19 @@ struct Range {
 
 struct Template {
 	SixDOF sixDOF;
-	std::vector<glm::vec3> pos, dir;
+	std::vector<glm::vec3> pos, offsetPos;
 
 	friend std::ostream& operator<<(std::ostream& out, Bits<struct Template&> o) {
 		out << bits(o.t.sixDOF)
 			<< bits(o.t.pos)
-			<< bits(o.t.dir);
+			<< bits(o.t.offsetPos);
 		return (out);
 	}
 
 	friend std::istream& operator>>(std::istream& in, Bits<struct Template&> o) {
 		in >> bits(o.t.sixDOF)
 			>> bits(o.t.pos)
-			>> bits(o.t.dir);
+			>> bits(o.t.offsetPos);
 		return (in);
 	}
 };

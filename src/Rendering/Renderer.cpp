@@ -34,9 +34,9 @@ Renderer::Renderer(const Geometry& geometry) {
     
     readConfig();
 
-    textureMaps.push_back(new TextureMap(CV_8U, resolution));
-    textureMaps.push_back(new TextureMap(CV_32FC3, resolution));
-    textureMaps.push_back(new TextureMap(CV_32FC3, resolution));
+    textureMaps.push_back(new TextureMap(CV_8U, resolution));       //mask
+    textureMaps.push_back(new TextureMap(CV_32FC3, resolution));    //pos 1
+    textureMaps.push_back(new TextureMap(CV_32FC3, resolution));    //pos 2
 
     // Z buffer
     glEnable(GL_DEPTH_TEST);
@@ -44,7 +44,7 @@ Renderer::Renderer(const Geometry& geometry) {
     glGenRenderbuffers(1, &depthBuffer);
     glBindRenderbuffer(GL_RENDERBUFFER, depthBuffer);
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, resolution.x, resolution.y);
-    glDepthFunc(GL_LEQUAL);
+    //glDepthFunc(GL_LEQUAL);
 
     //set up pipelines
     pipelines.push_back(new Pipeline("mesh",

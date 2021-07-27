@@ -13,6 +13,8 @@ float getNDCDepth(float cDepth){
 void main(){
 	//uniform depth distribution
 	vec4 cPos = VM * vec4(inPosition, 1);
+	//offset against z fighting in z buffer reuse
+	cPos.z -= 1.5;
 	gl_Position = P * cPos;
 	gl_Position.z = getNDCDepth(cPos.z)*gl_Position.w;
 }
