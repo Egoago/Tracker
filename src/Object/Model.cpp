@@ -8,6 +8,7 @@
 #include "AssimpGeometry.h"
 #include "ModelEdgeDetector.h"
 #include "../Rendering/Renderer.h"
+#include <random>
 
 using namespace std;
 
@@ -29,6 +30,61 @@ void Model::allocateRegistry() {
 									[dimensions[3]]
 									[dimensions[4]]
 									[dimensions[5]]);
+}
+
+void Model::rasterize(const cv::Mat& maskMap,
+					const cv::Mat& posMap,
+					const cv::Mat& dirMap,
+					Template* templ) {
+	//TODO remove logging
+	std::cout << "rasterizing\n";
+	std::mutex mtx;
+	const static float rasterProb = stof(config.getEntry("rasterization probability", "0.1"));
+	maskMap.forEach<uchar>(
+		[&mtx, templ, &dirMap, &posMap](uchar& pixel, const int* p) -> void {
+			//test mask
+			if (pixel < 128) return;
+
+			//test pos
+			cv::Point3f pos = posMap.at<cv::Point3f>(p[0], p[1]);
+			if (pos.dot(pos) < 1e-3) return;
+
+			//test dir
+			cv::Point3f dir = dirMap.at<cv::Point3f>(p[0], p[1]);
+			if (dir.dot(dir) < 1e-3) return;
+			
+			//rasterization
+			static thread_local std::random_device rd;
+			static thread_local std::mt19937 gen(rd());
+			std::bernoulli_distribution bern(rasterProb);
+			if(!bern(gen)) return;
+
+			//register
+			mtx.lock();
+			templ->pos.emplace_back(pos.x, pos.y, pos.z);
+			templ->dir.emplace_back(dir.x, dir.y, dir.z);
+			mtx.unlock();
+		});
+}
+
+
+void createMask(const cv::Mat& dirMap, cv::Mat& maskMap) {
+	//TODO remove logging
+	std::cout << "creating mask\n";
+	//TODO simplify xyz->binary transformation
+	// - use OpenGL instead of OpenCV
+	using namespace cv;
+	static Mat sum(Size(maskMap.cols, maskMap.rows), CV_32F);
+	static Mat binary(Size(maskMap.cols, maskMap.rows), CV_8U);
+	absdiff(dirMap, Scalar::all(0), sum);
+	transform(sum, sum, cv::Matx13f(1.0, 1.0, 1.0));
+	threshold(sum, binary, 1e-5, 255, THRESH_BINARY);
+	binary.convertTo(binary, CV_8U);
+
+	vector<vector<Point> > contours;
+	findContours(binary, contours, RETR_EXTERNAL, CHAIN_APPROX_NONE);
+
+	drawContours(maskMap, contours, 0, Scalar(255, 255, 255));
 }
 
 void Model::generate6DOFs() {
@@ -65,23 +121,6 @@ void Model::generate6DOFs() {
 	}
 }
 
-void Model::rasterize(const vector<Edge<>>& edges, Template* snapshot) {
-	const static float step = stof(config.getEntry("rasterization step", "2.0"));
-	const static float d = stof(config.getEntry("rasterization offset", "0.5"));
-	for (const Edge<>& edge : edges)
-	{
-		glm::vec3 dir = glm::normalize(edge.b - edge.a);
-		float dist = glm::distance(edge.a, edge.b);
-		glm::vec3 p = edge.a;
-		while (dist > 0) {
-			snapshot->M.push_back(p);
-			snapshot->M_.push_back(p + d * dir);
-			p += step * dir;
-			dist -= step;
-		}
-	}
-}
-
 void Model::generarteObject(const string& fileName) {
 	//TODO add loading bar
 	using namespace cv;
@@ -101,40 +140,34 @@ void Model::generarteObject(const string& fileName) {
 	namedWindow("Directions", WINDOW_NORMAL);
 	resizeWindow("Directions", windowRes.x, windowRes.y);
 	moveWindow("Directions", windowRes.x * 2, 50);
-	Mat posSum(Size(renderRes.x, renderRes.y), CV_32F);
-	Mat out(Size(renderRes.x, renderRes.y), CV_8U);
 	int c = 1;
 	for (Template* i = templates.data(); i < (templates.data() + templates.num_elements()); i++) {
 		//TODO use CUDA with OpenGL directly on GPU
 		// instead moving textures to CPU and using OpenCV
+		// OpenMP??
+
 		//TODO remove monitoring
 		cout << "Rendered " << c++ << "\t frames out of " << templates.num_elements() << "\r";
-		//i->sixDOF.print(cout);
+		i->sixDOF.print(cout);
 		renderer.setModel(i->sixDOF);
+		//TODO remove logging
+		std::cout << "rendering\n";
 		std::vector<cv::Mat*> textureMaps = renderer.render();
 		Mat& maskMap = *textureMaps.at(0);
 		Mat& posMap = *textureMaps.at(1);
 		Mat& dirMap = *textureMaps.at(2);
-		posMap.convertTo(posMap, CV_32FC3, 1.0 / 32.5, 0.0);
 
-		//TODO simplify xyz->binary transformation
-		// - use OpenGL instead of OpenCV
-		absdiff(dirMap, Scalar::all(0), posSum);
-		transform(posSum, posSum, cv::Matx13f(1.0, 1.0, 1.0));
-		threshold(posSum, out, 1e-5, 255, THRESH_BINARY);
-		out.convertTo(out, CV_8U);
-		vector<vector<Point> > contours;
-		findContours(out, contours, RETR_EXTERNAL, CHAIN_APPROX_NONE);
-		out = Scalar::all(0);
-		drawContours(out, contours, 0, Scalar(255, 255, 255));
-		maskMap += out;
+		createMask(dirMap, maskMap);
 
 		imshow("Mask", maskMap);
 		imshow("Pos", posMap);
 		imshow("Directions", dirMap);
-
-		waitKey(30000);
-		//rasterize(edges, i);
+		//TODO remove logging
+		std::cout << "waiting for key...\n";
+		waitKey(10000);
+		rasterize(maskMap, posMap, dirMap, i);
+		//TODO remove logging
+		std::cout << "samples: " << i->pos.size() << std::endl;;
 	}
 	cout << endl;
 }

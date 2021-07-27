@@ -1,4 +1,5 @@
 #pragma once
+#include <opencv2/core/mat.hpp>
 #include "../Misc/ConfigParser.h"
 #include "Coordinates.h"
 #include "boost/multi_array.hpp"
@@ -16,7 +17,7 @@ class Model
 	void generarteObject(const std::string& fileName);
 	void generate6DOFs();
 	void allocateRegistry();
-	void rasterize(const std::vector<Edge<>>& edges, Template* templates);
+	void rasterize(const cv::Mat& maskMap, const cv::Mat& posMap, const cv::Mat& dirMap, Template* templ);
 	void load();
 public:
 
