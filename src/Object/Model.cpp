@@ -119,22 +119,16 @@ void Model::generarteObject(const string& fileName) {
 
 		//TODO simplify xyz->binary transformation
 		// - use OpenGL instead of OpenCV
-		/*transform(posMap, posSum, cv::Matx13f(0.5, 0.5, 0.5));
-		threshold(posSum, out, 1e-3, 255, THRESH_BINARY);
+		absdiff(dirMap, Scalar::all(0), posSum);
+		transform(posSum, posSum, cv::Matx13f(1.0, 1.0, 1.0));
+		threshold(posSum, out, 1e-5, 255, THRESH_BINARY);
 		out.convertTo(out, CV_8U);
 		vector<vector<Point> > contours;
 		findContours(out, contours, RETR_EXTERNAL, CHAIN_APPROX_NONE);
 		out = Scalar::all(0);
-		drawContours(out, contours, 0, Scalar(255, 255, 255), 1, LINE_8, noArray(), 1, Point(1,1));*/
+		drawContours(out, contours, 0, Scalar(255, 255, 255));
+		maskMap += out;
 
-		//maskMap += out;
-		std::vector<cv::Mat> channels;
-		//maskMap.convertTo(maskMap, CV_32F, 1/2.0);
-		posMap.convertTo(posMap, CV_32FC3, 1/2.0);
-		split(posMap, channels);
-		channels.at(2) += maskMap;
-		merge(channels, posMap);
-		
 		imshow("Mask", maskMap);
 		imshow("Pos", posMap);
 		imshow("Directions", dirMap);

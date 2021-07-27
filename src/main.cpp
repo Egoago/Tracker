@@ -7,7 +7,7 @@ using namespace std;
 
 int main(int argc, char** argv) {
     Mat frame = imread(TEST_FRAME);
-    Model model("cube.stl");
+    Model model("cylinder.stl");
     /*PoseEstimator poseEstimator(frame.cols, frame.rows, model);
     namedWindow("jep");
     imshow("jep", frame);
