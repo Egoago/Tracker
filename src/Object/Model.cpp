@@ -5,10 +5,11 @@
 //TODO clear includes
 #include "opencv2/opencv.hpp"
 #include "../Misc/Links.h"
-#include "AssimpGeometry.h"
-#include "ModelEdgeDetector.h"
 #include "../Rendering/Renderer.h"
 #include <random>
+//TODO remove logging
+#include "../Misc/Log.h"
+#include "AssimpGeometry.h"
 
 using namespace std;
 using namespace cv;
@@ -35,6 +36,8 @@ void Model::allocateRegistry() {
 }
 
 void Model::generate6DOFs() {
+	//TODO remove logging
+	Logger::logProcess("generate6DOFs");
 	//TODO tune granularity
 	//TODO perspective distribution
 	tr::Range width(config.getEntries("width", { "-40.0", "40.0", "4" }));
@@ -66,6 +69,8 @@ void Model::generate6DOFs() {
 		sixDOF.orientation.p = pitch[p];
 		sixDOF.orientation.r = roll[r];
 	}
+	//TODO remove logging
+	Logger::logProcess("generate6DOFs");
 }
 
 //TODO remove monitoring
@@ -102,8 +107,6 @@ void Model::extractCandidates() {
 	Mat maskMap;
 	floatToBinary(*textureMaps[HDIR], maskMap);
 	getContour(*textureMaps[LDIR], maskMap);
-	//TODO remove
-	imshow("Mask", maskMap);
 	mutex mtx;
 	maskMap.forEach<uchar>(
 		[&textureMaps = textureMaps, &candidates = candidates, &mtx]
@@ -130,8 +133,7 @@ void Model::extractCandidates() {
 		});
 }
 
-void Model::rasterizeCandidates(Template* temp)
-{
+void Model::rasterizeCandidates(Template* temp) {
 	//TODO scale rastProb based on candidate count
 	const static float rasterProb = stof(config.getEntry("rasterization probability", "0.1"));
 	const static float rasterOffset = stof(config.getEntry("rasterization offset", "1.0"));
@@ -149,51 +151,34 @@ void Model::rasterizeCandidates(Template* temp)
 }
 
 void Model::generarteObject(const string& fileName) {
+	//TODO proper resource destruction
+	//TODO remove logging
+	Logger::logProcess("generarteObject");
 	//TODO add loading bar
 	generate6DOFs();
 	Geometry geo = AssimpGeometry(fileName);
 	Renderer renderer(geo);
-	glm::uvec2 renderRes = renderer.getResolution();
-	glm::uvec2 windowRes = renderRes / glm::uvec2(3,3);
 	
-	//TODO remove monitoring
-	namedWindow("Mask", WINDOW_NORMAL);
-	resizeWindow("Mask", windowRes.x, windowRes.y);
-	moveWindow("Mask", 0, 50);
-	namedWindow("Pos", WINDOW_NORMAL);
-	resizeWindow("Pos", windowRes.x, windowRes.y);
-	moveWindow("Pos", windowRes.x, 50);
-	namedWindow("Candidates", WINDOW_NORMAL);
-	resizeWindow("Candidates", windowRes.x, windowRes.y);
-	moveWindow("Candidates", windowRes.x * 2, 50);
 	int c = 1;
+	Logger::warning("this is a wanring.");
+	Logger::error("this is an error.");
 	for (Template* i = templates.data(); i < (templates.data() + templates.num_elements()); i++) {
 		//TODO use CUDA with OpenGL directly on GPU
 		// instead moving textures to CPU and using OpenCV
 		// OpenMP??
 
 		//TODO remove monitoring
-		//cout << "Rendered " << c++ << "\t frames out of " << templates.num_elements() << "\r";
-		//i->sixDOF.print(cout);
+
+		Logger::log("Rendered " + std::to_string(c++) +
+			"\t frames out of "+ std::to_string(templates.num_elements()) + "\r", true);
 		renderer.setModel(i->sixDOF);
 		renderer.render(textureMaps);
-
 		extractCandidates();
-		cout << "candidates: " << candidates.size() << endl;
 		rasterizeCandidates(i);
-		cout << "rasterized: " << i->pos.size() << endl;
-
-		imshow("Pos", *textureMaps[LPOS]);
-		//TODO remove logging
-		for (unsigned int x = 0; x < i->pos.size(); x++)
-			drawOnFrame(i->pos[x], *textureMaps[LDIR], renderer.getMVP(), Scalar(255,0,0));
-		for (unsigned int x = 0; x < i->pos.size(); x++)
-			drawOnFrame(i->offsetPos[x], *textureMaps[LDIR], renderer.getMVP(), Scalar(0,255,0));
-		imshow("Candidates", *textureMaps[LDIR]);
-
-		waitKey(10000);
 	}
-	cout << endl;
+	Logger::log("\n");
+	//TODO remove logging
+	Logger::logProcess("generarteObject");
 }
 
 Model::Model(string fileName)
@@ -209,6 +194,7 @@ Model::Model(string fileName)
 		config.save();
 		save();
 	}
+	std::cout << *this;
 }
 
 string getSavePath(const string& objectName) {
@@ -216,22 +202,30 @@ string getSavePath(const string& objectName) {
 }
 
 void Model::save(string fileName) {
+	//TODO remove logging
+	Logger::logProcess("save");
 	if (fileName.empty())
 		fileName = getSavePath(objectName);
 	ofstream out(fileName);
 	for (int i = 0; i < templates.dimensionality; i++)
 		out << bits(dimensions[i]);
-	for (Template* i = templates.data(); i < (templates.data() + templates.num_elements()); i++)
-		out << bits(*i);
+	/*for (Template* i = templates.data(); i < (templates.data() + templates.num_elements()); i++)
+		out << bits(*i);*/
 	out.close();
+	//TODO remove logging
+	Logger::logProcess("save");
 }
 
 void Model::load() {
+	//TODO remove logging
+	Logger::logProcess("load");
 	ifstream in(getSavePath(objectName));
 	for (int i = 0; i < templates.dimensionality; i++)
 		in >> bits(dimensions[i]);
 	allocateRegistry();
-	for (Template* i = templates.data(); i < (templates.data() + templates.num_elements()); i++)
-		in >> bits(*i);
+	/*for (Template* i = templates.data(); i < (templates.data() + templates.num_elements()); i++)
+		in >> bits(*i);*/
 	in.close();
+	//TODO remove logging
+	Logger::logProcess("load");
 }

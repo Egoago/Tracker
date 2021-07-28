@@ -23,15 +23,16 @@ namespace tr {
 			R = glm::rotate(R, orientation.p, glm::vec3(1.0f, 0.0f, 0.0f));
 		}
 
-		void print(std::ostream& os) const {
-			os << "pos: "
-				<< position.x << ' '
-				<< position.y << ' '
-				<< position.z << ' '
-				<< std::endl << "ori: "
-				<< orientation.y << ' '
-				<< orientation.p << ' '
-				<< orientation.r << std::endl;
+		friend std::ostream& operator<<(std::ostream& ost, const SixDOF& sDOF) {
+			ost << "pos: "
+				<< sDOF.position.x << ' '
+				<< sDOF.position.y << ' '
+				<< sDOF.position.z << ' '
+				<< "ori: "
+				<< sDOF.orientation.y << ' '
+				<< sDOF.orientation.p << ' '
+				<< sDOF.orientation.r << std::endl;
+			return ost;
 		}
 	};
 
@@ -96,6 +97,12 @@ namespace tr {
 				>> bits(o.t.pos)
 				>> bits(o.t.offsetPos);
 			return (in);
+		}
+
+		friend std::ostream& operator<<(std::ostream& ost, const Template& tmp) {
+			ost << "points: " << tmp.pos.size() << std::endl
+				<< "6DOF: " << tmp.sixDOF;
+			return ost;
 		}
 	};
 

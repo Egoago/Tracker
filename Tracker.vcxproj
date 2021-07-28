@@ -188,9 +188,9 @@ copy "$(SolutionDir)Common\glew-2.1.0\Bin\Release\x64\glew32.dll" "$(SolutionDir
     <ClCompile Include="src\Detectors\LSDDetector.cpp" />
     <ClCompile Include="src\Misc\ConfigParser.cpp" />
     <ClCompile Include="src\Misc\Links.h" />
+    <ClCompile Include="src\Misc\Log.cpp" />
     <ClCompile Include="src\Object\AssimpGeometry.cpp" />
     <ClCompile Include="src\Object\Geometry.cpp" />
-    <ClCompile Include="src\Object\ModelEdgeDetector.cpp" />
     <ClCompile Include="src\Object\Model.cpp" />
     <ClCompile Include="src\PoseEstimation\PoseEstimator.cpp" />
     <ClCompile Include="src\Rendering\Pipeline.cpp" />
@@ -209,10 +209,10 @@ copy "$(SolutionDir)Common\glew-2.1.0\Bin\Release\x64\glew32.dll" "$(SolutionDir
     <ClInclude Include="src\Detectors\lsd.h" />
     <ClInclude Include="src\Detectors\LSDDetector.h" />
     <ClInclude Include="src\Misc\ConfigParser.h" />
+    <ClInclude Include="src\Misc\Log.h" />
     <ClInclude Include="src\Object\Coordinates.h" />
     <ClInclude Include="src\Object\Geometry.h" />
     <ClInclude Include="src\Object\AssimpGeometry.h" />
-    <ClInclude Include="src\Object\ModelEdgeDetector.h" />
     <ClInclude Include="src\Object\Model.h" />
     <ClInclude Include="src\PoseEstimation\PoseEstimator.h" />
     <ClInclude Include="src\Rendering\Pipeline.h" />

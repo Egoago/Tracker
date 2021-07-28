@@ -37,7 +37,7 @@ class Model
 	void generate6DOFs();
 	void allocateRegistry();
 	void load();
-	void extractCandidates(const glm::mat4& MVP);
+	void extractCandidates();
 	void rasterizeCandidates(tr::Template* temp);
 public:
 	Model(std::string name);
@@ -48,13 +48,14 @@ public:
 	void setName(const char* str) { objectName = str; }
 
 	auto& getTemplates() const { return templates; }
-	
-	void print() const {
-		std::cout << "dimensions:";
-		for (int i = 0; i < templates.dimensionality; i++)
-			std::cout << " " << dimensions[i];
-		std::cout << std::endl;
-		for (const tr::Template* i = templates.data(); i < (templates.data() + templates.num_elements()); i++)
-			i->sixDOF.print(std::cout);
+
+	friend std::ostream& operator<<(std::ostream& ost, const Model& model) {
+		ost << "dimensions:";
+		for (int i = 0; i < model.templates.dimensionality; i++)
+			ost << " " << model.dimensions[i];
+		ost << std::endl;
+		for (const tr::Template* i = model.templates.data(); i < (model.templates.data() + model.templates.num_elements()); i++)
+			ost << *i;
+		return ost;
 	}
 };
