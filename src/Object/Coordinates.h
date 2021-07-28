@@ -92,11 +92,11 @@ namespace tr {
 			return (out);
 		}
 
-		friend std::istream& operator>>(std::istream& in, Bits<struct Template&> o) {
-			in >> bits(o.t.sixDOF)
+		friend std::istream& operator>>(std::istream& ins, Bits<struct Template&> o) {
+			ins >> bits(o.t.sixDOF)
 				>> bits(o.t.pos)
 				>> bits(o.t.offsetPos);
-			return (in);
+			return (ins);
 		}
 
 		friend std::ostream& operator<<(std::ostream& ost, const Template& tmp) {

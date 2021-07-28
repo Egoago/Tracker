@@ -208,6 +208,7 @@ copy "$(SolutionDir)Common\glew-2.1.0\Bin\Release\x64\glew32.dll" "$(SolutionDir
     <ClInclude Include="src\Detectors\EdgeDetector.h" />
     <ClInclude Include="src\Detectors\lsd.h" />
     <ClInclude Include="src\Detectors\LSDDetector.h" />
+    <ClInclude Include="src\Math\Tensor.h" />
     <ClInclude Include="src\Misc\ConfigParser.h" />
     <ClInclude Include="src\Misc\Log.h" />
     <ClInclude Include="src\Object\Coordinates.h" />

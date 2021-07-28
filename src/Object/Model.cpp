@@ -159,16 +159,15 @@ void Model::generarteObject(const string& fileName) {
 	Geometry geo = AssimpGeometry(fileName);
 	Renderer renderer(geo);
 	
-	int c = 1;
-	Logger::warning("this is a wanring.");
-	Logger::error("this is an error.");
-	for (Template* i = templates.data(); i < (templates.data() + templates.num_elements()); i++) {
+	int c = 1;																//____________
+	Logger::warning("remove divide by 10");									//|HERE|	  |
+#pragma message("[WARNING] remove divide by 10")							//			  V
+	for (Template* i = templates.data(); i < (templates.data() + templates.num_elements()/10); i++) {
 		//TODO use CUDA with OpenGL directly on GPU
 		// instead moving textures to CPU and using OpenCV
 		// OpenMP??
 
 		//TODO remove monitoring
-
 		Logger::log("Rendered " + std::to_string(c++) +
 			"\t frames out of "+ std::to_string(templates.num_elements()) + "\r", true);
 		renderer.setModel(i->sixDOF);
@@ -209,8 +208,8 @@ void Model::save(string fileName) {
 	ofstream out(fileName);
 	for (int i = 0; i < templates.dimensionality; i++)
 		out << bits(dimensions[i]);
-	/*for (Template* i = templates.data(); i < (templates.data() + templates.num_elements()); i++)
-		out << bits(*i);*/
+	for (Template* i = templates.data(); i < (templates.data() + templates.num_elements()); i++)
+		out << bits(*i);
 	out.close();
 	//TODO remove logging
 	Logger::logProcess("save");
@@ -223,8 +222,8 @@ void Model::load() {
 	for (int i = 0; i < templates.dimensionality; i++)
 		in >> bits(dimensions[i]);
 	allocateRegistry();
-	/*for (Template* i = templates.data(); i < (templates.data() + templates.num_elements()); i++)
-		in >> bits(*i);*/
+	for (Template* i = templates.data(); i < (templates.data() + templates.num_elements()); i++)
+		in >> bits(*i);
 	in.close();
 	//TODO remove logging
 	Logger::logProcess("load");

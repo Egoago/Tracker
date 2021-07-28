@@ -6,13 +6,12 @@
 using namespace std;
 
 const HANDLE Logger::hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-
 unordered_set<string> Logger::runningProcesses;
-
 bool Logger::logging = true;
+ostream& Logger::os = std::cout;
 
 void Logger::printTabs() {
-	cout << string(runningProcesses.size(), '\t');
+	os << string(runningProcesses.size(), '\t');
 }
 
 void Logger::logProcess(const string& processName) {
@@ -24,31 +23,31 @@ void Logger::logProcess(const string& processName) {
 	else {
 		runningProcesses.erase(processName);
 		//printTabs();
-		//cout << processName << endl;
+		//os << processName << endl;
 	}
 }
 
 void Logger::log(const string& message, bool noEndl) {
 	if (!logging) return;
 	Logger::printTabs();
-	cout << message;
+	os << message;
 	if (!noEndl)
-		cout << endl;
+		os << endl;
 }
 
 void Logger::warning(const string& message) {
 	if (!logging) return;
 	SetConsoleTextAttribute(hConsole, 14);
 	Logger::printTabs();
-	cout << "[WARNING] ";
-	cout << message << endl;
+	os << "[WARNING] ";
+	os << message << endl;
 	SetConsoleTextAttribute(hConsole, 7);
 }
 
 void Logger::error(const string& message) {
 	SetConsoleTextAttribute(hConsole, 12);
 	Logger::printTabs();
-	cout << "[ERROR] ";
-	cout << message << endl;
+	os << "[ERROR] ";
+	os << message << endl;
 	SetConsoleTextAttribute(hConsole, 7);
 }

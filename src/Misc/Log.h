@@ -8,6 +8,7 @@ class Logger {
 	const static HANDLE hConsole;
 	static void printTabs();
 	Logger() {} //disable instantiation
+	static std::ostream& os;
 public:
 	static bool logging;
 	static void logProcess(const std::string& processName);
