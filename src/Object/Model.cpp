@@ -90,68 +90,54 @@ void floatToBinary(const Mat& floatMap, Mat& binary) {
 }
 
 void getContour(const Mat& lowDirMap, Mat& contourMap) {
-	floatToBinary(lowDirMap, contourMap);
+	Mat tmp;
+	floatToBinary(lowDirMap, tmp);
 	vector<vector<Point> > contours;
-	findContours(contourMap, contours, RETR_EXTERNAL, CHAIN_APPROX_NONE);
-	contourMap = Scalar::all(0);
+	findContours(tmp, contours, RETR_EXTERNAL, CHAIN_APPROX_NONE);
 	drawContours(contourMap, contours, 0, Scalar(255, 255, 255));
 }
 
-void Model::extractCandidates(const glm::mat4& MVP) {
-
-	Mat contourMap;
-	getContour(*textureMaps[LDIR], contourMap);
-
-	Mat curvatureMap;
-	floatToBinary(highDirMap, curvatureMap);
-
-
+void Model::extractCandidates() {
+	candidates.clear();
+	Mat maskMap;
+	floatToBinary(*textureMaps[HDIR], maskMap);
+	getContour(*textureMaps[LDIR], maskMap);
+	//TODO remove
+	imshow("Mask", maskMap);
 	mutex mtx;
-	textureMaps[HPOS]->forEach<Point3f>(
-		[&textureMaps = textureMaps, MVP, &mtx, &candidates = candidates]
-		(Point3f& pixel, const int* p) -> void {
-			//test mask
-			if (pixel < 1) return;
+	maskMap.forEach<uchar>(
+		[&textureMaps = textureMaps, &candidates = candidates, &mtx]
+		(uchar& pixel, const int* p) -> void {
+			if (pixel == 0) return;
 
-			//test pos
-			Point3f pos = posMap.at<Point3f>(p[0], p[1]);
-			if (pos.dot(pos) < 1e-5) return;
-
-			//test offsetPos
-			Point3f offsetPos = offsetPosMap.at<Point3f>(p[0], p[1]);
-			//if (offsetPos.dot(offsetPos) < 1e-3) return;
-
-			//TODO remove		|
-			// this is heavy	V
-			
-			//test mask+dir
-			/*glm::vec4 p2 = MVP * glm::vec4( offsetPos.x,
-											offsetPos.y,
-											offsetPos.z, 1.0f);
-			p2 /= p2.w;
-			p2 = (p2 + 1.0f) / 2.0f;
-
-			const int offsetX = (int)(p2.x * posMap.cols + 0.5f);
-			const int offsetY = (int)(p2.y * posMap.rows + 0.5f);
-
-			uchar offsetPixel = maskMap.at<uchar>(offsetX, offsetY);
-			if (offsetPixel < 1) return;*/
-
-			//register
-			mtx.lock();
-			templ->pos.emplace_back(pos.x, pos.y, pos.z);
-			templ->offsetPos.emplace_back(offsetPos.x, offsetPos.y, offsetPos.z);
-			mtx.unlock();
+			//test high thres
+			Point3f pos = textureMaps[HPOS]->at<Point3f>(p[0], p[1]);
+			Point3f dir = textureMaps[HDIR]->at<Point3f>(p[0], p[1]);
+			if (pos.dot(pos) > 1e-5 && dir.dot(dir) > 1e-5) {
+				mtx.lock();
+				candidates.push_back(Candidate(pos, dir));
+				mtx.unlock();
+				return;
+			}
+			//test low thres
+			pos = textureMaps[LPOS]->at<Point3f>(p[0], p[1]);
+			dir = textureMaps[LDIR]->at<Point3f>(p[0], p[1]);
+			if (pos.dot(pos) > 1e-5 && dir.dot(dir) > 1e-5) {
+				mtx.lock();
+				candidates.push_back(Candidate(pos, dir));
+				mtx.unlock();
+			}
 		});
 }
 
 void Model::rasterizeCandidates(Template* temp)
 {
+	//TODO scale rastProb based on candidate count
 	const static float rasterProb = stof(config.getEntry("rasterization probability", "0.1"));
 	const static float rasterOffset = stof(config.getEntry("rasterization offset", "1.0"));
 	
-	const static std::mt19937 gen(std::random_device{}());
-	const static std::bernoulli_distribution dist(rasterProb);
+	static std::mt19937 gen(std::random_device{}());
+	static std::bernoulli_distribution dist(rasterProb);
 	std::vector<bool> mask(candidates.size());
 	std::generate(mask.begin(), mask.end(), [&] { return dist(gen); });
 	for(unsigned int i = 0; i < mask.size(); i++)
@@ -177,9 +163,9 @@ void Model::generarteObject(const string& fileName) {
 	namedWindow("Pos", WINDOW_NORMAL);
 	resizeWindow("Pos", windowRes.x, windowRes.y);
 	moveWindow("Pos", windowRes.x, 50);
-	namedWindow("Offset Pos", WINDOW_NORMAL);
-	resizeWindow("Offset Pos", windowRes.x, windowRes.y);
-	moveWindow("Offset Pos", windowRes.x * 2, 50);
+	namedWindow("Candidates", WINDOW_NORMAL);
+	resizeWindow("Candidates", windowRes.x, windowRes.y);
+	moveWindow("Candidates", windowRes.x * 2, 50);
 	int c = 1;
 	for (Template* i = templates.data(); i < (templates.data() + templates.num_elements()); i++) {
 		//TODO use CUDA with OpenGL directly on GPU
@@ -192,31 +178,20 @@ void Model::generarteObject(const string& fileName) {
 		renderer.setModel(i->sixDOF);
 		renderer.render(textureMaps);
 
-		extractCandidates(renderer.getMVP());
+		extractCandidates();
+		cout << "candidates: " << candidates.size() << endl;
 		rasterizeCandidates(i);
+		cout << "rasterized: " << i->pos.size() << endl;
+
+		imshow("Pos", *textureMaps[LPOS]);
+		//TODO remove logging
+		for (unsigned int x = 0; x < i->pos.size(); x++)
+			drawOnFrame(i->pos[x], *textureMaps[LDIR], renderer.getMVP(), Scalar(255,0,0));
+		for (unsigned int x = 0; x < i->pos.size(); x++)
+			drawOnFrame(i->offsetPos[x], *textureMaps[LDIR], renderer.getMVP(), Scalar(0,255,0));
+		imshow("Candidates", *textureMaps[LDIR]);
 
 		waitKey(10000);
-		//TODO remove logging
-		cout << "samples: " << i->pos.size() << endl;
-
-		//for (unsigned int x = 0; x < i->pos.size(); x++) {
-		//	drawOnFrame(i->pos[x], posMap, mvp, Scalar(255,0,0));
-		//	drawOnFrame(i->offsetPos[x], posMap, mvp, Scalar(0,255,0));
-		//	drawOnFrame(i->pos[x], offsetPosMap, mvp, Scalar(255,0,0));
-		//	glm::vec4 p2 = mvp * glm::vec4( i->offsetPos[x].x,
-		//									i->offsetPos[x].y,
-		//									i->offsetPos[x].z, 1.0f);
-		//	p2 /= p2.w;
-		//	p2 = (p2 + 1.0f) / 2.0f;
-
-		//	const int offsetX = (int)(p2.x * posMap.cols + 0.5f);
-		//	const int offsetY = (int)(p2.y * posMap.rows + 0.5f);
-
-		//	//uchar offsetPixel = maskMap.at<uchar>(offsetX, offsetY);
-		//	circle(offsetPosMap, Point(offsetX, offsetY), 1, Scalar(0,255,0), -1);
-		//}
-		//imshow("Offset Pos", offsetPosMap);
-		//imshow("Pos", posMap);
 	}
 	cout << endl;
 }

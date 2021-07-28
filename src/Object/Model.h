@@ -24,6 +24,9 @@ class Model
 	struct Candidate {
 		glm::vec3 pos, dir;
 		Candidate(glm::vec3 pos, glm::vec3 dir) : pos(pos), dir(dir) {}
+		Candidate(cv::Point3f pos, cv::Point3f dir) :
+			pos(pos.x, pos.y, pos.z),
+			dir(dir.x, dir.y, dir.z) {}
 	};
 
 	//Temp buffers
