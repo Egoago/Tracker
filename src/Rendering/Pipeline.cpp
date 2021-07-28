@@ -1,7 +1,5 @@
 #include "Pipeline.h"
 #include <opencv2/core/mat.hpp>
-//TODO remove
-#include <iostream>
 
 Pipeline::Pipeline(
     const char* name,
@@ -36,7 +34,7 @@ Pipeline::Pipeline(
 
 Pipeline::~Pipeline()
 {
-    std::cout << "deleting pipeline " << std::endl;
+    //TODO proper destructor fix
     glDeleteFramebuffers(1, &frameBuffer);
     delete shader;
 }

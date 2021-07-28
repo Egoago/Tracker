@@ -2,6 +2,7 @@
 #include <glm/geometric.hpp>
 #include <glm/gtx/vector_angle.hpp>
 #include "Coordinates.h"
+#include "../Misc/Log.h"
 
 using namespace std;
 
@@ -63,7 +64,7 @@ void Geometry::detectEdgePairs() {
             }
         }
     }
-    cout << "edges: " << getIndexCount() << endl;
-    cout << "pairs: " << pairCount << endl;
-    cout << "missed: " << singleCount << endl;
+    Logger::log("edges: " + std::to_string(getIndexCount()));
+    Logger::log("pairs: " + std::to_string(pairCount));
+    Logger::log("missed: " + std::to_string(singleCount));
 }
