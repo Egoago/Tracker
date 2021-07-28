@@ -1,5 +1,7 @@
 #include "PoseEstimator.h"
 
+using namespace tr;
+
 PoseEstimator::PoseEstimator(const int width, const int height, const Model& model) :
     generator(DCDT3Generator(width, height)),
     model(model) {

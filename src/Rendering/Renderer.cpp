@@ -6,6 +6,9 @@
 #include <opencv2/core/mat.hpp>
 #include "../Misc/Links.h"
 
+//TODO remove temporary namespaces
+using namespace tr;
+
 extern "C" {
     _declspec(dllexport) DWORD NvOptimusEnablement = 1;
     _declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
@@ -34,9 +37,9 @@ Renderer::Renderer(const Geometry& geometry) {
     
     readConfig();
 
-    textureMaps.push_back(new TextureMap(CV_8U, resolution));       //mask
-    textureMaps.push_back(new TextureMap(CV_32FC3, resolution));    //pos 1
-    textureMaps.push_back(new TextureMap(CV_32FC3, resolution));    //pos 2
+    //Four textures for pos and dir maps for both thresholds
+    for(unsigned int i = 0; i < 4; i++)
+        textureMaps.push_back(new TextureMap(CV_32FC3, resolution));
 
     // Z buffer
     glEnable(GL_DEPTH_TEST);
@@ -53,14 +56,16 @@ Renderer::Renderer(const Geometry& geometry) {
                                     GL_DEPTH_BUFFER_BIT,
                                     depthBuffer,
                                     true));
-    pipelines.push_back(new Pipeline("highThresh",
-                                    {textureMaps.at(0)},
+    //High thresh
+    pipelines.push_back(new Pipeline("edge",
+                                    {textureMaps.at(0), textureMaps.at(1)},
                                     GL_LINES,
                                     GL_COLOR_BUFFER_BIT,
                                     depthBuffer,
                                     false));
-    pipelines.push_back(new Pipeline("lowThresh",
-                                    {textureMaps.at(1), textureMaps.at(2)},
+    //Low thresh
+    pipelines.push_back(new Pipeline("edge",
+                                    {textureMaps.at(2), textureMaps.at(3)},
                                     GL_LINES,
                                     GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT,
                                     depthBuffer,
@@ -107,7 +112,7 @@ void Renderer::setGeometry(const Geometry& geometry)
     pipelines.at(0)->setGeometry(VAO, geometry.getIndexCount());
 
     //generating outliner edges
-    std::vector<glm::vec3> lowEdges, highEdges, lowDirections;
+    std::vector<glm::vec3> lowEdges, highEdges, lowDirections, highDirections;
     const float lowThreshold = std::stof(config.getEntry("low threshold", "1e-3"));
     const float highThreshold = std::stof(config.getEntry("high threshold", "30.0"));
     for (unsigned int i = 0; i < geometry.getEdgeCount(); i++) {
@@ -117,16 +122,18 @@ void Renderer::setGeometry(const Geometry& geometry)
             glm::vec3 b = geometry.getEdges()[2 * i + 1];
             lowEdges.push_back(a);
             lowEdges.push_back(b);
-            if (curvature > glm::radians(highThreshold)) {
-                highEdges.push_back(a);
-                highEdges.push_back(b);
-            }
             glm::vec3 dir = -glm::normalize(a - b);
             //opposite directions are the same
             if (glm::dot(glm::normalize(glm::vec3(0.9f, 0.65f, 0.56f)), dir) < 0.0f)
                 dir = -dir;
             lowDirections.push_back(dir);
             lowDirections.push_back(dir);
+            if (curvature > glm::radians(highThreshold)) {
+                highEdges.push_back(a);
+                highEdges.push_back(b);
+                highDirections.push_back(dir);
+                highDirections.push_back(dir);
+            }
         }
     }
 
@@ -140,6 +147,13 @@ void Renderer::setGeometry(const Geometry& geometry)
     glBufferData(GL_ARRAY_BUFFER, highEdges.size() * sizeof(glm::vec3), highEdges.data(), GL_STATIC_DRAW);
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+    //directions
+    glGenBuffers(1, &buffer);
+    glBindBuffer(GL_ARRAY_BUFFER, buffer);
+    glBufferData(GL_ARRAY_BUFFER, highDirections.size() * sizeof(glm::vec3), highDirections.data(), GL_STATIC_DRAW);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
     //register
     pipelines.at(1)->setGeometry(VAO, (unsigned int)highEdges.size());
@@ -197,11 +211,9 @@ void Renderer::setModel(SixDOF& sixDOF) {
     updatePipelines();
 }
 
-std::vector<cv::Mat*> Renderer::render() {
+void Renderer::render(std::vector<cv::Mat*>& outTextures) {
     glViewport(0, 0, resolution.x, resolution.y);
-    std::vector<cv::Mat*> outTextures;
+    outTextures.clear();
     for (auto pipeline : pipelines)
         pipeline->render(outTextures);
-
-    return outTextures;
 }

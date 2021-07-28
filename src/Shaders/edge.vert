@@ -9,10 +9,10 @@ uniform float near, far;
 
 //TODO add to config
 // it's already in obj.conf
-const float rasterOffset = 0.1; //in mms
+const float rasterOffset = 0.01; //in mms
 
-out vec3 pos;
-out vec3 offsetPos;
+out vec3 position;
+out vec3 direction;
 
 float getNDCDepth(float cDepth){
 	return (-cDepth-near)/(far-near)*2.0-1.0;
@@ -24,6 +24,6 @@ void main(){
 	vec4 cPos = VM * vec4(inPosition, 1);
 	gl_Position = P * cPos;
 	gl_Position.z = getNDCDepth(cPos.z)*gl_Position.w;
-	pos = inPosition;
-	offsetPos = inPosition + inDirection * rasterOffset; //dir normalized in assimp
+	position = inPosition;
+	direction = inDirection; //dir normalized in assimp
 }

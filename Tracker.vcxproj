@@ -221,11 +221,9 @@ copy "$(SolutionDir)Common\glew-2.1.0\Bin\Release\x64\glew32.dll" "$(SolutionDir
     <ClInclude Include="src\Rendering\TextureMap.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="src\Shaders\lowThresh.frag" />
-    <None Include="src\Shaders\lowThresh.vert" />
+    <None Include="src\Shaders\edge.frag" />
+    <None Include="src\Shaders\edge.vert" />
     <None Include="src\Shaders\mesh.vert" />
-    <None Include="src\Shaders\highThresh.vert" />
-    <None Include="src\Shaders\highThresh.frag" />
     <None Include="src\Shaders\mesh.frag" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -4,6 +4,8 @@
 #include "opencv2/highgui/highgui.hpp"
 #include <opencv2/imgproc.hpp>
 
+using namespace tr;
+
 ModelEdgeDetector::ModelEdgeDetector(const Geometry& geometry) : geometry(geometry)
 {
 }

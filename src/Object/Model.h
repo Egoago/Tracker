@@ -12,15 +12,31 @@ class Model
 	static ConfigParser config;
 	std::string objectName;
 	unsigned int dimensions[6];
-	boost::multi_array<Template, 6> templates;
+	boost::multi_array<tr::Template, 6> templates;
+
+	//Convenience declarations
+	enum TextureMapIndex {
+		HPOS = 0,
+		HDIR = 1,
+		LPOS = 2,
+		LDIR = 3
+	};
+	struct Candidate {
+		glm::vec3 pos, dir;
+		Candidate(glm::vec3 pos, glm::vec3 dir) : pos(pos), dir(dir) {}
+	};
+
+	//Temp buffers
+	std::vector<Candidate> candidates;
+	std::vector<cv::Mat*> textureMaps;
 	
 	void generarteObject(const std::string& fileName);
 	void generate6DOFs();
 	void allocateRegistry();
-	void extractValidPoints(const cv::Mat& maskMap, const cv::Mat& posMap, const cv::Mat& dirMap, Template* templ, const glm::mat4 MVP);
 	void load();
+	void extractCandidates(const glm::mat4& MVP);
+	void rasterizeCandidates(tr::Template* temp);
 public:
-
 	Model(std::string name);
 	~Model() {}
 	
@@ -35,7 +51,7 @@ public:
 		for (int i = 0; i < templates.dimensionality; i++)
 			std::cout << " " << dimensions[i];
 		std::cout << std::endl;
-		for (const Template* i = templates.data(); i < (templates.data() + templates.num_elements()); i++)
+		for (const tr::Template* i = templates.data(); i < (templates.data() + templates.num_elements()); i++)
 			i->sixDOF.print(std::cout);
 	}
 };

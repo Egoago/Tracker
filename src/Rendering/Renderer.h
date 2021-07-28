@@ -25,10 +25,10 @@ public:
 	Renderer(const Geometry& geometry);
 	~Renderer();
 	void setProj(float fov, float nearP, float farP, float aspect);
-	void setModel(SixDOF& sixDOF);
+	void setModel(tr::SixDOF& sixDOF);
 	glm::mat4 getMVP() const { return ProjMtx*ViewModelMtx; }
 	glm::mat4 getVM() const { return ViewModelMtx; }
 	glm::uvec2 getResolution() { return resolution; }
-	std::vector<cv::Mat*> render();
+	void render(std::vector<cv::Mat*>& outTextures);
 };
 

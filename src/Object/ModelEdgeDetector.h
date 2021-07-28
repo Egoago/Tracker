@@ -7,10 +7,10 @@
 class ModelEdgeDetector
 {
 	const Geometry& geometry;
-	std::vector<Edge<>> edgePairs;
+	std::vector<tr::Edge<>> edgePairs;
 public:
 	ModelEdgeDetector(const Geometry& geometry);
-    std::vector<Edge<>> detectOutlinerEdges(cv::Mat& edgeMap, cv::Mat& out, glm::mat4 MVP);
+    std::vector<tr::Edge<>> detectOutlinerEdges(cv::Mat& edgeMap, cv::Mat& out, glm::mat4 MVP);
 
 };
 

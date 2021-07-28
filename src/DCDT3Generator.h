@@ -13,7 +13,7 @@ private:
 	const EdgeDetector* edgeDetector;
 
 	//temp buffers
-	std::vector<std::vector<Edge<glm::vec2>>> quantizedEdges;
+	std::vector<std::vector<tr::Edge<glm::vec2>>> quantizedEdges;
 	std::vector<cv::Mat>& other;
 	std::vector<cv::Mat> buffer1, buffer2;
 	bool first;

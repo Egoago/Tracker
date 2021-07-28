@@ -6,6 +6,7 @@
 
 using namespace std;
 using namespace cv;
+using namespace tr;
 
 uint64_t constexpr mix(char m, uint64_t s) {
     return ((s << 7) + ~(s >> 3)) + ~m;

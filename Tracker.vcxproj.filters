@@ -153,9 +153,7 @@
     <None Include="src\Shaders\mesh.frag">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="src\Shaders\highThresh.vert" />
-    <None Include="src\Shaders\highThresh.frag" />
-    <None Include="src\Shaders\lowThresh.frag" />
-    <None Include="src\Shaders\lowThresh.vert" />
+    <None Include="src\Shaders\edge.frag" />
+    <None Include="src\Shaders\edge.vert" />
   </ItemGroup>
 </Project>
