@@ -251,7 +251,7 @@ static inline std::ostream& operator<<(std::ostream &out,
 #endif
     my_size_t sz = (my_size_t)v.t.size();
     out << bits(sz);
-    for (auto i : v.t) { out << bits(i); }
+    for (auto& i : v.t) { out << bits(i); }
     return (out);
 }
 
@@ -266,7 +266,7 @@ static inline std::ostream& operator<<(std::ostream &out,
 #endif
     my_size_t sz = (my_size_t)v.t.size();
     out << bits(sz);
-    for (auto i : v.t) { out << bits(i); }
+    for (auto& i : v.t) { out << bits(i); }
     return (out);
 }
 
@@ -281,10 +281,13 @@ static inline std::istream& operator>>(std::istream &in, Bits<C<T> &> v)
     std::cout << "read container<T> " << sz << " elems" << std::endl;
 #endif
     if (in && sz) {
-        while (sz--) {
-            T s;
+        //v.t.reserve(sz);
+        v.t.resize(sz);
+        for (int i = 0; i < sz; i++) {
+            /*T s;
             in >> bits(s);
-            v.t.push_back(s);
+            v.t.push_back(s);*/
+            in >> bits(v.t[i]);
         }
     }
 
@@ -388,7 +391,7 @@ static inline std::ostream& operator<<(std::ostream &out,
 #endif
     my_size_t sz = (my_size_t)m.t.size();
     out << bits(sz);
-    for (auto i : m.t) { out << bits(i.first) << bits(i.second); }
+    for (auto& i : m.t) { out << bits(i.first) << bits(i.second); }
     return (out);
 }
 

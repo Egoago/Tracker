@@ -18,24 +18,26 @@ int main(int argc, char** argv) {
     for (unsigned int i = 0; i < 2; i++)
         for (unsigned int x = 0; x < 3; x++)
             tensor({0, i, x}) = count++;
+    std::vector<tr::Tensor<int>> tensors(10, tensor);
     Logger::logging = true;
     Logger::logProcess("testing save");
-    Logger::log(tensor.toString());
+    for(auto& t : tensors)
+        Logger::log(t.toString());
     ofstream ofile("tensorTest.dat");
-    ofile << bits(tensor);
+    ofile << bits(tensors);
     ofile.close();
     Logger::logProcess("testing save");
     Logger::logProcess("testing load");
-    tr::Tensor<int> tensor2;
-    Logger::log(tensor2.toString());
+    std::vector<tr::Tensor<int>> tensors2;
     ifstream ifile("tensorTest.dat");
     if (!ifile.is_open()) {
         Logger::error("save file not found");
         exit(1);
     }
-    ifile >> bits(tensor2);
+    ifile >> bits(tensors2);
     ifile.close();
-    Logger::log(tensor2.toString());
+    for(auto& t : tensors2)
+        Logger::log(t.toString());
     Logger::logProcess("testing load");
     Logger::logProcess("testing tensor");
     /*PoseEstimator poseEstimator(frame.cols, frame.rows, model);
