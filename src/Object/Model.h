@@ -36,7 +36,7 @@ class Model
 	void generarteObject(const std::string& fileName);
 	void generate6DOFs();
 	void allocateRegistry();
-	void load();
+	bool load();
 	void extractCandidates();
 	void rasterizeCandidates(tr::Template* temp);
 public:

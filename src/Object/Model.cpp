@@ -185,9 +185,10 @@ Model::Model(string fileName)
 	getObjectName(fileName, objectName);
 	
 	vector<string> loadedObjects = config.getEntries("loaded objects");
+	bool loaded = false;
 	if (loadedObjects.size() > 0 && find(loadedObjects.begin(), loadedObjects.end(), objectName) != loadedObjects.end())
-		load();
-	else {
+		loaded = load();
+	if (!loaded) {
 		generarteObject(fileName);
 		config.getEntries("loaded objects").push_back(objectName);
 		config.save();
@@ -215,10 +216,14 @@ void Model::save(string fileName) {
 	Logger::logProcess("save");
 }
 
-void Model::load() {
+bool Model::load() {
 	//TODO remove logging
 	Logger::logProcess("load");
 	ifstream in(getSavePath(objectName));
+	if (!in.is_open()) {
+		Logger::warning(objectName + " save file not found");
+		return false;
+	}
 	for (int i = 0; i < templates.dimensionality; i++)
 		in >> bits(dimensions[i]);
 	allocateRegistry();
@@ -227,4 +232,5 @@ void Model::load() {
 	in.close();
 	//TODO remove logging
 	Logger::logProcess("load");
+	return true;
 }
