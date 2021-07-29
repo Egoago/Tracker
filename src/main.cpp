@@ -12,34 +12,39 @@ int main(int argc, char** argv) {
     //Model model("cylinder.stl");
 
     Logger::logProcess("testing tensor");
-    Logger::logging = false;
-    tr::Tensor<int> tensor({ 1,2,3 }, 0);
-    int count = 0;
-    for (unsigned int i = 0; i < 2; i++)
-        for (unsigned int x = 0; x < 3; x++)
-            tensor({0, i, x}) = count++;
-    std::vector<tr::Tensor<int>> tensors(10, tensor);
-    Logger::logging = true;
+    Logger::logProcess("init");
+    tr::Tensor<tr::Template> tensor({ 1,2,3 });
+    Logger::logProcess("init");
+    Logger::logProcess("modify");
+    tensor.at({ 0,0,0 }).sixDOF.orientation.b = 3.0f;
+    tensor({ 0,1,2 }).pos.push_back(glm::vec3(1.0f, 2.0f, 3.0f));
+    Logger::logProcess("modify");
+    ostringstream str;
+    str << tensor;
     Logger::logProcess("testing save");
-    for(auto& t : tensors)
-        Logger::log(t.toString());
     ofstream ofile("tensorTest.dat");
-    ofile << bits(tensors);
+    ofile << bits(tensor);
     ofile.close();
     Logger::logProcess("testing save");
     Logger::logProcess("testing load");
-    std::vector<tr::Tensor<int>> tensors2;
+    tr::Tensor<tr::Template> tensor2;
     ifstream ifile("tensorTest.dat");
     if (!ifile.is_open()) {
         Logger::error("save file not found");
         exit(1);
     }
-    ifile >> bits(tensors2);
+    ifile >> bits(tensor2);
     ifile.close();
-    for(auto& t : tensors2)
-        Logger::log(t.toString());
+    str << tensor2;
     Logger::logProcess("testing load");
     Logger::logProcess("testing tensor");
+    Logger::log("Result:");
+    Logger::log(str.str());
+    const glm::vec3& p = (tensor2.end() - 1)->pos.at(0);
+    Logger::log("new pos: "
+        + to_string(p.x) + " "
+        + to_string(p.y) + " "
+        + to_string(p.z));
     /*PoseEstimator poseEstimator(frame.cols, frame.rows, model);
     namedWindow("jep");
     imshow("jep", frame);

@@ -64,8 +64,6 @@ namespace tr {
 		inline CellType* end() { return storage + size; }
 		inline const CellType* end() const { return storage + size; }
 
-		std::string toString();
-
 		//[Serialization]
 		friend std::ostream& operator<<(std::ostream& out, Bits<Tensor<CellType>&> o) {
 			Logger::logProcess("serializing");
@@ -97,6 +95,18 @@ namespace tr {
 			}
 			Logger::logProcess("deserializing");
 			return ins;
+		}
+		//TODO remove log
+		friend std::ostream& operator<<(std::ostream& os, const Tensor<CellType>& tensor) {
+			Logger::logProcess("printing");
+			if (tensor.allocated) {
+				for (const CellType* i = tensor.begin(); i < tensor.end(); i++)
+					os << *i << " ";
+				os << std::endl;
+			}
+			else os << "tensor not yet allocated.";
+			Logger::logProcess("printing");
+			return os;
 		}
 	};
 
@@ -204,16 +214,6 @@ namespace tr {
 		}
 		Logger::logProcess("()");
 		return storage[indexSum];
-	}
-
-	template<class CellType>
-	inline std::string Tensor<CellType>::toString() {
-		Logger::logProcess("toString");
-		std::string str;
-		for (CellType* i = begin(); i < end(); i++)
-			str += to_string(*i) + " ";
-		Logger::logProcess("toString");
-		return str;
 	}
 }
 
