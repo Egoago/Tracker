@@ -7,6 +7,8 @@
 #include <glm/geometric.hpp>
 #include "../Misc/Log.h"
 
+using namespace tr;
+
 AssimpGeometry::AssimpGeometry(const std::string& fileName) {
 	Logger::logProcess("loading assimp geometry");
 	std::string path = MODELS_FOLDER + fileName;

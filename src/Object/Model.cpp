@@ -11,6 +11,7 @@
 #include "../Misc/Log.h"
 #include "AssimpGeometry.h"
 
+//TODO break apart
 using namespace std;
 using namespace cv;
 using namespace tr;
@@ -40,13 +41,13 @@ void Model::generate6DOFs() {
 	Logger::logProcess("generate6DOFs");
 	//TODO tune granularity
 	//TODO perspective distribution
-	tr::Range width(config.getEntries("width", { "-40.0", "40.0", "4" }));
-	tr::Range height(config.getEntries("height", { "-40.0", "40.0", "4" }));
-	tr::Range depth(config.getEntries("depth", { "-2000.0", "-300.0", "2" }));
+	Range width(config.getEntries("width", { "-40.0", "40.0", "4" }));
+	Range height(config.getEntries("height", { "-40.0", "40.0", "4" }));
+	Range depth(config.getEntries("depth", { "-2000.0", "-300.0", "2" }));
 	//TODO uniform sphere distr <=> homogenous tensor layout????
-	tr::Range roll(config.getEntries("roll", { "0", "360", "4" }));
-	tr::Range yaw(config.getEntries("yaw", { "0", "360", "4" }));
-	tr::Range pitch(config.getEntries("pitch", { "0", "180", "2" }));
+	Range roll(config.getEntries("roll", { "0", "360", "4" }));
+	Range yaw(config.getEntries("yaw", { "0", "360", "4" }));
+	Range pitch(config.getEntries("pitch", { "0", "180", "2" }));
 	dimensions[0] = width.resolution;
 	dimensions[1] = height.resolution;
 	dimensions[2] = depth.resolution;

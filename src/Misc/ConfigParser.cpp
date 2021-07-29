@@ -5,6 +5,7 @@
 #include "Links.h"
 
 using namespace std;
+using namespace tr;
 
 vector<string> split(string str, string delimiter) {
     vector<string> out;

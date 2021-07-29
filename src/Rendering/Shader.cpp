@@ -4,6 +4,8 @@
 #include <iostream>
 #include "../Misc/Links.h"
 
+using namespace tr;
+
 std::string readFile(std::string filename)
 {
 	std::ifstream stream(filename);

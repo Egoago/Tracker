@@ -1,6 +1,8 @@
 #include "Pipeline.h"
 #include <opencv2/core/mat.hpp>
 
+using namespace tr;
+
 Pipeline::Pipeline(
     const char* name,
     const std::vector<TextureMap*>& textureMaps,

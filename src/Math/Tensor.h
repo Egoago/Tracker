@@ -184,18 +184,18 @@ namespace tr {
 		if (!allocated)
 			error("tensor not yet allocated");
 		if (indices.size() != _dims)
-			error(to_string(indices.size())
+			error(std::to_string(indices.size())
 				+ " indices given for a tensor with dimensionality of "
-				+ to_string(_dims));
+				+ std::to_string(_dims));
 		uint i = 0u;
 		for (const auto index : indices) {
 			if (index >= _shape[i])
 				error("index"
-					+ to_string(index)
+					+ std::to_string(index)
 					+ " at dimension "
-					+ to_string(i)
+					+ std::to_string(i)
 					+ " is out of range of "
-					+ to_string(_shape[i]));
+					+ std::to_string(_shape[i]));
 			i++;
 		}
 		Logger::logProcess("at");

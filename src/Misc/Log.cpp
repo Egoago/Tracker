@@ -4,6 +4,7 @@
 //#include <WinBase.h>
 
 using namespace std;
+using namespace tr;
 
 const HANDLE Logger::hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 unordered_set<string> Logger::runningProcesses;

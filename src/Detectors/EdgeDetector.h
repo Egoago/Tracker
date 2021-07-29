@@ -4,9 +4,12 @@
 #include <opencv2/core/mat.hpp>
 #include <glm/vec2.hpp>
 
-class EdgeDetector
+namespace tr
 {
-public:
-	virtual void detectEdges(cv::Mat& img, std::vector<tr::Edge<glm::vec2>>& edges) const = 0;
-};
+	class EdgeDetector
+	{
+	public:
+		virtual void detectEdges(cv::Mat& img, std::vector<Edge<glm::vec2>>& edges) const = 0;
+	};
+}
 

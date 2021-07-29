@@ -2,6 +2,8 @@
 #include <uEye.h>
 #include <iostream>
 
+using namespace tr;
+
 int setColorMode(HIDS hCam, char colorMode) {
     int nColorMode;
     int nBitsPerPixel;

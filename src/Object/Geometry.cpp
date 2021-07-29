@@ -5,6 +5,7 @@
 #include "../Misc/Log.h"
 
 using namespace std;
+using namespace tr;
 
 bool operator==(const glm::vec3& a, const glm::vec3& b) {
     constexpr const float epsilon = 1e-13f;

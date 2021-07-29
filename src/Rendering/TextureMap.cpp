@@ -2,6 +2,8 @@
 #include <iostream>
 //TODO clear glew
 
+using namespace tr;
+
 TextureMap::TextureMap(int cvType, glm::uvec2 resolution) :
 	cvType(cvType),
 	cv::Mat(cv::Size(resolution.x, resolution.y), cvType) {
