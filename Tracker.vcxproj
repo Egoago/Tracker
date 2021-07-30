@@ -141,7 +141,8 @@
       <Command>copy "$(SolutionDir)Common\OpenCV\Bin\opencv_world452d.dll" "$(SolutionDir)Bin\$(Platform)\$(Configuration)\opencv_world452d.dll" /Y
 copy "$(SolutionDir)Common\freeglut\Bin\x64\freeglut.dll" "$(SolutionDir)Bin\$(Platform)\$(Configuration)\freeglut.dll" /Y
 copy "$(SolutionDir)Common\assimp\Bin\assimp-vc142-mtd.dll" "$(SolutionDir)Bin\$(Platform)\$(Configuration)\assimp-vc142-mtd.dll" /Y
-copy "$(SolutionDir)Common\glew-2.1.0\Bin\Release\x64\glew32.dll" "$(SolutionDir)Bin\$(Platform)\$(Configuration)\glew32.dll" /Y</Command>
+copy "$(SolutionDir)Common\glew-2.1.0\Bin\Release\x64\glew32.dll" "$(SolutionDir)Bin\$(Platform)\$(Configuration)\glew32.dll" /Y
+del "$(SolutionDir)Config\*" /Q</Command>
     </CustomBuildStep>
     <CustomBuildStep>
       <Outputs>$(SolutionDir)Bin\$(Platform)\$(Configuration)\opencv_world452d.dll;$(SolutionDir)Bin\$(Platform)\$(Configuration)\freeglut.dll;$(SolutionDir)Bin\$(Platform)\$(Configuration)\assimp-vc142-mtd.dll;$(SolutionDir)Bin\$(Platform)\$(Configuration)\glew32.dll</Outputs>
@@ -173,7 +174,8 @@ copy "$(SolutionDir)Common\glew-2.1.0\Bin\Release\x64\glew32.dll" "$(SolutionDir
       <Command>copy "$(SolutionDir)Common\OpenCV\Bin\opencv_world452.dll" "$(SolutionDir)Bin\$(Platform)\$(Configuration)\opencv_world452.dll" /Y
 copy "$(SolutionDir)Common\freeglut\Bin\x64\freeglut.dll" "$(SolutionDir)Bin\$(Platform)\$(Configuration)\freeglut.dll" /Y
 copy "$(SolutionDir)Common\assimp\Bin\assimp-vc142-mtd.dll" "$(SolutionDir)Bin\$(Platform)\$(Configuration)\assimp-vc142-mtd.dll" /Y
-copy "$(SolutionDir)Common\glew-2.1.0\Bin\Release\x64\glew32.dll" "$(SolutionDir)Bin\$(Platform)\$(Configuration)\glew32.dll" /Y</Command>
+copy "$(SolutionDir)Common\glew-2.1.0\Bin\Release\x64\glew32.dll" "$(SolutionDir)Bin\$(Platform)\$(Configuration)\glew32.dll" /Y
+del "$(SolutionDir)Config\*" /Q</Command>
     </CustomBuildStep>
     <CustomBuildStep>
       <Outputs>$(SolutionDir)Bin\$(Platform)\$(Configuration)\opencv_world452.dll;$(SolutionDir)Bin\$(Platform)\$(Configuration)\freeglut.dll;$(SolutionDir)Bin\$(Platform)\$(Configuration)\assimp-vc142-mtd.dll;$(SolutionDir)Bin\$(Platform)\$(Configuration)\glew32.dll</Outputs>

@@ -112,7 +112,6 @@ namespace tr {
 
 	template<class CellType>
 	inline void Tensor<CellType>::calculateSize() {
-		Logger::logProcess("calculating size");
 		if (!allocated || _dims == 0u) size = 0u;
 		else {
 			size = 1u;
@@ -121,7 +120,6 @@ namespace tr {
 			for (uint i = 0u; i < _dims; i++)
 				size = size * _shape[i];
 		}
-		Logger::logProcess("calculating size");
 	}
 
 	template<class CellType>
@@ -145,7 +143,7 @@ namespace tr {
 
 	template<class CellType>
 	inline void Tensor<CellType>::allocate(std::initializer_list<uint> shape) {
-		Logger::logProcess("allocating1");
+		Logger::logProcess("allocating1 tensor");
 		if (allocated)
 			deallocate();
 		_dims = (uint)shape.size();
@@ -159,7 +157,7 @@ namespace tr {
 		allocated = true;
 		calculateSize();
 		storage = new CellType[size];
-		Logger::logProcess("allocating1");
+		Logger::logProcess("allocating1 tensor");
 	}
 
 	template<class CellType>

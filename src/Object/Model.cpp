@@ -2,12 +2,12 @@
 #include <mutex>
 #include <random>
 #include <opencv2/imgproc.hpp>
-//TODO clear includes
-#include "../Misc/Links.h"
+#include "AssimpGeometry.h"
 #include "../Rendering/Renderer.h"
+#include "../Misc/Links.h"
 //TODO remove logging
 #include "../Misc/Log.h"
-#include "AssimpGeometry.h"
+#include <opencv2/highgui.hpp>
 
 //TODO break apart
 using namespace tr;
@@ -27,14 +27,13 @@ void Model::generate6DOFs() {
 	//TODO remove logging
 	Logger::logProcess("generate6DOFs");
 	//TODO tune granularity
-	//TODO perspective distribution
-	Range width(config.getEntries("width", { "-40.0", "40.0", "4" }));
-	Range height(config.getEntries("height", { "-40.0", "40.0", "4" }));
-	Range depth(config.getEntries("depth", { "-2000.0", "-300.0", "2" }));
+	const static Range width(config.getEntries("width", { "-130.0", "130.0", "6" }));
+	const static Range height(config.getEntries("height", { "-130.0", "130.0", "6" }));
+	const static Range depth(config.getEntries("depth", { "-325.0", "-8000.0", "6" }));
 	//TODO uniform sphere distr <=> homogenous tensor layout????
-	Range roll(config.getEntries("roll", { "0", "360", "4" }));
-	Range yaw(config.getEntries("yaw", { "0", "360", "4" }));
-	Range pitch(config.getEntries("pitch", { "0", "180", "2" }));
+	const static Range roll(config.getEntries("roll", { "0", "360", "2" }));
+	const static Range yaw(config.getEntries("yaw", { "0", "360", "4" }));
+	const static Range pitch(config.getEntries("pitch", { "0", "180", "4" }));
 	templates.allocate({
 		width.resolution,
 		height.resolution,
@@ -42,16 +41,16 @@ void Model::generate6DOFs() {
 		yaw.resolution,
 		pitch.resolution,
 		roll.resolution });
-	for (unsigned int x = 0; x < width.resolution; x++)
-	for (unsigned int y = 0; y < height.resolution; y++)
-	for (unsigned int z = 0; z < depth.resolution; z++)
 	for (unsigned int ya = 0; ya < yaw.resolution; ya++)
 	for (unsigned int p = 0; p < pitch.resolution; p++)
 	for (unsigned int r = 0; r < roll.resolution; r++)
+	for (unsigned int x = 0; x < width.resolution; x++)
+	for (unsigned int y = 0; y < height.resolution; y++)
+	for (unsigned int z = 0; z < depth.resolution; z++)
 	{
 		SixDOF& sixDOF = templates.at({x,y,z,ya,p,r}).sixDOF;
-		sixDOF.position.x = width[x];
-		sixDOF.position.y = height[y];
+		sixDOF.position.x = width[x] / depth.begin * depth[z];
+		sixDOF.position.y = height[y] / depth.begin * depth[z];
 		sixDOF.position.z = depth[z];
 		sixDOF.orientation.y = yaw[ya];
 		sixDOF.orientation.p = pitch[p];
@@ -122,10 +121,10 @@ void Model::extractCandidates() {
 }
 
 void Model::rasterizeCandidates(Template* temp) {
-	//TODO scale rastProb based on candidate count
-	const static float rasterProb = stof(config.getEntry("rasterization probability", "0.1"));
-	const static float rasterOffset = stof(config.getEntry("rasterization offset", "1.0"));
-	
+	const static int rasterCount = std::stoi(config.getEntry("rasterization count", "100"));
+	const static float rasterOffset = stof(config.getEntry("rasterization offset", "0.01"));
+	float rasterProb = (float)rasterCount / (float)candidates.size();
+	if (rasterProb > 1.0f) rasterProb = 1.0f;
 	static std::mt19937 gen(std::random_device{}());
 	static std::bernoulli_distribution dist(rasterProb);
 	std::vector<bool> mask(candidates.size());
@@ -133,7 +132,6 @@ void Model::rasterizeCandidates(Template* temp) {
 	for(unsigned int i = 0; i < mask.size(); i++)
 		if (mask[i]) {
 			temp->pos.push_back(candidates[i].pos);
-			//TODO check dir vector length
 			temp->offsetPos.push_back(candidates[i].pos + candidates[i].dir * rasterOffset);
 		}
 }
@@ -143,14 +141,12 @@ void Model::generarteObject(const std::string& fileName) {
 	//TODO remove logging
 	Logger::logProcess("generarteObject");
 	//TODO add loading bar
-	generate6DOFs();
 	Geometry geo = AssimpGeometry(fileName);
 	Renderer renderer(geo);
+	generate6DOFs();
 	
-	int c = 1;																//____________
-	Logger::warning("remove divide by 10");									//|HERE|	  |
-#pragma message("[WARNING] remove divide by 10")							//			  V
-	for (Template* i = templates.begin(); i < (templates.begin() + templates.getSize()/10); i++) {
+	int c = 1;
+	for (Template* i = templates.begin(); i < (templates.begin() + templates.getSize()); i++) {
 		//TODO use CUDA with OpenGL directly on GPU
 		// instead moving textures to CPU and using OpenCV
 		// OpenMP??
@@ -172,17 +168,11 @@ Model::Model(std::string fileName)
 {
 	getObjectName(fileName, objectName);
 	
-	std::vector<std::string> loadedObjects = config.getEntries("loaded objects");
-	bool loaded = false;
-	if (loadedObjects.size() > 0 && find(loadedObjects.begin(), loadedObjects.end(), objectName) != loadedObjects.end())
-		loaded = load();
+	bool loaded = load();
 	if (!loaded) {
 		generarteObject(fileName);
-		config.getEntries("loaded objects").push_back(objectName);
-		config.save();
 		save();
 	}
-	std::cout << *this;
 }
 
 std::string getSavePath(const std::string& objectName) {

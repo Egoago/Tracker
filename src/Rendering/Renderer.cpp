@@ -19,8 +19,8 @@ void Renderer::readConfig() {
     std::vector<std::string> str = config.getEntries("frame resolution", { "1000", "1000" });
     resolution = glm::uvec2(std::stoi(str[0]), std::stoi(str[1]));
     nearP = std::stof(config.getEntry("near clipping pane", "200.0"));
-    farP = std::stof(config.getEntry("far clipping pane", "5000.0"));
-    fov = std::stof(config.getEntry("fov", "45.0"));
+    farP = std::stof(config.getEntry("far clipping pane", "10100.0"));
+    fov = glm::radians(std::stof(config.getEntry("fov", "45.0")));
     aspect = (float)resolution.x / resolution.y;
 }
 
@@ -75,7 +75,7 @@ Renderer::Renderer(const Geometry& geometry) {
 
 Renderer::~Renderer()
 {
-    std::cout << "deleting renderer\n";
+    //TODO proper resource management
     glDisableVertexAttribArray(0);
     glDisableVertexAttribArray(1);
 }
@@ -195,7 +195,7 @@ void Renderer::setProj(float fov, float nearP, float farP, float aspect)
 {
     this->nearP = nearP;
     this->farP = farP;
-	ProjMtx = glm::perspective(glm::radians(fov), aspect, nearP, farP);
+	ProjMtx = glm::perspective(fov, aspect, nearP, farP);
     updatePipelines();
 }
 
