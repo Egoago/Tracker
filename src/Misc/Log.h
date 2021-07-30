@@ -1,13 +1,12 @@
 #pragma once
 #include <iostream>
 #include <unordered_set>
-#include <Windows.h>
 
 namespace tr
 {
 	class Logger {
-		static std::unordered_set<std::string> runningProcesses;
-		const static HANDLE hConsole;
+		static std::unordered_set<std::string> runningProcesses, warnings, errors;
+		static void* hConsole;
 		static void printTabs();
 		Logger() {} //disable instantiation
 		static std::ostream& os;

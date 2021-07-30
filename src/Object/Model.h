@@ -1,11 +1,11 @@
 #pragma once
+#include <vector>
+#include <string>
+#include <iostream>
 #include <opencv2/core/mat.hpp>
 #include "../Misc/ConfigParser.h"
 #include "Coordinates.h"
-#include "boost/multi_array.hpp"
-
-//TODO remove monitoring
-#include <iostream>
+#include "../Math/Tensor.h"
 
 namespace tr
 {
@@ -13,8 +13,7 @@ namespace tr
 	{
 		static ConfigParser config;
 		std::string objectName;
-		unsigned int dimensions[6];
-		boost::multi_array<Template, 6> templates;
+		Tensor<Template> templates;
 
 		//Convenience declarations
 		enum TextureMapIndex {
@@ -37,7 +36,6 @@ namespace tr
 
 		void generarteObject(const std::string& fileName);
 		void generate6DOFs();
-		void allocateRegistry();
 		bool load();
 		void extractCandidates();
 		void rasterizeCandidates(Template* temp);
@@ -52,12 +50,7 @@ namespace tr
 		auto& getTemplates() const { return templates; }
 
 		friend std::ostream& operator<<(std::ostream& ost, const Model& model) {
-			ost << "dimensions:";
-			for (int i = 0; i < model.templates.dimensionality; i++)
-				ost << " " << model.dimensions[i];
-			ost << std::endl;
-			for (const Template* i = model.templates.data(); i < (model.templates.data() + model.templates.num_elements()); i++)
-				ost << *i;
+			ost << model.templates;
 			return ost;
 		}
 	};

@@ -1,39 +1,26 @@
 #include "Model.h"
-#include <string>
-#include <serializer.h>
 #include <mutex>
+#include <random>
+#include <opencv2/imgproc.hpp>
 //TODO clear includes
-#include "opencv2/opencv.hpp"
 #include "../Misc/Links.h"
 #include "../Rendering/Renderer.h"
-#include <random>
 //TODO remove logging
 #include "../Misc/Log.h"
 #include "AssimpGeometry.h"
 
 //TODO break apart
-using namespace std;
-using namespace cv;
 using namespace tr;
 
 ConfigParser Model::config(OBJ_CONFIG_FILE);
 
-void getObjectName(string& fName, string& oName) {
+void getObjectName(std::string& fName, std::string& oName) {
 	size_t dot = fName.find('.');
-	if (dot == string::npos) {
+	if (dot == std::string::npos) {
 		oName = fName;
 		fName += ".STL";
 	}
 	else oName = fName.substr(0, dot);
-}
-
-void Model::allocateRegistry() {
-	templates.resize(boost::extents[dimensions[0]]
-									[dimensions[1]]
-									[dimensions[2]]
-									[dimensions[3]]
-									[dimensions[4]]
-									[dimensions[5]]);
 }
 
 void Model::generate6DOFs() {
@@ -48,13 +35,13 @@ void Model::generate6DOFs() {
 	Range roll(config.getEntries("roll", { "0", "360", "4" }));
 	Range yaw(config.getEntries("yaw", { "0", "360", "4" }));
 	Range pitch(config.getEntries("pitch", { "0", "180", "2" }));
-	dimensions[0] = width.resolution;
-	dimensions[1] = height.resolution;
-	dimensions[2] = depth.resolution;
-	dimensions[3] = yaw.resolution;
-	dimensions[4] = pitch.resolution;
-	dimensions[5] = roll.resolution;
-	allocateRegistry();
+	templates.allocate({
+		width.resolution,
+		height.resolution,
+		depth.resolution,
+		yaw.resolution,
+		pitch.resolution,
+		roll.resolution });
 	for (unsigned int x = 0; x < width.resolution; x++)
 	for (unsigned int y = 0; y < height.resolution; y++)
 	for (unsigned int z = 0; z < depth.resolution; z++)
@@ -62,7 +49,7 @@ void Model::generate6DOFs() {
 	for (unsigned int p = 0; p < pitch.resolution; p++)
 	for (unsigned int r = 0; r < roll.resolution; r++)
 	{
-		SixDOF& sixDOF = templates[x][y][z][ya][p][r].sixDOF;
+		SixDOF& sixDOF = templates.at({x,y,z,ya,p,r}).sixDOF;
 		sixDOF.position.x = width[x];
 		sixDOF.position.y = height[y];
 		sixDOF.position.z = depth[z];
@@ -75,48 +62,48 @@ void Model::generate6DOFs() {
 }
 
 //TODO remove monitoring
-void drawOnFrame(const glm::vec3& p, Mat& posMap, const glm::mat4& mvp, Scalar color) {
+void drawOnFrame(const glm::vec3& p, cv::Mat& posMap, const glm::mat4& mvp, cv::Scalar color) {
 	glm::vec4 pPos = mvp * glm::vec4(p, 1.0f);
 	pPos /= pPos.w;
 	pPos = (pPos + 1.0f) / 2.0f;
-	Point pixel((int)(pPos.x * (float)posMap.cols +0.5f),
+	cv::Point pixel((int)(pPos.x * (float)posMap.cols +0.5f),
 		(int)(pPos.y * (float)posMap.rows + 0.5f));
 	circle(posMap, pixel, 1, color, -1);
 }
 
-void floatToBinary(const Mat& floatMap, Mat& binary) {
-	absdiff(floatMap, Scalar::all(0), binary);
+void floatToBinary(const cv::Mat& floatMap, cv::Mat& binary) {
+	cv::absdiff(floatMap, cv::Scalar::all(0), binary);
 	switch (binary.channels()) {
-		case 3: transform(binary, binary, Matx13f(1.0, 1.0, 1.0)); break;
-		case 2: transform(binary, binary, Matx12f(1.0, 1.0)); break;
-		case 4: transform(binary, binary, Matx14f(1.0, 1.0, 1.0, 1.0)); break;
+		case 3: cv::transform(binary, binary, cv::Matx13f(1.0, 1.0, 1.0)); break;
+		case 2: cv::transform(binary, binary, cv::Matx12f(1.0, 1.0)); break;
+		case 4: cv::transform(binary, binary, cv::Matx14f(1.0, 1.0, 1.0, 1.0)); break;
 	}
-	threshold(binary, binary, 1e-10, 255, THRESH_BINARY);
+	cv::threshold(binary, binary, 1e-10, 255, cv::THRESH_BINARY);
 	binary.convertTo(binary, CV_8U);
 }
 
-void getContour(const Mat& lowDirMap, Mat& contourMap) {
-	Mat tmp;
+void getContour(const cv::Mat& lowDirMap, cv::Mat& contourMap) {
+	cv::Mat tmp;
 	floatToBinary(lowDirMap, tmp);
-	vector<vector<Point> > contours;
-	findContours(tmp, contours, RETR_EXTERNAL, CHAIN_APPROX_NONE);
-	drawContours(contourMap, contours, 0, Scalar(255, 255, 255));
+	std::vector<std::vector<cv::Point> > contours;
+	cv::findContours(tmp, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_NONE);
+	cv::drawContours(contourMap, contours, 0, cv::Scalar(255, 255, 255));
 }
 
 void Model::extractCandidates() {
 	candidates.clear();
-	Mat maskMap;
+	cv::Mat maskMap;
 	floatToBinary(*textureMaps[HDIR], maskMap);
 	getContour(*textureMaps[LDIR], maskMap);
-	mutex mtx;
+	std::mutex mtx;
 	maskMap.forEach<uchar>(
 		[&textureMaps = textureMaps, &candidates = candidates, &mtx]
 		(uchar& pixel, const int* p) -> void {
 			if (pixel == 0) return;
 
 			//test high thres
-			Point3f pos = textureMaps[HPOS]->at<Point3f>(p[0], p[1]);
-			Point3f dir = textureMaps[HDIR]->at<Point3f>(p[0], p[1]);
+			cv::Point3f pos = textureMaps[HPOS]->at<cv::Point3f>(p[0], p[1]);
+			cv::Point3f dir = textureMaps[HDIR]->at<cv::Point3f>(p[0], p[1]);
 			if (pos.dot(pos) > 1e-5 && dir.dot(dir) > 1e-5) {
 				mtx.lock();
 				candidates.push_back(Candidate(pos, dir));
@@ -124,8 +111,8 @@ void Model::extractCandidates() {
 				return;
 			}
 			//test low thres
-			pos = textureMaps[LPOS]->at<Point3f>(p[0], p[1]);
-			dir = textureMaps[LDIR]->at<Point3f>(p[0], p[1]);
+			pos = textureMaps[LPOS]->at<cv::Point3f>(p[0], p[1]);
+			dir = textureMaps[LDIR]->at<cv::Point3f>(p[0], p[1]);
 			if (pos.dot(pos) > 1e-5 && dir.dot(dir) > 1e-5) {
 				mtx.lock();
 				candidates.push_back(Candidate(pos, dir));
@@ -151,7 +138,7 @@ void Model::rasterizeCandidates(Template* temp) {
 		}
 }
 
-void Model::generarteObject(const string& fileName) {
+void Model::generarteObject(const std::string& fileName) {
 	//TODO proper resource destruction
 	//TODO remove logging
 	Logger::logProcess("generarteObject");
@@ -163,14 +150,14 @@ void Model::generarteObject(const string& fileName) {
 	int c = 1;																//____________
 	Logger::warning("remove divide by 10");									//|HERE|	  |
 #pragma message("[WARNING] remove divide by 10")							//			  V
-	for (Template* i = templates.data(); i < (templates.data() + templates.num_elements()/10); i++) {
+	for (Template* i = templates.begin(); i < (templates.begin() + templates.getSize()/10); i++) {
 		//TODO use CUDA with OpenGL directly on GPU
 		// instead moving textures to CPU and using OpenCV
 		// OpenMP??
 
 		//TODO remove monitoring
 		Logger::log("Rendered " + std::to_string(c++) +
-			"\t frames out of "+ std::to_string(templates.num_elements()) + "\r", true);
+			"\t frames out of "+ std::to_string(templates.getSize()) + "\r", true);
 		renderer.setModel(i->sixDOF);
 		renderer.render(textureMaps);
 		extractCandidates();
@@ -181,11 +168,11 @@ void Model::generarteObject(const string& fileName) {
 	Logger::logProcess("generarteObject");
 }
 
-Model::Model(string fileName)
+Model::Model(std::string fileName)
 {
 	getObjectName(fileName, objectName);
 	
-	vector<string> loadedObjects = config.getEntries("loaded objects");
+	std::vector<std::string> loadedObjects = config.getEntries("loaded objects");
 	bool loaded = false;
 	if (loadedObjects.size() > 0 && find(loadedObjects.begin(), loadedObjects.end(), objectName) != loadedObjects.end())
 		loaded = load();
@@ -198,20 +185,18 @@ Model::Model(string fileName)
 	std::cout << *this;
 }
 
-string getSavePath(const string& objectName) {
+std::string getSavePath(const std::string& objectName) {
 	return LOADED_OBJECTS_FOLDER + objectName + ".txt";
 }
 
-void Model::save(string fileName) {
+void Model::save(std::string fileName) {
 	//TODO remove logging
 	Logger::logProcess("save");
 	if (fileName.empty())
 		fileName = getSavePath(objectName);
-	ofstream out(fileName);
-	for (int i = 0; i < templates.dimensionality; i++)
-		out << bits(dimensions[i]);
-	for (Template* i = templates.data(); i < (templates.data() + templates.num_elements()); i++)
-		out << bits(*i);
+	std::ofstream out(fileName, std::ios::out | std::ios::binary);
+	out << bits(objectName);
+	out << bits(templates);
 	out.close();
 	//TODO remove logging
 	Logger::logProcess("save");
@@ -220,16 +205,13 @@ void Model::save(string fileName) {
 bool Model::load() {
 	//TODO remove logging
 	Logger::logProcess("load");
-	ifstream in(getSavePath(objectName));
+	std::ifstream in(getSavePath(objectName), std::ios::in | std::ios::binary);
 	if (!in.is_open()) {
 		Logger::warning(objectName + " save file not found");
 		return false;
 	}
-	for (int i = 0; i < templates.dimensionality; i++)
-		in >> bits(dimensions[i]);
-	allocateRegistry();
-	for (Template* i = templates.data(); i < (templates.data() + templates.num_elements()); i++)
-		in >> bits(*i);
+	in >> bits(objectName);
+	in >> bits(templates);
 	in.close();
 	//TODO remove logging
 	Logger::logProcess("load");

@@ -5,6 +5,7 @@
 #include <string>
 #include <iostream>
 #include <serializer.h>
+#include "../Misc/Log.h"
 
 //TODO move everything to tr
 namespace tr {
@@ -85,18 +86,14 @@ namespace tr {
 		SixDOF sixDOF;
 		std::vector<glm::vec3> pos, offsetPos;
 
-		friend std::ostream& operator<<(std::ostream& out, Bits<struct Template&> o) {
-			out << bits(o.t.sixDOF)
-				<< bits(o.t.pos)
-				<< bits(o.t.offsetPos);
-			return (out);
+		friend std::ostream& operator<<(std::ostream& out, Bits<Template&> o) {
+			out << bits(o.t.sixDOF )<< bits(o.t.pos )<< bits(o.t.offsetPos);
+			return out;
 		}
 
-		friend std::istream& operator>>(std::istream& ins, Bits<struct Template&> o) {
-			ins >> bits(o.t.sixDOF)
-				>> bits(o.t.pos)
-				>> bits(o.t.offsetPos);
-			return (ins);
+		friend std::istream& operator>>(std::istream& ins, Bits<Template&> o) {
+			ins >> bits(o.t.sixDOF )>> bits(o.t.pos )>> bits(o.t.offsetPos);
+			return ins;
 		}
 
 		friend std::ostream& operator<<(std::ostream& ost, const Template& tmp) {

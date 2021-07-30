@@ -3,7 +3,6 @@
 #include "Renderer.h"
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/ext/matrix_clip_space.hpp>
-#include <opencv2/core/mat.hpp>
 #include "../Misc/Links.h"
 
 //TODO remove temporary namespaces

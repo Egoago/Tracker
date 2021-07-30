@@ -12,10 +12,10 @@ SixDOF PoseEstimator::getPose(cv::Mat& frame)
 {
     std::vector<cv::Mat>& dcd3t = generator.setFrame(frame);
     auto& templates = model.getTemplates();
-    float constexpr minDist = std::numeric_limits<float>::max();
-    for (const Template* i = templates.data(); i < (templates.data() + templates.num_elements()); i++) {
+    //float constexpr minDist = std::numeric_limits<float>::max();
+    for (const Template* i = templates.begin(); i < templates.end(); i++) {
         SixDOF sixDOF = i->sixDOF;
 
     }
-    return templates.origin()->sixDOF;
+    return templates.begin()->sixDOF;
 }

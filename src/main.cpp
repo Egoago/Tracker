@@ -2,7 +2,7 @@
 
 int main(int argc, char** argv) {
     //Mat frame = imread(TEST_FRAME);
-    Model model("cylinder.stl");
+    tr::Model model("cylinder.stl");
     /*PoseEstimator poseEstimator(frame.cols, frame.rows, model);
     namedWindow("jep");
     imshow("jep", frame);

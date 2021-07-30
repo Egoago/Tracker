@@ -180,7 +180,10 @@ namespace tr {
 
 	template<class CellType>
 	inline CellType& Tensor<CellType>::at(std::initializer_list<uint> indices) {
-		Logger::logProcess("at");
+#ifndef _DEBUG
+		Logger::warning("remove at from release");
+#endif // !_DEBUG
+
 		if (!allocated)
 			error("tensor not yet allocated");
 		if (indices.size() != _dims)
@@ -198,13 +201,11 @@ namespace tr {
 					+ std::to_string(_shape[i]));
 			i++;
 		}
-		Logger::logProcess("at");
 		return this->operator()(indices);
 	}
 
 	template<class CellType>
 	inline CellType& Tensor<CellType>::operator()(std::initializer_list<uint> indices) {
-		Logger::logProcess("()");
 		uint indexSum = 0u;
 		uint i = 0;
 		for (const auto index : indices) {
@@ -212,7 +213,6 @@ namespace tr {
 			indexSum += index;
 			i++;
 		}
-		Logger::logProcess("()");
 		return storage[indexSum];
 	}
 }
