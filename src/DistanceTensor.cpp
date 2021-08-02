@@ -51,7 +51,11 @@ void DistanceTensor::swapBuffers() {
 void DistanceTensor::setFrame(const cv::Mat& nextFrame) {
     Logger::logProcess(__FUNCTION__);   //TODO remove logging
     vector<Edge<glm::vec2>> edges;
-    edgeDetector->detectEdges(nextFrame, edges);
+    Mat frame = nextFrame;
+    if (nextFrame.type() != CV_8U) {
+        cvtColor(nextFrame, frame, COLOR_BGR2GRAY);
+    }
+    edgeDetector->detectEdges(frame, edges);
     for (auto& container : quantizedEdges)
         container.clear();
     for (Edge<glm::vec2>& edge : edges)

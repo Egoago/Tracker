@@ -12,6 +12,7 @@ unordered_set<string> Logger::runningProcesses;
 unordered_set<string> Logger::warnings;
 unordered_set<string> Logger::errors;
 bool Logger::logging = true;
+int Logger::defaultColor = 7;
 ostream& Logger::os = std::cout;
 
 void Logger::printTabs() {
@@ -32,10 +33,12 @@ void Logger::logProcess(const string& processName) {
 
 void Logger::log(const string& message, bool noEndl) {
 	if (!logging) return;
+	SetConsoleTextAttribute(hConsole, 8);
 	Logger::printTabs();
 	os << message;
 	if (!noEndl)
 		os << endl;
+	SetConsoleTextAttribute(hConsole, defaultColor);
 }
 
 void Logger::warning(const string& message) {
@@ -46,7 +49,7 @@ void Logger::warning(const string& message) {
 	Logger::printTabs();
 	os << "[WARNING] ";
 	os << message << endl;
-	SetConsoleTextAttribute(hConsole, 7);
+	SetConsoleTextAttribute(hConsole, defaultColor);
 }
 
 void Logger::error(const string& message) {
@@ -56,5 +59,5 @@ void Logger::error(const string& message) {
 	Logger::printTabs();
 	os << "[ERROR] ";
 	os << message << endl;
-	SetConsoleTextAttribute(hConsole, 7);
+	SetConsoleTextAttribute(hConsole, defaultColor);
 }

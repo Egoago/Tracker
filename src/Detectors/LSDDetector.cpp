@@ -14,12 +14,12 @@ using namespace tr;
 
 //Doesn't work as intended
 void LSDDetector::detectEdges(const cv::Mat& img, std::vector<Edge<glm::vec2>>& edges) const {
-    Mat canny, doubleImg;
-    img.copyTo(canny);
+    Mat doubleImg;
+    /*img.copyTo(canny);
     blur(canny, canny, Size(5, 5));
-    Canny(canny, doubleImg, 50, 100, 5);
+    Canny(canny, doubleImg, 50, 100, 5);*/
     //imshow("image", doubleImg);
-    doubleImg.convertTo(doubleImg, CV_64F);
+    img.convertTo(doubleImg, CV_64F);
     //Logger::log("frame: " + std::to_string(doubleImg.cols) + " " + std::to_string(doubleImg.rows));
     int lineCount = 0;
     double* lines = lsd_scale(&lineCount, doubleImg.ptr<double>(), doubleImg.cols, doubleImg.rows, 0.5);

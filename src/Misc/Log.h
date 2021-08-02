@@ -8,6 +8,7 @@ namespace tr
 		static std::unordered_set<std::string> runningProcesses, warnings, errors;
 		static void* hConsole;
 		static void printTabs();
+		static int defaultColor;
 		Logger() {} //disable instantiation
 		static std::ostream& os;
 	public:

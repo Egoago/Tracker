@@ -14,12 +14,11 @@ std::vector<Template*> tr::DirectEstimator::estimate(const DistanceTensor& dcd3t
         }
         //TODO implement non naive way/paralellization/OpenMP
         float distance = 0.0f;
-        for (unsigned int i = 0; i < pixelCount; i++) {
+        for (unsigned int i = 0; i < pixelCount; i++)
             distance += dcd3t.getDist(temp->uv[i], temp->angle[i]);
-        }
         distance /= pixelCount;
-        /*Logger::log(std::to_string(c) + ":\tpixels " + std::to_string(pixelCount)
-                    + "\tloss " + std::to_string(distance));*/
+        Logger::log(std::to_string(c) + ":\tpixels " + std::to_string(pixelCount)
+                    + "\tloss " + std::to_string(distance));
         if (candidates.size() < candidateCount) {
             distances[candidates.size()] = distance;
             candidates.push_back(temp);
