@@ -1,18 +1,24 @@
 #pragma once
-#include "../Object/Coordinates.h"
+#include "../Coordinates.h"
 #include <opencv2/core/mat.hpp>
-#include "../DCDT3Generator.h"
-#include "../Object/Model.h"
+#include "Estimator.h"
+#include "Registrator.h"
+#include "../Math/Tensor.h"
+#include "../Misc/ConfigParser.h"
+#include "../DistanceTensor.h"
 
 namespace tr
 {
 	class PoseEstimator
 	{
-		DCDT3Generator generator;
-		const Model& model;
+		static ConfigParser config;
+		DistanceTensor distanceTensor;
+		Estimator* estimator = nullptr;
+		Registrator* registrator = nullptr;
 	public:
-		PoseEstimator(const int width, const int height, const Model& model);
-		SixDOF getPose(cv::Mat& frame);
+		PoseEstimator(const int width, const int height, Tensor<Template>& templates);
+		~PoseEstimator();
+		SixDOF getPose(const cv::Mat& frame);
 	};
 
 }

@@ -4,7 +4,7 @@
 #include <vector>
 #include "../Misc/ConfigParser.h"
 #include "../Object/Geometry.h"
-#include "../Object/Coordinates.h"
+#include "../Coordinates.h"
 #include "Pipeline.h"
 #include "TextureMap.h"
 

@@ -26,8 +26,7 @@ void Logger::logProcess(const string& processName) {
 	}
 	else {
 		runningProcesses.erase(processName);
-		//printTabs();
-		//os << processName << endl;
+		log(processName);
 	}
 }
 

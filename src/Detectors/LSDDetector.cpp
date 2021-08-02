@@ -1,5 +1,7 @@
 #include "LSDDetector.h"
 #include <opencv2/imgproc.hpp>
+//TODO remove debug
+//#include <opencv2/highgui.hpp>
 extern "C" {
 #include "lsd.h"
 }
@@ -10,20 +12,29 @@ using namespace std;
 using namespace glm;
 using namespace tr;
 
-void LSDDetector::detectEdges(cv::Mat& img, std::vector<Edge<glm::vec2>>& edges) const {
+//Doesn't work as intended
+void LSDDetector::detectEdges(const cv::Mat& img, std::vector<Edge<glm::vec2>>& edges) const {
+    Mat canny, doubleImg;
+    img.copyTo(canny);
+    blur(canny, canny, Size(5, 5));
+    Canny(canny, doubleImg, 50, 100, 5);
+    //imshow("image", doubleImg);
+    doubleImg.convertTo(doubleImg, CV_64F);
+    //Logger::log("frame: " + std::to_string(doubleImg.cols) + " " + std::to_string(doubleImg.rows));
     int lineCount = 0;
-    Mat doubleImg;
-    img.convertTo(doubleImg, CV_64F);
-    double* lines = lsd_scale(&lineCount, (double*)doubleImg.data, img.cols, img.rows, scale);
-    float s = 0.4f;
-    //===================
-    img = Scalar::all(255.0);
-    //===================
+    double* lines = lsd_scale(&lineCount, doubleImg.ptr<double>(), doubleImg.cols, doubleImg.rows, 0.5);
+    float s = 1.0f;
+    Mat image(Size(doubleImg.cols, doubleImg.rows), CV_8U, Scalar(0));
     for (int i = 0; i < lineCount; i++) {
-        vec2 a(lines[i * 7] * img.cols * s, lines[i * 7 + 1] * img.cols * s);
-        vec2 b(lines[i * 7 + 2] * img.cols * s, lines[i * 7 + 3] * img.cols * s);
-        Point A((int)a.x, (int)a.y), B((int)b.x, (int)b.y);
+        //Logger::log(std::to_string(lines[i * 7 + 5]));
+        vec2 a( lines[i * 7 + 0]*s,
+                lines[i * 7 + 1]*s);
+        vec2 b( lines[i * 7 + 2]*s,
+                lines[i * 7 + 3]*s);
+        //Point A((int)a.x, (int)a.y), B((int)b.x, (int)b.y);
         edges.push_back(Edge<vec2>(a, b));
-        line(img, A, B, Scalar(0.0), 1, FILLED, LINE_8);
+        //line(image, A, B, Scalar(255), 1, LINE_8);
     }
+    //imshow("edges", image);
+    //waitKey(1);
 }

@@ -80,7 +80,7 @@
     <LinkIncremental>true</LinkIncremental>
     <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>Build\$(Platform)\$(Configuration)\</IntDir>
-    <IncludePath>$(SolutionDir)Common\Cereal\Include;$(SolutionDir)Common\Serializer\Include;$(SolutionDir)Common\glm;$(SolutionDir)Common\assimp\Include;$(SolutionDir)Common\uEye\Include;$(SolutionDir)Common\freeglut\Include;$(SolutionDir)Common\glew-2.1.0\Include;$(SolutionDir)Common\Opencv\Include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)Common\Serializer\Include;$(SolutionDir)Common\glm;$(SolutionDir)Common\assimp\Include;$(SolutionDir)Common\uEye\Include;$(SolutionDir)Common\freeglut\Include;$(SolutionDir)Common\glew-2.1.0\Include;$(SolutionDir)Common\Opencv\Include;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)Common\uEye\Lib;$(SolutionDir)Common\freeglut\Lib;$(SolutionDir)Common\assimp\Lib;$(SolutionDir)Common\glew-2.1.0\Lib\Release\x64;$(SolutionDir)Common\OpenCV\Lib;$(LibraryPath)</LibraryPath>
     <SourcePath>$(SourcePath)</SourcePath>
     <CustomBuildBeforeTargets>Build</CustomBuildBeforeTargets>
@@ -89,7 +89,7 @@
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>Build\$(Platform)\$(Configuration)\</IntDir>
-    <IncludePath>$(SolutionDir)Common\Cereal\Include;$(SolutionDir)Common\Serializer\Include;$(SolutionDir)Common\glm;$(SolutionDir)Common\glew-2.1.0\Include;$(SolutionDir)Common\assimp\Include;$(SolutionDir)Common\uEye\Include;$(SolutionDir)Common\freeglut\Include;$(SolutionDir)Common\Opencv\Include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)Common\Serializer\Include;$(SolutionDir)Common\glm;$(SolutionDir)Common\glew-2.1.0\Include;$(SolutionDir)Common\assimp\Include;$(SolutionDir)Common\uEye\Include;$(SolutionDir)Common\freeglut\Include;$(SolutionDir)Common\Opencv\Include;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)Common\uEye\Lib;$(SolutionDir)Common\freeglut\Lib;$(SolutionDir)Common\assimp\Lib;$(SolutionDir)Common\glew-2.1.0\Lib\Release\x64;$(SolutionDir)Common\OpenCV\Lib;$(LibraryPath)</LibraryPath>
     <SourcePath>$(SourcePath)</SourcePath>
     <CustomBuildBeforeTargets>Build</CustomBuildBeforeTargets>
@@ -182,9 +182,10 @@ del "$(SolutionDir)Config\*" /Q</Command>
     </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\PoseEstimation\DirectEstimator.cpp" />
     <ClCompile Include="src\Camera\OpenCVCamera.cpp" />
     <ClCompile Include="src\Camera\uEyeCamera.cpp" />
-    <ClCompile Include="src\DCDT3Generator.cpp" />
+    <ClCompile Include="src\DistanceTensor.cpp" />
     <ClCompile Include="src\Detectors\CannyDetector.cpp" />
     <ClCompile Include="src\Detectors\lsd.c" />
     <ClCompile Include="src\Detectors\LSDDetector.cpp" />
@@ -205,7 +206,7 @@ del "$(SolutionDir)Config\*" /Q</Command>
     <ClInclude Include="src\Camera\Camera.h" />
     <ClInclude Include="src\Camera\OpenCVCamera.h" />
     <ClInclude Include="src\Camera\uEyeCamera.h" />
-    <ClInclude Include="src\DCDT3Generator.h" />
+    <ClInclude Include="src\DistanceTensor.h" />
     <ClInclude Include="src\Detectors\CannyDetector.h" />
     <ClInclude Include="src\Detectors\EdgeDetector.h" />
     <ClInclude Include="src\Detectors\lsd.h" />
@@ -213,11 +214,14 @@ del "$(SolutionDir)Config\*" /Q</Command>
     <ClInclude Include="src\Math\Tensor.h" />
     <ClInclude Include="src\Misc\ConfigParser.h" />
     <ClInclude Include="src\Misc\Log.h" />
-    <ClInclude Include="src\Object\Coordinates.h" />
+    <ClInclude Include="src\Coordinates.h" />
     <ClInclude Include="src\Object\Geometry.h" />
     <ClInclude Include="src\Object\AssimpGeometry.h" />
     <ClInclude Include="src\Object\Model.h" />
+    <ClInclude Include="src\PoseEstimation\DirectEstimator.h" />
+    <ClInclude Include="src\PoseEstimation\Estimator.h" />
     <ClInclude Include="src\PoseEstimation\PoseEstimator.h" />
+    <ClInclude Include="src\PoseEstimation\Registrator.h" />
     <ClInclude Include="src\Rendering\Pipeline.h" />
     <ClInclude Include="src\Rendering\Renderer.h" />
     <ClInclude Include="src\Rendering\Shader.h" />

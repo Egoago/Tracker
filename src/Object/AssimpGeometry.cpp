@@ -10,7 +10,7 @@
 using namespace tr;
 
 AssimpGeometry::AssimpGeometry(const std::string& fileName) {
-	Logger::logProcess("loading assimp geometry");
+	Logger::logProcess(__FUNCTION__);
 	std::string path = MODELS_FOLDER + fileName;
 	Assimp::Importer importer;
 
@@ -49,5 +49,5 @@ AssimpGeometry::AssimpGeometry(const std::string& fileName) {
 		indices.emplace_back(face.mIndices[2]);
 	}
 	detectEdgePairs();
-	Logger::logProcess("loading assimp geometry");
+	Logger::logProcess(__FUNCTION__);
 }

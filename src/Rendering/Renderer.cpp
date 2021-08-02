@@ -216,3 +216,4 @@ void Renderer::render(std::vector<cv::Mat*>& outTextures) {
     for (auto pipeline : pipelines)
         pipeline->render(outTextures);
 }
+

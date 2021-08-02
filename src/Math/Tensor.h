@@ -26,9 +26,9 @@ namespace tr {
 		Tensor() {}
 		Tensor(std::initializer_list<uint> shape) { allocate(shape); }
 		Tensor(const Tensor<CellType>& other) {
-			Logger::logProcess("copy constr");
+			Logger::logProcess(__FUNCTION__);
 			*this = other;
-			Logger::logProcess("copy constr");
+			Logger::logProcess(__FUNCTION__);
 		}
 		Tensor(std::initializer_list<uint> shape, const CellType& value) {
 			allocate(shape);
@@ -39,10 +39,10 @@ namespace tr {
 		void allocate(const uint* shape, const uint dims);
 
 		Tensor<CellType>& operator=(const Tensor<CellType>& other) {
-			Logger::logProcess("assignement");
+			Logger::logProcess(__FUNCTION__);
 			allocate(other._shape, other._dims);
 			std::copy(other.begin(), other.end(), begin());
-			Logger::logProcess("assignement");
+			Logger::logProcess(__FUNCTION__);
 			return *this;
 		}
 
@@ -66,7 +66,7 @@ namespace tr {
 
 		//[Serialization]
 		friend std::ostream& operator<<(std::ostream& out, Bits<Tensor<CellType>&> o) {
-			Logger::logProcess("serializing");
+			Logger::logProcess(__FUNCTION__);
 			const uint dims = o.t.getDims();
 			const uint* shape = o.t.getShape();
 			out << bits(dims);
@@ -76,12 +76,12 @@ namespace tr {
 				for (CellType* i = o.t.begin(); i < o.t.end(); i++)
 					out << bits(*i);
 			}
-			Logger::logProcess("serializing");
+			Logger::logProcess(__FUNCTION__);
 			return out;
 		}
 		//TODO type check
 		friend std::istream& operator>>(std::istream& ins, Bits<Tensor<CellType>&> o) {
-			Logger::logProcess("deserializing");
+			Logger::logProcess(__FUNCTION__);
 			o.t.deallocate();
 			uint dims = 0u;
 			ins >> bits(dims);
@@ -93,19 +93,19 @@ namespace tr {
 				for (CellType* cell = o.t.begin(); cell < o.t.end(); cell++)
 					ins >> bits(*cell);
 			}
-			Logger::logProcess("deserializing");
+			Logger::logProcess(__FUNCTION__);
 			return ins;
 		}
 		//TODO remove log
 		friend std::ostream& operator<<(std::ostream& os, const Tensor<CellType>& tensor) {
-			Logger::logProcess("printing");
+			Logger::logProcess(__FUNCTION__);
 			if (tensor.allocated) {
 				for (const CellType* i = tensor.begin(); i < tensor.end(); i++)
 					os << *i << " ";
 				os << std::endl;
 			}
 			else os << "tensor not yet allocated.";
-			Logger::logProcess("printing");
+			Logger::logProcess(__FUNCTION__);
 			return os;
 		}
 	};
@@ -125,7 +125,7 @@ namespace tr {
 	template<class CellType>
 	inline void Tensor<CellType>::deallocate() {
 		if (allocated) {
-		Logger::logProcess("deallocating tensor");
+		Logger::logProcess(__FUNCTION__);
 			if (storage != nullptr) {
 				delete[] storage;
 				storage = nullptr;
@@ -137,13 +137,13 @@ namespace tr {
 			allocated = false;
 			_dims = 0u;
 			size = 0u;
-		Logger::logProcess("deallocating tensor");
+		Logger::logProcess(__FUNCTION__);
 		}
 	}
 
 	template<class CellType>
 	inline void Tensor<CellType>::allocate(std::initializer_list<uint> shape) {
-		Logger::logProcess("allocating1 tensor");
+		Logger::logProcess(__FUNCTION__);
 		if (allocated)
 			deallocate();
 		_dims = (uint)shape.size();
@@ -157,12 +157,12 @@ namespace tr {
 		allocated = true;
 		calculateSize();
 		storage = new CellType[size];
-		Logger::logProcess("allocating1 tensor");
+		Logger::logProcess(__FUNCTION__);
 	}
 
 	template<class CellType>
 	inline void Tensor<CellType>::allocate(const uint* shape, const uint dims) {
-		Logger::logProcess("allocating2");
+		Logger::logProcess(__FUNCTION__);
 		if (allocated)
 			deallocate();
 		_dims = dims;
@@ -173,7 +173,7 @@ namespace tr {
 		allocated = true;
 		calculateSize();
 		storage = new CellType[size];
-		Logger::logProcess("allocating2");
+		Logger::logProcess(__FUNCTION__);
 	}
 
 	template<class CellType>

@@ -4,12 +4,11 @@
 #include "Detectors/EdgeDetector.h"
 
 //TODO rename + reorganise file hierarchy
-namespace tr
-{
-	class DCDT3Generator
-	{
+namespace tr {
+	class DistanceTensor {
 	private:
 		static ConfigParser config;
+		const float maxCost;
 		const unsigned int q;
 		std::vector<cv::Mat>& dcdt3;
 		const EdgeDetector* edgeDetector;
@@ -26,13 +25,13 @@ namespace tr
 		void gaussianBlur();
 		void swapBuffers();
 	public:
-		DCDT3Generator(unsigned int width, unsigned int height);
-		~DCDT3Generator() {
+		DistanceTensor(unsigned int width, unsigned int height);
+		~DistanceTensor() {
 			delete edgeDetector;
 			delete[] costs;
 		};
-		inline const std::vector<cv::Mat>& getDCDT3() const { return dcdt3; };
-		std::vector<cv::Mat>& setFrame(cv::Mat& nextFrame);
+		void setFrame(const cv::Mat& nextFrame);
+		float getDist(const glm::vec2 uv, const float angle) const;
 	};
 }
 

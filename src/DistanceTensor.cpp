@@ -1,4 +1,4 @@
-#include "DCDT3Generator.h"
+#include "DistanceTensor.h"
 #include <opencv2/imgproc.hpp>
 #include "Misc/Links.h"
 #include "Detectors/LSDDetector.h"
@@ -8,33 +8,32 @@ using namespace std;
 using namespace cv;
 using namespace tr;
 
-uint64_t constexpr mix(char m, uint64_t s) {
-    return ((s << 7) + ~(s >> 3)) + ~m;
-}
+ConfigParser DistanceTensor::config(DCDT3_CONFIG_FILE);
 
-uint64_t constexpr my_hash(const char* m) {
-    return (*m) ? mix(*m, my_hash(m + 1)) : 0;
+constexpr inline int quantizedIndex(const float value, const unsigned int q) {
+    const constexpr float pi = glm::pi<float>();
+    const float d = pi / q;
+    return (int)(value / d) % q;
 }
-
-ConfigParser DCDT3Generator::config(DCDT3_CONFIG_FILE);
 
 unsigned int getQ(ConfigParser& config) {
     return std::stoi(config.getEntry("orientation quantization", "60"));
 }
 
 EdgeDetector* getEdgeDetector(ConfigParser& config) {
-    switch (my_hash(config.getEntry("edge detector", "lsd").c_str())) {
-    case my_hash("canny"): return new CannyDetector();
-    case my_hash("lsd"):
+    switch (strHash(config.getEntry("edge detector", "lsd").c_str())) {
+    case strHash("canny"): return new CannyDetector();
+    case strHash("lsd"):
     default: return new LSDDetector();
     }
 }
 
-DCDT3Generator::DCDT3Generator(unsigned int width, unsigned int height)
+DistanceTensor::DistanceTensor(unsigned int width, unsigned int height)
     :q(getQ(config)),
      edgeDetector(getEdgeDetector(config)),
     dcdt3(buffer1),
-    other(buffer2) {
+    other(buffer2),
+    maxCost(stof(config.getEntry("max cost", "3000.0"))) {
     buffer1.resize(q);
     buffer2.resize(q, Mat((int)height, (int)width, CV_32F));
     first = true;
@@ -43,14 +42,14 @@ DCDT3Generator::DCDT3Generator(unsigned int width, unsigned int height)
     costs = new float[q];
 }
 
-void DCDT3Generator::swapBuffers() {
+void DistanceTensor::swapBuffers() {
      dcdt3 = (first) ? buffer2 : buffer1;
      other = (!first) ? buffer2 : buffer1;
      first = !first;
 }
 
-std::vector<cv::Mat>& DCDT3Generator::setFrame(cv::Mat& nextFrame)
-{
+void DistanceTensor::setFrame(const cv::Mat& nextFrame) {
+    Logger::logProcess(__FUNCTION__);   //TODO remove logging
     vector<Edge<glm::vec2>> edges;
     edgeDetector->detectEdges(nextFrame, edges);
     for (auto& container : quantizedEdges)
@@ -69,12 +68,23 @@ std::vector<cv::Mat>& DCDT3Generator::setFrame(cv::Mat& nextFrame)
 
     directedDistanceTransform();
 
-    gaussianBlur();
-    return dcdt3;
+    //TODO reintroduce blurring
+    //gaussianBlur();
+    Logger::logProcess(__FUNCTION__);   //TODO remove logging
+}
+
+float tr::DistanceTensor::getDist(const glm::vec2 uv, const float angle) const {
+    cv::Point pixel((int)((uv.x * (float)tmp.cols) + 0.5f),
+        (int)((uv.y * (float)tmp.rows) + 0.5f));
+    if (pixel.x < 0 || pixel.x >= tmp.cols ||
+        pixel.y < 0 || pixel.y >= tmp.rows) return maxCost;
+
+    return dcdt3[quantizedIndex(angle, q)].at<float>(pixel);
 }
 
 //TODO merge blur with ddt?
-void DCDT3Generator::gaussianBlur() {
+void DistanceTensor::gaussianBlur() {
+    Logger::logProcess(__FUNCTION__);   //TODO remove logging
     //TODO parallelization
     for (int x = 0; x < dcdt3[0].cols; x++)
         for (int y = 0; y < dcdt3[0].rows; y++) {
@@ -89,11 +99,12 @@ void DCDT3Generator::gaussianBlur() {
             }
         }
     swapBuffers();
+    Logger::logProcess(__FUNCTION__);   //TODO remove logging
 }
 
-void DCDT3Generator::directedDistanceTransform() {
-    const static float maxCost = stof(config.getEntry("max cost","3000.0"));
-    const static float lambda = stof(config.getEntry("lambda", "100.0"));
+void DistanceTensor::directedDistanceTransform() {
+    Logger::logProcess(__FUNCTION__);   //TODO remove logging
+    const static float lambda = stof(config.getEntry("lambda", "1.0"));
     const float dirCost = lambda*glm::pi<float>()/q;
 
     //TODO parallelization
@@ -137,4 +148,5 @@ void DCDT3Generator::directedDistanceTransform() {
 		for (unsigned int i = 0; i < q; i++)
             dcdt3[i].at<float>(y,x) = costs[i];
 	}
+    Logger::logProcess(__FUNCTION__);   //TODO remove logging
 }

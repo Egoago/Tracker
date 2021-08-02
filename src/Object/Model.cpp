@@ -24,8 +24,7 @@ void getObjectName(std::string& fName, std::string& oName) {
 }
 
 void Model::generate6DOFs() {
-	//TODO remove logging
-	Logger::logProcess("generate6DOFs");
+	Logger::logProcess(__FUNCTION__);	//TODO remove logging
 	//TODO tune granularity
 	const static Range width(config.getEntries("width", { "-130.0", "130.0", "6" }));
 	const static Range height(config.getEntries("height", { "-130.0", "130.0", "6" }));
@@ -56,17 +55,33 @@ void Model::generate6DOFs() {
 		sixDOF.orientation.p = pitch[p];
 		sixDOF.orientation.r = roll[r];
 	}
-	//TODO remove logging
-	Logger::logProcess("generate6DOFs");
+	Logger::logProcess(__FUNCTION__);	//TODO remove logging
+}
+
+glm::vec2 renderPoint(const glm::vec3& p, const glm::mat4& mvp) {
+	glm::vec4 pPos = mvp * glm::vec4(p, 1.0f);
+	pPos /= pPos.w;
+	pPos = (pPos + 1.0f) / 2.0f;
+	return glm::vec2(pPos.x, pPos.y);
+}
+
+void renderTemplate(Template* temp, const glm::mat4& mvp) {
+	const unsigned int pixelCount = (unsigned int)temp->pos.size();
+	temp->uv.resize(pixelCount);
+	temp->angle.resize(pixelCount);
+	for (unsigned int i = 0; i < pixelCount; i++) {
+		glm::vec2 p = renderPoint(temp->pos[i], mvp);
+		glm::vec2 op = renderPoint(temp->offsetPos[i], mvp);
+		temp->uv[i] = p;
+		temp->angle[i] = getOrientation(p - op);
+	}
 }
 
 //TODO remove monitoring
 void drawOnFrame(const glm::vec3& p, cv::Mat& posMap, const glm::mat4& mvp, cv::Scalar color) {
-	glm::vec4 pPos = mvp * glm::vec4(p, 1.0f);
-	pPos /= pPos.w;
-	pPos = (pPos + 1.0f) / 2.0f;
-	cv::Point pixel((int)(pPos.x * (float)posMap.cols +0.5f),
-		(int)(pPos.y * (float)posMap.rows + 0.5f));
+	glm::vec2 uv = renderPoint(p, mvp);
+	cv::Point pixel((int)(uv.x * (float)posMap.cols +0.5f),
+		(int)(uv.y * (float)posMap.rows + 0.5f));
 	circle(posMap, pixel, 1, color, -1);
 }
 
@@ -138,8 +153,7 @@ void Model::rasterizeCandidates(Template* temp) {
 
 void Model::generarteObject(const std::string& fileName) {
 	//TODO proper resource destruction
-	//TODO remove logging
-	Logger::logProcess("generarteObject");
+	Logger::logProcess(__FUNCTION__);	//TODO remove logging
 	//TODO add loading bar
 	Geometry geo = AssimpGeometry(fileName);
 	Renderer renderer(geo);
@@ -158,14 +172,13 @@ void Model::generarteObject(const std::string& fileName) {
 		renderer.render(textureMaps);
 		extractCandidates();
 		rasterizeCandidates(i);
+		renderTemplate(i, renderer.getMVP());
 	}
 	Logger::log("\n");
-	//TODO remove logging
-	Logger::logProcess("generarteObject");
+	Logger::logProcess(__FUNCTION__);	//TODO remove logging
 }
 
-Model::Model(std::string fileName)
-{
+Model::Model(std::string fileName) {
 	getObjectName(fileName, objectName);
 	
 	bool loaded = load();
@@ -176,25 +189,22 @@ Model::Model(std::string fileName)
 }
 
 std::string getSavePath(const std::string& objectName) {
-	return LOADED_OBJECTS_FOLDER + objectName + ".txt";
+	return LOADED_OBJECTS_FOLDER + objectName + LOADED_OBJECT_FILENAME_EXTENSION;
 }
 
 void Model::save(std::string fileName) {
-	//TODO remove logging
-	Logger::logProcess("save");
+	Logger::logProcess(__FUNCTION__);	//TODO remove logging
 	if (fileName.empty())
 		fileName = getSavePath(objectName);
 	std::ofstream out(fileName, std::ios::out | std::ios::binary);
 	out << bits(objectName);
 	out << bits(templates);
 	out.close();
-	//TODO remove logging
-	Logger::logProcess("save");
+	Logger::logProcess(__FUNCTION__);	//TODO remove logging
 }
 
 bool Model::load() {
-	//TODO remove logging
-	Logger::logProcess("load");
+	Logger::logProcess(__FUNCTION__);	//TODO remove logging
 	std::ifstream in(getSavePath(objectName), std::ios::in | std::ios::binary);
 	if (!in.is_open()) {
 		Logger::warning(objectName + " save file not found");
@@ -203,7 +213,6 @@ bool Model::load() {
 	in >> bits(objectName);
 	in >> bits(templates);
 	in.close();
-	//TODO remove logging
-	Logger::logProcess("load");
+	Logger::logProcess(__FUNCTION__);	//TODO remove logging
 	return true;
 }

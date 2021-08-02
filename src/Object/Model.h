@@ -4,13 +4,11 @@
 #include <iostream>
 #include <opencv2/core/mat.hpp>
 #include "../Misc/ConfigParser.h"
-#include "Coordinates.h"
+#include "../Coordinates.h"
 #include "../Math/Tensor.h"
 
-namespace tr
-{
-	class Model
-	{
+namespace tr {
+	class Model {
 		static ConfigParser config;
 		std::string objectName;
 		Tensor<Template> templates;
@@ -47,7 +45,7 @@ namespace tr
 
 		void setName(const char* str) { objectName = str; }
 
-		auto& getTemplates() const { return templates; }
+		Tensor<Template>& getTemplates() { return templates; }
 
 		friend std::ostream& operator<<(std::ostream& ost, const Model& model) {
 			ost << model.templates;

@@ -68,7 +68,7 @@
     <ClCompile Include="src\Detectors\CannyDetector.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\DCDT3Generator.cpp">
+    <ClCompile Include="src\DistanceTensor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\PoseEstimation\PoseEstimator.cpp">
@@ -84,6 +84,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Misc\Log.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PoseEstimation\DirectEstimator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -112,7 +115,7 @@
     <ClInclude Include="src\Misc\ConfigParser.h">
       <Filter>Header Files\Misc</Filter>
     </ClInclude>
-    <ClInclude Include="src\Object\Coordinates.h">
+    <ClInclude Include="src\Coordinates.h">
       <Filter>Header Files\Object</Filter>
     </ClInclude>
     <ClInclude Include="src\Detectors\EdgeDetector.h">
@@ -130,7 +133,7 @@
     <ClInclude Include="src\PoseEstimation\PoseEstimator.h">
       <Filter>Header Files\PoseEstimation</Filter>
     </ClInclude>
-    <ClInclude Include="src\DCDT3Generator.h">
+    <ClInclude Include="src\DistanceTensor.h">
       <Filter>Header Files\PoseEstimation</Filter>
     </ClInclude>
     <ClInclude Include="src\Object\Model.h">
@@ -146,6 +149,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Math\Tensor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\PoseEstimation\Estimator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\PoseEstimation\Registrator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\PoseEstimation\DirectEstimator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
