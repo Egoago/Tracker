@@ -3,6 +3,7 @@
 #include "Misc/Links.h"
 #include "Detectors/LSDDetector.h"
 #include "Detectors/CannyDetector.h"
+#include <opencv2/highgui.hpp>
 
 using namespace std;
 using namespace cv;
@@ -17,7 +18,7 @@ constexpr inline int quantizedIndex(const float value, const unsigned int q) {
 }
 
 unsigned int getQ(ConfigParser& config) {
-    return std::stoi(config.getEntry("orientation quantization", "60"));
+    return std::stoi(config.getEntry("orientation quantization", "10"));
 }
 
 EdgeDetector* getEdgeDetector(ConfigParser& config) {
@@ -28,24 +29,24 @@ EdgeDetector* getEdgeDetector(ConfigParser& config) {
     }
 }
 
-DistanceTensor::DistanceTensor(unsigned int width, unsigned int height)
-    :q(getQ(config)),
-     edgeDetector(getEdgeDetector(config)),
-    dcdt3(buffer1),
-    other(buffer2),
+DistanceTensor::DistanceTensor(unsigned int width, unsigned int height) :
+    q(getQ(config)),
+    width(width),
+    height(height),
+    edgeDetector(getEdgeDetector(config)),
     maxCost(stof(config.getEntry("max cost", "3000.0"))) {
-    buffer1.resize(q);
-    buffer2.resize(q, Mat((int)height, (int)width, CV_32F));
-    first = true;
-    quantizedEdges.resize(q);
+    Logger::logProcess(__FUNCTION__);   //TODO remove logging
+    buffers = new cv::Mat*[2];
+    for (int buffer = 0; buffer < 2; buffer++) {
+        buffers[buffer] = new cv::Mat[q];
+        for (unsigned int i = 0; i < q; i++)
+            buffers[buffer][i].create((int)height, (int)width, CV_32F);
+    }
+    front = true;
+    quantizedEdges = new std::vector<Edge<glm::vec2>>[q];
     tmp = Mat((int)height, (int)width, CV_8U);
     costs = new float[q];
-}
-
-void DistanceTensor::swapBuffers() {
-     dcdt3 = (first) ? buffer2 : buffer1;
-     other = (!first) ? buffer2 : buffer1;
-     first = !first;
+    Logger::logProcess(__FUNCTION__);   //TODO remove logging
 }
 
 void DistanceTensor::setFrame(const cv::Mat& nextFrame) {
@@ -56,53 +57,72 @@ void DistanceTensor::setFrame(const cv::Mat& nextFrame) {
         cvtColor(nextFrame, frame, COLOR_BGR2GRAY);
     }
     edgeDetector->detectEdges(frame, edges);
-    for (auto& container : quantizedEdges)
-        container.clear();
+
+    //TODO remove monitoring
+    tmp = Scalar::all(255);
+    for (auto& edge : edges) {
+        const Point A((int)std::round(edge.a.x),
+                      (int)std::round(edge.a.y)),
+                    B((int)std::round(edge.b.x),
+                      (int)std::round(edge.b.y));
+        line(tmp, A, B, Scalar(0), 1, LINE_8);
+    }
+    cv::imshow("detected lines", tmp);
+
+    for (unsigned int i = 0; i < q; i++)
+        quantizedEdges[i].clear();
     for (Edge<glm::vec2>& edge : edges)
         quantizedEdges[quantizedIndex(getOrientation(edge), q)].push_back(edge);
 
     for (unsigned int i = 0; i < q; i++) {
-        tmp = Scalar::all(255.0);
+        tmp = Scalar::all(255);
         for (Edge<glm::vec2>& edge : quantizedEdges[i]) {
-            const Point A((int)edge.a.x, (int)edge.a.y), B((int)edge.b.x, (int)edge.b.y);
-            line(tmp, A, B, Scalar(0.0), 1, FILLED, LINE_8);
+            const Point A((int)std::round(edge.a.x),
+                          (int)std::round(edge.a.y)),
+                        B((int)std::round(edge.b.x),
+                          (int)std::round(edge.b.y));
+            line(tmp, A, B, Scalar(0), 1, LINE_8);
         }
-        distanceTransform(tmp, dcdt3[i], DIST_L2, DIST_MASK_PRECISE);
+        distanceTransform(tmp, buffers[front][i], DIST_L2, DIST_MASK_PRECISE, CV_32F);
     }
+    gaussianBlur();
+    buffers[front][q / 2].convertTo(buffers[front][q / 2], CV_32F, 1.0 / 2055.0);
+    cv::imshow("dist transform", buffers[front][q/2]);
+    cv::waitKey(100000);
 
-    directedDistanceTransform();
+    //directedDistanceTransform();
 
     //TODO reintroduce blurring
-    //gaussianBlur();
     Logger::logProcess(__FUNCTION__);   //TODO remove logging
 }
 
 float tr::DistanceTensor::getDist(const glm::vec2 uv, const float angle) const {
-    cv::Point pixel((int)((uv.x * (float)tmp.cols) + 0.5f),
-        (int)((uv.y * (float)tmp.rows) + 0.5f));
-    if (pixel.x < 0 || pixel.x >= tmp.cols ||
-        pixel.y < 0 || pixel.y >= tmp.rows) return maxCost;
+    cv::Point pixel((int)((uv.x * (float)width) + 0.5f),
+        (int)((uv.y * (float)height) + 0.5f));
+    if (pixel.x < 0 || pixel.x >= (int)width ||
+        pixel.y < 0 || pixel.y >= (int)height) return maxCost;
 
-    return dcdt3[quantizedIndex(angle, q)].at<float>(pixel);
+    return buffers[front][quantizedIndex(angle, q)].at<float>(pixel);
 }
 
 //TODO merge blur with ddt?
 void DistanceTensor::gaussianBlur() {
     Logger::logProcess(__FUNCTION__);   //TODO remove logging
     //TODO parallelization
-    for (int x = 0; x < dcdt3[0].cols; x++)
-        for (int y = 0; y < dcdt3[0].rows; y++) {
+    for (unsigned int x = 0; x < width; x++)
+        for (unsigned int y = 0; y < height; y++) {
+            const cv::Point pixel(x, y);
             for (unsigned int dir = 0; dir < q; dir++) {
                 const unsigned int prev = (dir == 0) ? q-1 : dir - 1;
                 const unsigned int next = (dir == q-1) ? 0 : dir + 1;
                 //TODO localization
-                other[dir].at<float>(y, x) =
-                    dcdt3[prev].at<float>(y, x) * 0.25f +
-                    dcdt3[dir].at<float>(y, x) * 0.5f +
-                    dcdt3[next].at<float>(y, x) * 0.25f;
+                buffers[!front][dir].at<float>(pixel) =
+                    buffers[front][prev].at<float>(pixel) * 0.25f +
+                    buffers[front][dir].at<float>(pixel) * 0.5f +
+                    buffers[front][next].at<float>(pixel) * 0.25f;
             }
         }
-    swapBuffers();
+    front = !front; //swap buffers
     Logger::logProcess(__FUNCTION__);   //TODO remove logging
 }
 
@@ -113,10 +133,11 @@ void DistanceTensor::directedDistanceTransform() {
 
     //TODO parallelization
     //TODO buffer swap
-	for (int x = 0; x < dcdt3[0].cols; x++)
-	for (int y = 0; y < dcdt3[0].rows; y++) {
+	for (unsigned int x = 0; x < width; x++)
+	for (unsigned int y = 0; y < height; y++) {
+        const cv::Point pixel(x,y);
 		for (unsigned int i = 0; i < q; i++) {
-			costs[i] = dcdt3[i].at<float>(y,x);
+			costs[i] = buffers[front][i].at<float>(pixel);
 			if (costs[i] > maxCost)
 				costs[i] = maxCost;
 		}
@@ -150,7 +171,7 @@ void DistanceTensor::directedDistanceTransform() {
 			else break;
 
 		for (unsigned int i = 0; i < q; i++)
-            dcdt3[i].at<float>(y,x) = costs[i];
+            buffers[front][i].at<float>(pixel) = costs[i];
 	}
     Logger::logProcess(__FUNCTION__);   //TODO remove logging
 }

@@ -1,14 +1,12 @@
 #include "Log.h"
 //TODO only for windows
 #include <Windows.h>
-//#include <consoleapi2.h>
-//#include <WinBase.h>
 
 using namespace std;
 using namespace tr;
 
 void* Logger::hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-unordered_set<string> Logger::runningProcesses;
+unordered_map<string, Logger::TimePoint> Logger::runningProcesses;
 unordered_set<string> Logger::warnings;
 unordered_set<string> Logger::errors;
 bool Logger::logging = true;
@@ -20,14 +18,23 @@ void Logger::printTabs() {
 }
 
 void Logger::logProcess(const string& processName) {
+	using namespace std::chrono;
 	if (!logging) return;
 	if (runningProcesses.count(processName) == 0) {
 		log(processName);
-		runningProcesses.insert(processName);
+		runningProcesses.insert({ processName, high_resolution_clock::now() });
 	}
 	else {
+		const TimePoint start = runningProcesses.at(processName);
+		const TimePoint stop = high_resolution_clock::now();
+		long long duration = duration_cast<nanoseconds>(stop - start).count();
 		runningProcesses.erase(processName);
-		log(processName);
+		log(processName + " Finished in: " 
+			+ std::to_string(duration / (int)1e9) + "s "
+			+ std::to_string(duration % (int)1e9 / (int)1e6) + "ms "
+			+ std::to_string(duration % (int)1e6 / (int)1e3) + "us "
+			+ std::to_string(duration % (int)1e3) + "ns."
+		);
 	}
 }
 

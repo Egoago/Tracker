@@ -1,11 +1,15 @@
 #pragma once
 #include <iostream>
 #include <unordered_set>
+#include <unordered_map>
+#include <chrono>
 
 namespace tr
 {
 	class Logger {
-		static std::unordered_set<std::string> runningProcesses, warnings, errors;
+		typedef std::chrono::time_point<std::chrono::steady_clock> TimePoint;
+		static std::unordered_map<std::string, TimePoint> runningProcesses;
+		static std::unordered_set<std::string> warnings, errors;
 		static void* hConsole;
 		static void printTabs();
 		static int defaultColor;

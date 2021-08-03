@@ -10,20 +10,19 @@ namespace tr {
 		static ConfigParser config;
 		const float maxCost;
 		const unsigned int q;
-		std::vector<cv::Mat>& dcdt3;
 		const EdgeDetector* edgeDetector;
 
+		const unsigned int width, height;
+
 		//temp buffers
-		std::vector<std::vector<Edge<glm::vec2>>> quantizedEdges;
-		std::vector<cv::Mat>& other;
-		std::vector<cv::Mat> buffer1, buffer2;
-		bool first;
+		std::vector<Edge<glm::vec2>>* quantizedEdges;
+		cv::Mat** buffers;
+		bool front;
 		cv::Mat tmp;
 		float* costs;
 
 		void directedDistanceTransform();
 		void gaussianBlur();
-		void swapBuffers();
 	public:
 		DistanceTensor(unsigned int width, unsigned int height);
 		~DistanceTensor() {
