@@ -100,9 +100,9 @@ void Model::extractCandidates() {
 	Logger::logProcess(__FUNCTION__);	//TODO remove logging
 	candidates.clear();
 	cv::Mat maskMap;
-	floatToBinary(*textureMaps[HDIR], maskMap);
+	floatToBinary(*textureMaps[Renderer::HDIR], maskMap);
 	cv::imshow("hdir mask", maskMap);
-	getContour(*textureMaps[LDIR], maskMap);
+	getContour(*textureMaps[Renderer::LDIR], maskMap);
 	cv::imshow("hdir + contour", maskMap);
 	std::mutex mtx;
 	maskMap.forEach<uchar>(
@@ -111,8 +111,8 @@ void Model::extractCandidates() {
 			if (pixel == 0) return;
 
 			//test high thres
-			cv::Point3f pos = textureMaps[HPOS]->at<cv::Point3f>(p[0], p[1]);
-			cv::Point3f dir = textureMaps[HDIR]->at<cv::Point3f>(p[0], p[1]);
+			cv::Point3f pos = textureMaps[Renderer::HPOS]->at<cv::Point3f>(p[0], p[1]);
+			cv::Point3f dir = textureMaps[Renderer::HDIR]->at<cv::Point3f>(p[0], p[1]);
 			if (pos.dot(pos) > 1e-5 && dir.dot(dir) > 1e-5) {
 				mtx.lock();
 				candidates.push_back(Candidate(pos, dir));
@@ -120,8 +120,8 @@ void Model::extractCandidates() {
 				return;
 			}
 			//test low thres
-			pos = textureMaps[LPOS]->at<cv::Point3f>(p[0], p[1]);
-			dir = textureMaps[LDIR]->at<cv::Point3f>(p[0], p[1]);
+			pos = textureMaps[Renderer::LPOS]->at<cv::Point3f>(p[0], p[1]);
+			dir = textureMaps[Renderer::LDIR]->at<cv::Point3f>(p[0], p[1]);
 			if (pos.dot(pos) > 1e-5 && dir.dot(dir) > 1e-5) {
 				mtx.lock();
 				candidates.push_back(Candidate(pos, dir));
@@ -193,7 +193,9 @@ void Model::generarteObject(const std::string& fileName) {
 			"\t frames out of "+ std::to_string(templates.getSize()) + "\r", true);
 		renderer.setModel(i->sixDOF);
 		renderer.render(textureMaps);
-		cv::imshow("depth", *textureMaps[DPTH]);
+		cv::Mat temp;
+		textureMaps[Renderer::MESH]->convertTo(temp, CV_32F, 255.0 / 1.0);
+		cv::imshow("depth", temp);
 		/*cv::imshow("high pos", *textureMaps[HPOS]);
 		cv::imshow("high dir", *textureMaps[HDIR]);
 		cv::imshow("low pos", *textureMaps[LPOS]);

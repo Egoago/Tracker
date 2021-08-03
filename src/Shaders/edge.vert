@@ -7,10 +7,6 @@ layout (location = 1) in vec3 inDirection;
 uniform mat4  P, VM;
 uniform float near, far;
 
-//TODO add to config
-// it's already in obj.conf
-const float rasterOffset = 0.01; //in mms
-
 out vec3 position;
 out vec3 direction;
 

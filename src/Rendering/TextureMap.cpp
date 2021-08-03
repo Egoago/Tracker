@@ -1,7 +1,7 @@
 #include "TextureMap.h"
 #include <iostream>
 #include "../Misc/Log.h"
-//TODO clear glew
+#include <GL/glew.h>
 
 using namespace tr;
 
@@ -21,9 +21,9 @@ TextureMap::TextureMap(int cvType, glm::uvec2 resolution) :
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, resolution.x, resolution.y, 0, GL_RED, GL_FLOAT, 0);
 		break;
 	default: {
-		Logger::error("not supported texture type: " + std::to_string(cvType));
-		exit(1);
-	}
+			Logger::error("not supported texture type: " + std::to_string(cvType));
+			exit(1);
+		}
 	}
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -47,14 +47,14 @@ cv::Mat* TextureMap::copyToCPU() {
 		glGetTexImage(GL_TEXTURE_2D, 0, GL_RED, GL_FLOAT, data);
 		break;
 	default: {
-		Logger::error("not supported texture type: " + std::to_string(cvType));
-		exit(1);
-	}
+			Logger::error("not supported texture type: " + std::to_string(cvType));
+			exit(1);
+		}
 	}
 	return this;
 }
 
-GLenum TextureMap::bind(unsigned int index) {
+unsigned int TextureMap::bind(unsigned int index) {
 	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + index, glBuffer, 0);
 	return GL_COLOR_ATTACHMENT0 + index;
 }

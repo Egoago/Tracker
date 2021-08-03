@@ -24,9 +24,6 @@ void Renderer::readConfig() {
     aspect = (float)resolution.x / resolution.y;
 }
 
-//TODO create textureMap
-GLuint depthBuffer;
-cv::Mat depthTexture;
 Renderer::Renderer(const Geometry& geometry) {
     //TODO add back-face culling
     int argc=0;
@@ -39,38 +36,37 @@ Renderer::Renderer(const Geometry& geometry) {
     
     readConfig();
 
+    //Texture for contour mask
+    textureMaps.push_back(new TextureMap(CV_8U, resolution));
     //Four textures for pos and dir maps for both thresholds
     for(unsigned int i = 0; i < 4; i++)
         textureMaps.push_back(new TextureMap(CV_32FC3, resolution));
 
     // Z buffer
     glEnable(GL_DEPTH_TEST);
-    glGenTextures(1, &depthBuffer);
-    glBindTexture(GL_TEXTURE_2D, depthBuffer);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F, resolution.x, resolution.y, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+    GLuint depthBuffer;
+    glGenRenderbuffers(1, &depthBuffer);
+    glBindRenderbuffer(GL_RENDERBUFFER, depthBuffer);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, resolution.x, resolution.y);
     glDepthFunc(GL_LEQUAL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
-    depthTexture.create(resolution.y, resolution.x, CV_32F);
     //set up pipelines
     pipelines.push_back(new Pipeline("mesh",
-                                    std::vector<TextureMap*>{},
+                                    { textureMaps[MESH] },
                                     GL_TRIANGLES,
-                                    GL_DEPTH_BUFFER_BIT,
+                                    GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT,
                                     depthBuffer,
                                     true));
     //High thresh
     pipelines.push_back(new Pipeline("edge",
-                                    {textureMaps.at(0), textureMaps.at(1)},
+                                    {textureMaps[HPOS], textureMaps[HDIR]},
                                     GL_LINES,
                                     GL_COLOR_BUFFER_BIT,
                                     depthBuffer,
                                     false));
     //Low thresh
+    
     pipelines.push_back(new Pipeline("edge",
-                                    {textureMaps.at(2), textureMaps.at(3)},
+                                    {textureMaps[LPOS], textureMaps[LDIR]},
                                     GL_LINES,
                                     GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT,
                                     depthBuffer,
@@ -81,6 +77,7 @@ Renderer::Renderer(const Geometry& geometry) {
 
 Renderer::~Renderer()
 {
+    //TODO delete depth buffer
     //TODO proper resource management
     glDisableVertexAttribArray(0);
     glDisableVertexAttribArray(1);
@@ -222,9 +219,6 @@ void Renderer::render(std::vector<cv::Mat*>& outTextures) {
     outTextures.clear();
     for (auto pipeline : pipelines)
         pipeline->render(outTextures);
-    glBindTexture(GL_TEXTURE_2D, depthBuffer);
-    glGetTexImage(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, GL_FLOAT, depthTexture.data);
-    outTextures.push_back(&depthTexture);
     Logger::logProcess(__FUNCTION__);	//TODO remove logging
 }
 

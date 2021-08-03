@@ -1,5 +1,6 @@
 #include "Pipeline.h"
 #include <opencv2/core/mat.hpp>
+#include "../Misc/Log.h"
 
 using namespace tr;
 
@@ -25,7 +26,7 @@ Pipeline::Pipeline(
     GLenum* drawBuffers = new GLenum[size];
     for (unsigned int i = 0; i < size; i++)
         drawBuffers[i] = textureMaps[i]->bind(i);
-    glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthBuffer, 0);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthBuffer);
     if (size > 0)
         glDrawBuffers(size, drawBuffers);
     else
@@ -43,6 +44,7 @@ Pipeline::~Pipeline()
 
 void Pipeline::render(std::vector<cv::Mat*>& outTextures)
 {
+    Logger::logProcess(__FUNCTION__);
     glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
     glClear(clearMask);
     shader->enable();
@@ -53,7 +55,9 @@ void Pipeline::render(std::vector<cv::Mat*>& outTextures)
         glDrawArrays(drawPrimitive, 0, primitiveCount);
     shader->disable();
     glFlush();
-
+    Logger::logProcess("copy texture");
     for (auto textureMap : textureMaps)
         outTextures.push_back(textureMap->copyToCPU());
+    Logger::logProcess("copy texture");
+    Logger::logProcess(__FUNCTION__);
 }
