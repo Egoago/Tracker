@@ -25,7 +25,7 @@ Pipeline::Pipeline(
     GLenum* drawBuffers = new GLenum[size];
     for (unsigned int i = 0; i < size; i++)
         drawBuffers[i] = textureMaps[i]->bind(i);
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthBuffer);
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthBuffer, 0);
     if (size > 0)
         glDrawBuffers(size, drawBuffers);
     else
@@ -55,5 +55,5 @@ void Pipeline::render(std::vector<cv::Mat*>& outTextures)
     glFlush();
 
     for (auto textureMap : textureMaps)
-        outTextures.push_back(textureMap->copy());
+        outTextures.push_back(textureMap->copyToCPU());
 }

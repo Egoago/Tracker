@@ -5,8 +5,8 @@
 #include "../Misc/ConfigParser.h"
 #include "../Object/Geometry.h"
 #include "../Coordinates.h"
-#include "Pipeline.h"
 #include "TextureMap.h"
+#include "Pipeline.h"
 
 namespace tr
 {

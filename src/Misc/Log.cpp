@@ -29,7 +29,7 @@ void Logger::logProcess(const string& processName) {
 		const TimePoint stop = high_resolution_clock::now();
 		long long duration = duration_cast<nanoseconds>(stop - start).count();
 		runningProcesses.erase(processName);
-		log(processName + " Finished in: " 
+		log("Finished in: " 
 			+ std::to_string(duration / (int)1e9) + "s "
 			+ std::to_string(duration % (int)1e9 / (int)1e6) + "ms "
 			+ std::to_string(duration % (int)1e6 / (int)1e3) + "us "
@@ -48,10 +48,12 @@ void Logger::log(const string& message, bool noEndl) {
 	SetConsoleTextAttribute(hConsole, defaultColor);
 }
 
-void Logger::warning(const string& message) {
+void Logger::warning(const string& message, bool repeat) {
 	if (!logging) return;
-	if (warnings.count(message) != 0) return;
-	warnings.insert(message);
+	if (warnings.count(message) != 0) {
+		if(!repeat) return;
+	}
+	else warnings.insert(message);
 	SetConsoleTextAttribute(hConsole, 14);
 	Logger::printTabs();
 	os << "[WARNING] ";

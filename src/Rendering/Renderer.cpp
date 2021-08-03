@@ -24,6 +24,9 @@ void Renderer::readConfig() {
     aspect = (float)resolution.x / resolution.y;
 }
 
+//TODO create textureMap
+GLuint depthBuffer;
+cv::Mat depthTexture;
 Renderer::Renderer(const Geometry& geometry) {
     //TODO add back-face culling
     int argc=0;
@@ -42,12 +45,15 @@ Renderer::Renderer(const Geometry& geometry) {
 
     // Z buffer
     glEnable(GL_DEPTH_TEST);
-    GLuint depthBuffer;
-    glGenRenderbuffers(1, &depthBuffer);
-    glBindRenderbuffer(GL_RENDERBUFFER, depthBuffer);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, resolution.x, resolution.y);
-    //glDepthFunc(GL_LEQUAL);
-
+    glGenTextures(1, &depthBuffer);
+    glBindTexture(GL_TEXTURE_2D, depthBuffer);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F, resolution.x, resolution.y, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+    glDepthFunc(GL_LEQUAL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
+    depthTexture.create(resolution.y, resolution.x, CV_32F);
     //set up pipelines
     pipelines.push_back(new Pipeline("mesh",
                                     std::vector<TextureMap*>{},
@@ -211,9 +217,14 @@ void Renderer::setModel(SixDOF& sixDOF) {
 }
 
 void Renderer::render(std::vector<cv::Mat*>& outTextures) {
+    Logger::logProcess(__FUNCTION__);	//TODO remove logging
     glViewport(0, 0, resolution.x, resolution.y);
     outTextures.clear();
     for (auto pipeline : pipelines)
         pipeline->render(outTextures);
+    glBindTexture(GL_TEXTURE_2D, depthBuffer);
+    glGetTexImage(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, GL_FLOAT, depthTexture.data);
+    outTextures.push_back(&depthTexture);
+    Logger::logProcess(__FUNCTION__);	//TODO remove logging
 }
 

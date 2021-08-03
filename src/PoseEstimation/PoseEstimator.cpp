@@ -10,7 +10,7 @@ using namespace tr;
 ConfigParser PoseEstimator::config(POSE_CONFIG_FILE);
 
 Estimator* getEstimator(ConfigParser& config) {
-    const unsigned int candidateCount = std::stoi(config.getEntry("candidate count", "5"));
+    const unsigned int candidateCount = std::stoi(config.getEntry("candidate count", "10"));
     switch (strHash(config.getEntry("estimator", "direct").c_str())) {
         //TODO add more
     case strHash("direct"): return new DirectEstimator(candidateCount);
@@ -32,15 +32,22 @@ tr::PoseEstimator::~PoseEstimator() {
 }
 
 SixDOF PoseEstimator::getPose(const cv::Mat& frame) {
+    Logger::logProcess(__FUNCTION__);   //TODO remove logging
     distanceTensor.setFrame(frame);
     std::vector<Template*> candidates = estimator->estimate(distanceTensor);
-    cv::Mat image(frame.rows, frame.cols,CV_8U, cv::Scalar(0));
-    for (auto& i : candidates.front()->uv)
-        image.at<uchar>(cv::Point((int)(i.x * frame.cols), (int)(i.y * frame.rows))) = 255;
-    cv::imshow("top candidate", image);
+    int i=0;
+    for (auto& candidate : candidates) {
+        cv::Mat image(frame.rows, frame.cols, CV_8U, cv::Scalar(0));
+        for (auto& i : candidate->uv)
+            image.at<uchar>(cv::Point((int)(i.x * frame.cols), (int)(i.y * frame.rows))) = 255;
+        cv::imshow("top candidate", image);
+        Logger::log(std::to_string(++i) + ". candidate");
+        cv::waitKey(1000000000);
+    }
     //TODO parallel registration
     //return registrator.registrate(templates.begin(),)
     
+    Logger::logProcess(__FUNCTION__);   //TODO remove logging
     //TODO registration
     return candidates.front()->sixDOF;
 }

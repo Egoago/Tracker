@@ -26,13 +26,13 @@ void getObjectName(std::string& fName, std::string& oName) {
 void Model::generate6DOFs() {
 	Logger::logProcess(__FUNCTION__);	//TODO remove logging
 	//TODO tune granularity
-	const static Range width(config.getEntries("width", { "-130.0", "130.0", "6" }));
-	const static Range height(config.getEntries("height", { "-130.0", "130.0", "6" }));
-	const static Range depth(config.getEntries("depth", { "-325.0", "-8000.0", "6" }));
+	const static Range width(config.getEntries("width", { "-120.0", "120.0", "1" }));
+	const static Range height(config.getEntries("height", { "-120.0", "120.0", "1" }));
+	const static Range depth(config.getEntries("depth", { "-325.0", "-8000.0", "2" }));
 	//TODO uniform sphere distr <=> homogenous tensor layout????
 	const static Range roll(config.getEntries("roll", { "0", "360", "2" }));
-	const static Range yaw(config.getEntries("yaw", { "0", "360", "4" }));
-	const static Range pitch(config.getEntries("pitch", { "0", "180", "4" }));
+	const static Range yaw(config.getEntries("yaw", { "0", "360", "2" }));
+	const static Range pitch(config.getEntries("pitch", { "0", "180", "2" }));
 	templates.allocate({
 		width.resolution,
 		height.resolution,
@@ -65,27 +65,16 @@ glm::vec2 renderPoint(const glm::vec3& p, const glm::mat4& mvp) {
 	return glm::vec2(pPos.x, pPos.y);
 }
 
-void renderTemplate(Template* temp, const glm::mat4& mvp) {
-	const unsigned int pixelCount = (unsigned int)temp->pos.size();
-	temp->uv.resize(pixelCount);
-	temp->angle.resize(pixelCount);
-	for (unsigned int i = 0; i < pixelCount; i++) {
-		glm::vec2 p = renderPoint(temp->pos[i], mvp);
-		glm::vec2 op = renderPoint(temp->offsetPos[i], mvp);
-		temp->uv[i] = p;
-		temp->angle[i] = getOrientation(p - op);
-	}
-}
-
 //TODO remove monitoring
-void drawOnFrame(const glm::vec3& p, cv::Mat& posMap, const glm::mat4& mvp, cv::Scalar color) {
+void drawOnFrame(const glm::vec3& p, cv::Mat& canvas, const glm::mat4& mvp, cv::Scalar color) {
 	glm::vec2 uv = renderPoint(p, mvp);
-	cv::Point pixel((int)(uv.x * (float)posMap.cols +0.5f),
-		(int)(uv.y * (float)posMap.rows + 0.5f));
-	circle(posMap, pixel, 1, color, -1);
+	cv::Point pixel((int)std::roundf(uv.x * (canvas.cols-1)),
+					(int)std::roundf(uv.y * (canvas.rows-1)));
+	circle(canvas, pixel, 1, color, -1);
 }
 
 void floatToBinary(const cv::Mat& floatMap, cv::Mat& binary) {
+	Logger::logProcess(__FUNCTION__);	//TODO remove logging
 	cv::absdiff(floatMap, cv::Scalar::all(0), binary);
 	switch (binary.channels()) {
 		case 3: cv::transform(binary, binary, cv::Matx13f(1.0, 1.0, 1.0)); break;
@@ -94,21 +83,27 @@ void floatToBinary(const cv::Mat& floatMap, cv::Mat& binary) {
 	}
 	cv::threshold(binary, binary, 1e-10, 255, cv::THRESH_BINARY);
 	binary.convertTo(binary, CV_8U);
+	Logger::logProcess(__FUNCTION__);	//TODO remove logging
 }
 
 void getContour(const cv::Mat& lowDirMap, cv::Mat& contourMap) {
+	Logger::logProcess(__FUNCTION__);	//TODO remove logging
 	cv::Mat tmp;
 	floatToBinary(lowDirMap, tmp);
 	std::vector<std::vector<cv::Point> > contours;
 	cv::findContours(tmp, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_NONE);
 	cv::drawContours(contourMap, contours, 0, cv::Scalar(255, 255, 255));
+	Logger::logProcess(__FUNCTION__);	//TODO remove logging
 }
 
 void Model::extractCandidates() {
+	Logger::logProcess(__FUNCTION__);	//TODO remove logging
 	candidates.clear();
 	cv::Mat maskMap;
 	floatToBinary(*textureMaps[HDIR], maskMap);
+	cv::imshow("hdir mask", maskMap);
 	getContour(*textureMaps[LDIR], maskMap);
+	cv::imshow("hdir + contour", maskMap);
 	std::mutex mtx;
 	maskMap.forEach<uchar>(
 		[&textureMaps = textureMaps, &candidates = candidates, &mtx]
@@ -133,22 +128,50 @@ void Model::extractCandidates() {
 				mtx.unlock();
 			}
 		});
+	Logger::logProcess(__FUNCTION__);	//TODO remove logging
 }
 
 void Model::rasterizeCandidates(Template* temp) {
+	Logger::logProcess(__FUNCTION__);	//TODO remove logging
+	const unsigned int bufferSize = (unsigned int)candidates.size();
 	const static int rasterCount = std::stoi(config.getEntry("rasterization count", "100"));
-	const static float rasterOffset = stof(config.getEntry("rasterization offset", "0.01"));
-	float rasterProb = (float)rasterCount / (float)candidates.size();
+	const static float rasterOffset = stof(config.getEntry("rasterization offset", "4.0f"));
+	float rasterProb = (float)rasterCount / (float)bufferSize;
 	if (rasterProb > 1.0f) rasterProb = 1.0f;
 	static std::mt19937 gen(std::random_device{}());
 	static std::bernoulli_distribution dist(rasterProb);
 	std::vector<bool> mask(candidates.size());
-	std::generate(mask.begin(), mask.end(), [&] { return dist(gen); });
-	for(unsigned int i = 0; i < mask.size(); i++)
+	unsigned int count = 0;
+	std::generate(mask.begin(), mask.end(), [&] {
+		count++;
+		return dist(gen); 
+	});
+	temp->pos.resize(count);
+	temp->offsetPos.resize(count);
+	//TODO parallelization-compact
+	for(unsigned int i = 0; i < bufferSize; i++)
 		if (mask[i]) {
-			temp->pos.push_back(candidates[i].pos);
-			temp->offsetPos.push_back(candidates[i].pos + candidates[i].dir * rasterOffset);
+			const glm::vec3 p = candidates[i].pos;
+			if(std::fabsf(glm::length(candidates[i].dir)-1.0f) > 1e-10f)
+			Logger::warning("normal: " + std::to_string(glm::length(candidates[i].dir)));
+			temp->pos[i] = p;
+			temp->offsetPos[i] = p + (candidates[i].dir * rasterOffset);
 		}
+	Logger::logProcess(__FUNCTION__);	//TODO remove logging
+}
+
+void renderTemplate(Template* temp, const glm::mat4& mvp) {
+	Logger::logProcess(__FUNCTION__);	//TODO remove logging
+	const unsigned int pixelCount = (unsigned int)temp->pos.size();
+	temp->uv.resize(pixelCount);
+	temp->angle.resize(pixelCount);
+	for (unsigned int i = 0; i < pixelCount; i++) {
+		const glm::vec2 p = renderPoint(temp->pos[i], mvp);
+		const glm::vec2 op = renderPoint(temp->offsetPos[i], mvp);
+		temp->uv[i] = p;
+		temp->angle[i] = getOrientation(p - op);
+	}
+	Logger::logProcess(__FUNCTION__);	//TODO remove logging
 }
 
 void Model::generarteObject(const std::string& fileName) {
@@ -170,9 +193,30 @@ void Model::generarteObject(const std::string& fileName) {
 			"\t frames out of "+ std::to_string(templates.getSize()) + "\r", true);
 		renderer.setModel(i->sixDOF);
 		renderer.render(textureMaps);
+		cv::imshow("depth", *textureMaps[DPTH]);
+		/*cv::imshow("high pos", *textureMaps[HPOS]);
+		cv::imshow("high dir", *textureMaps[HDIR]);
+		cv::imshow("low pos", *textureMaps[LPOS]);
+		cv::imshow("low dir", *textureMaps[LDIR]);*/
 		extractCandidates();
 		rasterizeCandidates(i);
 		renderTemplate(i, renderer.getMVP());
+		cv::Mat canvas(cv::Size(800, 800), CV_8UC3);
+		canvas = cv::Scalar::all(0);
+		for (unsigned int x = 0; x < i->pos.size(); x++) {
+			glm::vec2 uv1 = renderPoint(i->pos[x], renderer.getMVP());
+			cv::Point p1((int)std::roundf(uv1.x * (canvas.cols - 1)),
+						 (int)std::roundf(uv1.y * (canvas.rows - 1)));
+			glm::vec2 uv2 = renderPoint(i->offsetPos[x], renderer.getMVP());
+			cv::Point p2((int)std::roundf(uv2.x * (canvas.cols - 1)),
+						 (int)std::roundf(uv2.y * (canvas.rows - 1)));
+			line(canvas, p1, p2, cv::Scalar(255, 0, 0));
+			circle(canvas, p1, 1, cv::Scalar(0, 255, 0), -1);
+			circle(canvas, p2, 1, cv::Scalar(0, 0, 255), -1);
+		}
+		cv::imshow("rasterized", canvas);
+		Logger::log("Waiting for key...");
+		cv::waitKey(10000000);
 	}
 	Logger::log("\n");
 	Logger::logProcess(__FUNCTION__);	//TODO remove logging

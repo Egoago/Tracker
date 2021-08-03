@@ -37,6 +37,13 @@ namespace tr {
 		}
 	};
 
+	inline float getOrientation(const glm::vec2 d) {
+		float angle = glm::atan(d.y / d.x);
+		if (angle < 0.0f)
+			angle += glm::pi<float>();
+		return angle;
+	}
+
 	template <class PointType = glm::vec3>
 	struct Edge {
 		PointType a, b;
@@ -50,21 +57,17 @@ namespace tr {
 			return *this;
 		}
 
-		bool operator==(const Edge& other) {
+		inline float orientation() const {
+			return getOrientation(a - b);
+		}
+
+		inline bool operator==(const Edge& other) {
 			const float epsilon = 1e-13f;
 			return
 				glm::distance(a, other.a) < epsilon &&
 				glm::distance(b, other.b) < epsilon;
 		}
 	};
-
-	inline float getOrientation(const Edge<glm::vec2>& edge) {
-		glm::vec2 d = edge.a - edge.b;
-		float angle = glm::atan(d.y / d.x);
-		if (angle < 0.0f)
-			angle += glm::pi<float>();
-		return angle;
-	}
 
 	struct Range {
 		float begin, end, step, dist;

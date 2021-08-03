@@ -1,6 +1,8 @@
 #pragma once
-#include "Misc/ConfigParser.h"
 #include <opencv2/core/mat.hpp>
+#include <glm/vec2.hpp>
+#include <vector>
+#include "Misc/ConfigParser.h"
 #include "Detectors/EdgeDetector.h"
 
 //TODO rename + reorganise file hierarchy
@@ -22,6 +24,7 @@ namespace tr {
 		float* costs;
 
 		void directedDistanceTransform();
+		void distanceTransformFromEdges(const std::vector< Edge<glm::vec2>>& edges);
 		void gaussianBlur();
 	public:
 		DistanceTensor(unsigned int width, unsigned int height);

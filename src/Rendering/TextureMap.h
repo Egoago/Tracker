@@ -12,7 +12,7 @@ namespace tr
 	public:
 		TextureMap(int cvType, glm::uvec2 resolution);
 		~TextureMap();
-		cv::Mat* copy();
+		cv::Mat* copyToCPU();
 		GLenum bind(unsigned int index);
 	};
 }

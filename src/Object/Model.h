@@ -18,7 +18,8 @@ namespace tr {
 			HPOS = 0,
 			HDIR = 1,
 			LPOS = 2,
-			LDIR = 3
+			LDIR = 3,
+			DPTH = 4
 		};
 		struct Candidate {
 			glm::vec3 pos, dir;
