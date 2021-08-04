@@ -1,10 +1,8 @@
 #pragma once
 #include "EdgeDetector.hpp"
 
-namespace tr
-{
-	class LSDDetector : public EdgeDetector
-	{
+namespace tr {
+	class LSDDetector : public EdgeDetector {
 	private:
 		float scale;
 	public:
