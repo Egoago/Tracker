@@ -18,6 +18,11 @@ std::vector<Template*> tr::DirectEstimator::estimate(const DistanceTensor& dcd3t
         for (unsigned int i = 0; i < pixelCount; i++)
             distance += std::powf(dcd3t.getDist(temp->uv[i], temp->angle[i]),2.0f);
         distance /= (float)pixelCount;
+        if (pixelCount <= 20)
+            distance = 1000000000000;
+        else if (pixelCount < 80)
+            distance /= (pixelCount - 20) / 60.0f;
+        //distance /= 1.0f + std::expf(-(float)pixelCount / 20.0f + 2.5f);
         /*Logger::log(std::to_string(c) + ":\tpixels " + std::to_string(pixelCount)
                     + "\tloss " + std::to_string(distance));*/
         if (candidates.size() < candidateCount) {
@@ -37,6 +42,9 @@ std::vector<Template*> tr::DirectEstimator::estimate(const DistanceTensor& dcd3t
             candidates.pop_back();
         }
     }
+    Logger::log("Candidate losses");
+    for (unsigned int i = 0; i < candidateCount; i++)
+        Logger::log(std::to_string(i + 1) + ". candidate: " + std::to_string(distances[i]));
     Logger::logProcess(__FUNCTION__);   //TODO remove logging
     return candidates;
 }

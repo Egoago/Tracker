@@ -18,7 +18,7 @@ constexpr inline int quantizedIndex(const float value, const unsigned int q) {
 }
 
 unsigned int getQ(ConfigParser& config) {
-    return std::stoi(config.getEntry("orientation quantization", "100"));
+    return std::stoi(config.getEntry("orientation quantization", "60"));
 }
 
 EdgeDetector* getEdgeDetector(ConfigParser& config) {
@@ -63,8 +63,9 @@ void DistanceTensor::setFrame(const cv::Mat& nextFrame) {
     directedDistanceTransform();
     //TODO reintroduce
     //gaussianBlur();
+    //TODO remove logging
     //while(1)
-    for (unsigned int i = 0; i < q; i++) {
+    /*for (unsigned int i = 0; i < q; i++) {
         tmp = Scalar::all(255);
         for (Edge<glm::vec2>& edge : quantizedEdges[i]) {
             const Point A((int)std::round(edge.a.x),
@@ -81,7 +82,7 @@ void DistanceTensor::setFrame(const cv::Mat& nextFrame) {
         cv::waitKey(1);
         Logger::log( std::to_string(i)+ ". quanized edges");
         cv::waitKey(10000000);
-    }
+    }*/
 
     //TODO reintroduce blurring
     Logger::logProcess(__FUNCTION__);   //TODO remove logging
@@ -133,7 +134,7 @@ std::shared_ptr<cv::Point[]> getPixels(const unsigned int width, const unsigned 
 
 void DistanceTensor::directedDistanceTransform() {
     Logger::logProcess(__FUNCTION__);   //TODO remove logging
-    const static float lambda = stof(config.getEntry("lambda", "20000.0"));
+    const static float lambda = stof(config.getEntry("lambda", "3000.0"));
     const static float dirCost = lambda*glm::pi<float>()/q;
     const static auto pixels = getPixels(width, height);
     //TODO parallelization

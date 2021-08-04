@@ -16,10 +16,10 @@ extern "C" {
 ConfigParser Renderer::config(REND_CONFIG_FILE);
 
 void Renderer::readConfig() {
-    std::vector<std::string> str = config.getEntries("frame resolution", { "1000", "1000" });
+    std::vector<std::string> str = config.getEntries("frame resolution", { "1024", "1024" });
     resolution = glm::uvec2(std::stoi(str[0]), std::stoi(str[1]));
     nearP = std::stof(config.getEntry("near clipping pane", "200.0"));
-    farP = std::stof(config.getEntry("far clipping pane", "10100.0"));
+    farP = std::stof(config.getEntry("far clipping pane", "4500.0"));
     fov = glm::radians(std::stof(config.getEntry("fov", "45.0")));
     aspect = (float)resolution.x / resolution.y;
 }
@@ -214,22 +214,24 @@ void Renderer::setModel(SixDOF& sixDOF) {
 }
 
 void Renderer::render() {
-    Logger::logProcess(__FUNCTION__);	//TODO remove logging
+    //TODO use PBOs for downloading and double buffering
+    //x2~3 model load speedup
+    //see notes for details
+    //Logger::logProcess(__FUNCTION__);	//TODO remove logging
     glViewport(0, 0, resolution.x, resolution.y);
     for (auto pipeline : pipelines)
         pipeline->render();
     glFlush();
     getTextures();
-    Logger::logProcess(__FUNCTION__);	//TODO remove logging
-    
+    //Logger::logProcess(__FUNCTION__);	//TODO remove logging
 }
 
 std::vector<cv::Mat*> tr::Renderer::getTextures() {
-    Logger::logProcess(__FUNCTION__);	//TODO remove logging
+    //Logger::logProcess(__FUNCTION__);	//TODO remove logging
     std::vector<cv::Mat*> outTextures;
     for (auto textureMap : textureMaps)
         outTextures.push_back(textureMap->copyToCPU());
-    Logger::logProcess(__FUNCTION__);	//TODO remove logging
+    //Logger::logProcess(__FUNCTION__);	//TODO remove logging
     return outTextures;
 }
 

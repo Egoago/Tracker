@@ -35,14 +35,14 @@ SixDOF PoseEstimator::getPose(const cv::Mat& frame) {
     Logger::logProcess(__FUNCTION__);   //TODO remove logging
     distanceTensor.setFrame(frame);
     std::vector<Template*> candidates = estimator->estimate(distanceTensor);
-    int i=0;
+    int c=0;
     for (auto& candidate : candidates) {
         cv::Mat image(frame.rows, frame.cols, CV_8U, cv::Scalar(0));
         for (auto& i : candidate->uv)
             image.at<uchar>(cv::Point((int)(i.x * frame.cols), (int)(i.y * frame.rows))) = 255;
-        cv::imshow("top candidate", image);
+        cv::imshow("candidate", image);
         cv::waitKey(1);
-        Logger::log(std::to_string(++i) + ". candidate");
+        Logger::log(std::to_string(++c) + ". candidate. " + std::to_string(candidate->uv.size()) + " points.");
         cv::waitKey(1000000000);
     }
     //TODO parallel registration

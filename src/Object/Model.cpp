@@ -1,6 +1,7 @@
 #include "Model.h"
 #include <mutex>
 #include <random>
+#include <numeric>
 #include <opencv2/imgproc.hpp>
 #include "AssimpGeometry.h"
 #include "../Rendering/Renderer.h"
@@ -26,13 +27,13 @@ void getObjectName(std::string& fName, std::string& oName) {
 void Model::generate6DOFs() {
 	Logger::logProcess(__FUNCTION__);	//TODO remove logging
 	//TODO tune granularity
-	const static Range width(config.getEntries("width", { "-120.0", "120.0", "2" }));
-	const static Range height(config.getEntries("height", { "-120.0", "120.0", "2" }));
-	const static Range depth(config.getEntries("depth", { "-325.0", "-8000.0", "2" }));
+	const static Range width(config.getEntries("width", { "-120.0", "120.0", "7" }));
+	const static Range height(config.getEntries("height", { "-120.0", "120.0", "7" }));
+	const static Range depth(config.getEntries("depth", { "-325.0", "-4000.0", "5" }));
 	//TODO uniform sphere distr <=> homogenous tensor layout????
-	const static Range roll(config.getEntries("roll", { "0", "360", "2" }));
-	const static Range yaw(config.getEntries("yaw", { "0", "360", "2" }));
-	const static Range pitch(config.getEntries("pitch", { "0", "180", "2" }));
+	const static Range roll(config.getEntries("roll", { "0", "360", "6" }));
+	const static Range yaw(config.getEntries("yaw", { "0", "360", "6" }));
+	const static Range pitch(config.getEntries("pitch", { "0", "180", "3" }));
 	templates.allocate({
 		width.resolution,
 		height.resolution,
@@ -65,16 +66,8 @@ glm::vec2 renderPoint(const glm::vec3& p, const glm::mat4& mvp) {
 	return glm::vec2(pPos.x, pPos.y);
 }
 
-//TODO remove monitoring
-void drawOnFrame(const glm::vec3& p, cv::Mat& canvas, const glm::mat4& mvp, cv::Scalar color) {
-	glm::vec2 uv = renderPoint(p, mvp);
-	cv::Point pixel((int)std::roundf(uv.x * (canvas.cols-1)),
-					(int)std::roundf(uv.y * (canvas.rows-1)));
-	circle(canvas, pixel, 1, color, -1);
-}
-
 void floatToBinary(const cv::Mat& floatMap, cv::Mat& binary) {
-	Logger::logProcess(__FUNCTION__);	//TODO remove logging
+	//Logger::logProcess(__FUNCTION__);	//TODO remove logging
 	cv::absdiff(floatMap, cv::Scalar::all(0), binary);
 	switch (binary.channels()) {
 		case 3: cv::transform(binary, binary, cv::Matx13f(1.0, 1.0, 1.0)); break;
@@ -83,30 +76,23 @@ void floatToBinary(const cv::Mat& floatMap, cv::Mat& binary) {
 	}
 	cv::threshold(binary, binary, 1e-10, 255, cv::THRESH_BINARY);
 	binary.convertTo(binary, CV_8U);
-	Logger::logProcess(__FUNCTION__);	//TODO remove logging
+	//Logger::logProcess(__FUNCTION__);	//TODO remove logging
 }
 
 void getContour(const cv::Mat& maskMap, cv::Mat& contourMap) {
-	Logger::logProcess(__FUNCTION__);	//TODO remove logging
+	//Logger::logProcess(__FUNCTION__);	//TODO remove logging
 	std::vector<std::vector<cv::Point> > contours;
-	cv::Mat temp = maskMap.clone();
-	temp = cv::Scalar::all(0);
 	cv::findContours(maskMap, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_NONE);
 	cv::drawContours(contourMap, contours, 0, cv::Scalar(255, 255, 255));
-	cv::drawContours(temp, contours, 0, cv::Scalar(255, 255, 255));
-	cv::imshow("contour", temp);
-	cv::waitKey(1);
-	Logger::logProcess(__FUNCTION__);	//TODO remove logging
+	//Logger::logProcess(__FUNCTION__);	//TODO remove logging
 }
 
 void Model::extractCandidates() {
-	Logger::logProcess(__FUNCTION__);	//TODO remove logging
+	//Logger::logProcess(__FUNCTION__);	//TODO remove logging
 	candidates.clear();
 	cv::Mat maskMap;
 	floatToBinary(*textureMaps[Renderer::HDIR], maskMap);
 	getContour(*textureMaps[Renderer::MESH], maskMap);
-	cv::imshow("hdir + contour", maskMap);
-	cv::waitKey(1);
 	std::mutex mtx;
 	maskMap.forEach<uchar>(
 		[&textureMaps = textureMaps, &candidates = candidates, &mtx]
@@ -131,40 +117,43 @@ void Model::extractCandidates() {
 				mtx.unlock();
 			}
 		});
-	Logger::logProcess(__FUNCTION__);	//TODO remove logging
+	//Logger::logProcess(__FUNCTION__);	//TODO remove logging
 }
 
 void Model::rasterizeCandidates(Template* temp) {
-	Logger::logProcess(__FUNCTION__);	//TODO remove logging
+	//Logger::logProcess(__FUNCTION__);	//TODO remove logging
+
 	const unsigned int bufferSize = (unsigned int)candidates.size();
 	const static int rasterCount = std::stoi(config.getEntry("rasterization count", "100"));
-	const static float rasterOffset = stof(config.getEntry("rasterization offset", "4.0f"));
+	const static float rasterOffset = stof(config.getEntry("rasterization offset", "1e-5f"));
 	float rasterProb = (float)rasterCount / (float)bufferSize;
 	if (rasterProb > 1.0f) rasterProb = 1.0f;
 	static std::mt19937 gen(std::random_device{}());
 	static std::bernoulli_distribution dist(rasterProb);
-	std::vector<bool> mask(candidates.size());
+	std::vector<bool> mask(bufferSize); //mask generation needed for efficient allocation
 	unsigned int count = 0;
 	std::generate(mask.begin(), mask.end(), [&] {
-		count++;
-		return dist(gen); 
+		if(dist(gen)){
+			count++;
+			return true;
+		}
+		return false; 
 	});
 	temp->pos.resize(count);
 	temp->offsetPos.resize(count);
 	//TODO parallelization-compact
+	unsigned int x = 0;
 	for(unsigned int i = 0; i < bufferSize; i++)
 		if (mask[i]) {
 			const glm::vec3 p = candidates[i].pos;
-			if(std::fabsf(glm::length(candidates[i].dir)-1.0f) > 1e-10f)
-			Logger::warning("normal: " + std::to_string(glm::length(candidates[i].dir)));
-			temp->pos[i] = p;
-			temp->offsetPos[i] = p + (candidates[i].dir * rasterOffset);
+			temp->pos[x] = p;
+			temp->offsetPos[x++] = p + (candidates[i].dir * rasterOffset);
 		}
-	Logger::logProcess(__FUNCTION__);	//TODO remove logging
+	//Logger::logProcess(__FUNCTION__);	//TODO remove logging
 }
 
 void renderTemplate(Template* temp, const glm::mat4& mvp) {
-	Logger::logProcess(__FUNCTION__);	//TODO remove logging
+	//Logger::logProcess(__FUNCTION__);	//TODO remove logging
 	const unsigned int pixelCount = (unsigned int)temp->pos.size();
 	temp->uv.resize(pixelCount);
 	temp->angle.resize(pixelCount);
@@ -174,7 +163,20 @@ void renderTemplate(Template* temp, const glm::mat4& mvp) {
 		temp->uv[i] = p;
 		temp->angle[i] = getOrientation(p - op);
 	}
-	Logger::logProcess(__FUNCTION__);	//TODO remove logging
+	//Logger::logProcess(__FUNCTION__);	//TODO remove logging
+}
+
+//TODO remove logging
+void analizeRasterization(const std::vector<unsigned int>& rasterCounts) {
+	double avg = std::accumulate(rasterCounts.begin(), rasterCounts.end(), 0.0) / (double)rasterCounts.size();
+	double sq_sum = std::inner_product(rasterCounts.begin(), rasterCounts.end(), rasterCounts.begin(), 0.0);
+	double stdev = std::sqrt(sq_sum / rasterCounts.size() - avg * avg);
+	unsigned int max = *std::max_element(std::begin(rasterCounts), std::end(rasterCounts));
+	unsigned int min = *std::min_element(std::begin(rasterCounts), std::end(rasterCounts));
+	Logger::log("Rasterization max " + std::to_string(max)
+							+ " min " + std::to_string(min)
+							+ " mean " + std::to_string(avg)
+							+ " stdev " + std::to_string(stdev));
 }
 
 void Model::generarteObject(const std::string& fileName) {
@@ -187,22 +189,19 @@ void Model::generarteObject(const std::string& fileName) {
 	generate6DOFs();
 	
 	int c = 1;
+	std::vector<unsigned int> rasterCounts;
 	for (Template* i = templates.begin(); i < (templates.begin() + templates.getSize()); i++) {
 		//TODO use CUDA with OpenGL directly on GPU
 		// instead moving textures to CPU and using OpenCV
 		// OpenMP??
 
-		//TODO remove monitoring
-		Logger::log("Rendered " + std::to_string(c++) +
-			"\t frames out of "+ std::to_string(templates.getSize()) + "\r", true);
 		renderer.setModel(i->sixDOF);
 		renderer.render();
-		cv::imshow("mesh", *textureMaps[Renderer::MESH]);
-		cv::waitKey(1);
 		extractCandidates();
 		rasterizeCandidates(i);
 		renderTemplate(i, renderer.getMVP());
-		cv::Mat canvas(cv::Size(800, 800), CV_8UC3);
+		//TODO remove log
+		/*cv::Mat canvas(cv::Size(800, 800), CV_8UC3);
 		canvas = cv::Scalar::all(0);
 		for (unsigned int x = 0; x < i->pos.size(); x++) {
 			glm::vec2 uv1 = renderPoint(i->pos[x], renderer.getMVP());
@@ -214,12 +213,19 @@ void Model::generarteObject(const std::string& fileName) {
 			line(canvas, p1, p2, cv::Scalar(255, 0, 0));
 			circle(canvas, p1, 1, cv::Scalar(0, 255, 0), -1);
 			circle(canvas, p2, 1, cv::Scalar(0, 0, 255), -1);
-		}
-		cv::imshow("rasterized", canvas);
+		}*/
+		/*cv::imshow("rasterized", canvas);
 		cv::waitKey(1);
 		Logger::log("Waiting for key...");
-		cv::waitKey(10000000);
+		cv::waitKey(10000000);*/
+		//TODO remove monitoring
+		rasterCounts.push_back((unsigned int)i->uv.size());
+		
+		Logger::log("Rendered " + std::to_string(c++)
+			+ "\t frames out of "+ std::to_string(templates.getSize())
+			+ " \r", true);
 	}
+	analizeRasterization(rasterCounts);
 	Logger::log("\n");
 	Logger::logProcess(__FUNCTION__);	//TODO remove logging
 }
