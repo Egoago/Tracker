@@ -6,7 +6,7 @@ using namespace tr;
 
 Pipeline::Pipeline(
     const char* name,
-    const std::vector<TextureMap*>& textureMaps,
+    const std::vector<std::shared_ptr<TextureMap>>& textureMaps,
     GLenum drawPrimitive,
     GLbitfield clearMask,
     GLuint depthBuffer,
@@ -14,8 +14,8 @@ Pipeline::Pipeline(
     textureMaps(textureMaps),
     drawPrimitive(drawPrimitive),
     clearMask(clearMask),
-    drawElements(drawElements) {
-    shader = new Shader(name);
+    drawElements(drawElements),
+    shader(new Shader(name)){
 
     //Frame buffer
     glGenFramebuffers(1, &frameBuffer);
@@ -31,14 +31,11 @@ Pipeline::Pipeline(
         glDrawBuffers(size, drawBuffers);
     else
         glDrawBuffer(GL_NONE);
-    //glFlush();
     delete[] drawBuffers;
 }
 
 Pipeline::~Pipeline() {
-    //TODO proper destructor fix
     glDeleteFramebuffers(1, &frameBuffer);
-    delete shader;
 }
 
 void Pipeline::render() {

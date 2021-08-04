@@ -24,7 +24,7 @@ namespace tr {
 
 		//Temp buffers
 		std::vector<Candidate> candidates;
-		std::vector<cv::Mat*> textureMaps;
+		std::vector<cv::Mat*> textureMaps; //TODO smart pointer
 
 		void generarteObject(const std::string& fileName);
 		void generate6DOFs();

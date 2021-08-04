@@ -121,28 +121,29 @@ void tr::DistanceTensor::distanceTransformFromEdges(const std::vector<Edge<glm::
     Logger::logProcess(__FUNCTION__);   //TODO remove logging
 }
 
-std::shared_ptr<cv::Point[]> getPixels(const unsigned int width, const unsigned int height) {
-    std::shared_ptr<cv::Point[]> pixels(new cv::Point[width * height]);
-    for (unsigned int x = 0; x < width; x++)
-        for (unsigned int y = 0; y < height; y++) {
-            const unsigned int i = width * y + x;
-            pixels[i].x = x;
-            pixels[i].y = y;
+std::shared_ptr<unsigned int[]> getIndices(const cv::Mat& buffer) {
+    const unsigned int width = buffer.cols;
+    const unsigned int height = buffer.rows;
+    unsigned int stride = (unsigned int)buffer.step1();
+    std::shared_ptr<unsigned int[]> indices(new unsigned int[width * height]);
+    for (unsigned int y = 0; y < height; y++) {
+        for (unsigned int x = 0; x < width; x++)
+            indices[width * y + x] = stride * y + x;
         }
-    return pixels;
+    return indices;
 }
 
 void DistanceTensor::directedDistanceTransform() {
     Logger::logProcess(__FUNCTION__);   //TODO remove logging
     const static float lambda = stof(config.getEntry("lambda", "3000.0"));
     const static float dirCost = lambda*glm::pi<float>()/q;
-    const static auto pixels = getPixels(width, height);
+    const static auto indices = getIndices(buffers[front][0]);
     //TODO parallelization
     //TODO buffer swap
 	for (unsigned int p = 0; p < width * height; p++) {
-        const cv::Point pixel = pixels[p];
+        const unsigned int index = indices[p];
 		for (unsigned int i = 0; i < q; i++) {
-			costs[i] = buffers[front][i].at<float>(pixel);
+			costs[i] = ((float*)buffers[front][i].data)[index];
 			if (costs[i] > maxCost)
 				costs[i] = maxCost;
 		}
@@ -176,7 +177,7 @@ void DistanceTensor::directedDistanceTransform() {
 			else break;
 
 		for (unsigned int i = 0; i < q; i++)
-            buffers[front][i].at<float>(pixel) = costs[i];
+            ((float*)buffers[front][i].data)[index] = costs[i];
 	}
     Logger::logProcess(__FUNCTION__);   //TODO remove logging
 }
@@ -184,18 +185,19 @@ void DistanceTensor::directedDistanceTransform() {
 //TODO merge blur with ddt?
 void DistanceTensor::gaussianBlur() {
     Logger::logProcess(__FUNCTION__);   //TODO remove logging
+    unsigned int stride = (unsigned int)buffers[front][0].step1();
+    const static auto indices = getIndices(buffers[front][0]);
     //TODO parallelization
-    for (unsigned int x = 0; x < width; x++)
-        for (unsigned int y = 0; y < height; y++) {
-            const cv::Point pixel(x, y);
+    for (unsigned int p = 0; p < width * height; p++) {
+            const unsigned int pixelIndex = indices[p];
             for (unsigned int dir = 0; dir < q; dir++) {
                 const unsigned int prev = (dir == 0) ? q-1 : dir - 1;
                 const unsigned int next = (dir == q-1) ? 0 : dir + 1;
                 //TODO localization
-                buffers[!front][dir].at<float>(pixel) =
-                    buffers[front][prev].at<float>(pixel) * 0.25f +
-                    buffers[front][dir].at<float>(pixel) * 0.5f +
-                    buffers[front][next].at<float>(pixel) * 0.25f;
+                ((float*)buffers[!front][dir].data)[pixelIndex] =
+                    ((float*)buffers[front][prev].data)[pixelIndex] * 0.25f +
+                    ((float*)buffers[front][dir].data)[pixelIndex] * 0.5f +
+                    ((float*)buffers[front][next].data)[pixelIndex] * 0.25f;
             }
         }
     front = !front; //swap buffers

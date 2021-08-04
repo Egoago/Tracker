@@ -9,26 +9,19 @@ using namespace tr;
 
 ConfigParser PoseEstimator::config(POSE_CONFIG_FILE);
 
-Estimator* getEstimator(ConfigParser& config) {
+Estimator* getEstimator(ConfigParser& config, Tensor<Template>& templates) {
     const unsigned int candidateCount = std::stoi(config.getEntry("candidate count", "10"));
+    Estimator* estimator = nullptr;
     switch (strHash(config.getEntry("estimator", "direct").c_str())) {
         //TODO add more
-    case strHash("direct"): return new DirectEstimator(candidateCount);
-    default: return new DirectEstimator(candidateCount);
+    case strHash("direct"): return new DirectEstimator(candidateCount, templates);
+    default: return new DirectEstimator(candidateCount, templates);
     }
 }
 
 PoseEstimator::PoseEstimator(const int width, const int height, Tensor<Template>& templates) :
-    distanceTensor(DistanceTensor(width, height)) {
-    estimator = getEstimator(config);
-    estimator->setTemplates(&templates);
-}
-
-tr::PoseEstimator::~PoseEstimator() {
-    if (estimator != nullptr)
-        delete estimator;
-    if (registrator != nullptr)
-        delete registrator;
+    distanceTensor(width, height),
+    estimator(getEstimator(config, templates)) {
 }
 
 SixDOF PoseEstimator::getPose(const cv::Mat& frame) {

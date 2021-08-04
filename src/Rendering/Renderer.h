@@ -2,6 +2,7 @@
 #include <glm/mat4x4.hpp>
 #include <opencv2/core/mat.hpp>
 #include <vector>
+#include <memory>
 #include "../Misc/ConfigParser.h"
 #include "../Object/Geometry.h"
 #include "../Coordinates.h"
@@ -15,8 +16,10 @@ namespace tr
 	private:
 		static ConfigParser config;
 
-		std::vector<Pipeline*> pipelines;
-		std::vector<TextureMap*> textureMaps;
+		std::vector<std::unique_ptr<Pipeline>> pipelines;
+		std::vector<std::shared_ptr<TextureMap>> textureMaps;
+		unsigned int depthBuffer;
+		int glutWindow;
 
 		//TODO simplify to one matrix
 		glm::mat4 ProjMtx, ViewModelMtx;

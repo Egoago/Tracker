@@ -5,7 +5,6 @@
 #include <glm/ext/matrix_clip_space.hpp>
 #include "../Misc/Links.h"
 
-//TODO remove temporary namespaces
 using namespace tr;
 
 extern "C" {
@@ -27,37 +26,37 @@ void Renderer::readConfig() {
 Renderer::Renderer(const Geometry& geometry) {
     //TODO add back-face culling
     int argc=0;
-    //TODO argc and argv in release
     glutInit(&argc, nullptr);
     /* can not hide window due to
      * main loop not being called*/
-    glutCreateWindow("OpenGL");
+    glutWindow = glutCreateWindow("OpenGL");
     glewInit();
     
     readConfig();
 
     //Texture for contour mask
-    textureMaps.push_back(new TextureMap(CV_8U, resolution));
+    textureMaps.reserve(5);
+    textureMaps.emplace_back(new TextureMap(CV_8U, resolution));
     //Four textures for pos and dir maps for both thresholds
     for(unsigned int i = 0; i < 4; i++)
-        textureMaps.push_back(new TextureMap(CV_32FC3, resolution));
+        textureMaps.emplace_back(new TextureMap(CV_32FC3, resolution));
 
     // Z buffer
     glEnable(GL_DEPTH_TEST);
-    GLuint depthBuffer;
     glGenRenderbuffers(1, &depthBuffer);
     glBindRenderbuffer(GL_RENDERBUFFER, depthBuffer);
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, resolution.x, resolution.y);
     glDepthFunc(GL_LEQUAL);
     //set up pipelines
-    pipelines.push_back(new Pipeline("mesh",
+    pipelines.reserve(3);
+    pipelines.emplace_back(new Pipeline("mesh",
                                     { textureMaps[MESH] },
                                     GL_TRIANGLES,
                                     GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT,
                                     depthBuffer,
                                     true));
     //High thresh
-    pipelines.push_back(new Pipeline("edge",
+    pipelines.emplace_back(new Pipeline("edge",
                                     {textureMaps[HPOS], textureMaps[HDIR]},
                                     GL_LINES,
                                     GL_COLOR_BUFFER_BIT,
@@ -65,7 +64,7 @@ Renderer::Renderer(const Geometry& geometry) {
                                     false));
     //Low thresh
     
-    pipelines.push_back(new Pipeline("edge",
+    pipelines.emplace_back(new Pipeline("edge",
                                     {textureMaps[LPOS], textureMaps[LDIR]},
                                     GL_LINES,
                                     GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT,
@@ -77,10 +76,10 @@ Renderer::Renderer(const Geometry& geometry) {
 
 Renderer::~Renderer()
 {
-    //TODO delete depth buffer
     //TODO proper resource management
-    glDisableVertexAttribArray(0);
-    glDisableVertexAttribArray(1);
+    glDeleteRenderbuffers(1, &depthBuffer);
+    glutDestroyWindow(glutWindow);
+
 }
 
 void Renderer::setGeometry(const Geometry& geometry)
@@ -184,8 +183,8 @@ void Renderer::setGeometry(const Geometry& geometry)
 
 void Renderer::updatePipelines()
 {
-    for (auto pipeline : pipelines) {
-        Shader* shader = pipeline->getShader();
+    for (auto& pipeline : pipelines) {
+        std::shared_ptr<Shader> shader = pipeline->getShader();
         shader->enable();
         shader->registerFloat4x4("P", &ProjMtx[0][0]);
         shader->registerFloat4x4("VM", &ViewModelMtx[0][0]);
@@ -219,7 +218,7 @@ void Renderer::render() {
     //see notes for details
     //Logger::logProcess(__FUNCTION__);	//TODO remove logging
     glViewport(0, 0, resolution.x, resolution.y);
-    for (auto pipeline : pipelines)
+    for (auto& pipeline : pipelines)
         pipeline->render();
     glFlush();
     getTextures();
@@ -229,7 +228,7 @@ void Renderer::render() {
 std::vector<cv::Mat*> tr::Renderer::getTextures() {
     //Logger::logProcess(__FUNCTION__);	//TODO remove logging
     std::vector<cv::Mat*> outTextures;
-    for (auto textureMap : textureMaps)
+    for (auto& textureMap : textureMaps)
         outTextures.push_back(textureMap->copyToCPU());
     //Logger::logProcess(__FUNCTION__);	//TODO remove logging
     return outTextures;

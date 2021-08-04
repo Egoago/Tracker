@@ -3,11 +3,11 @@
 #include <vector>
 #include <iostream>
 #include "../Misc/Links.h"
+#include "../Misc/Log.h"
 
 using namespace tr;
 
-std::string readFile(std::string filename)
-{
+std::string readFile(std::string filename) {
 	std::ifstream stream(filename);
 	if (!stream.is_open()) {
 		std::cerr << "File " << filename << " not found.\n";
@@ -18,15 +18,13 @@ std::string readFile(std::string filename)
 	return str;
 }
 
-Shader::Shader(const char* name) : name(name)
-{
+Shader::Shader(const char* name) : name(name) {
 	loadShader(GL_VERTEX_SHADER, SHADERS_FOLDER + std::string(name) + ".vert");
 	loadShader(GL_FRAGMENT_SHADER, SHADERS_FOLDER + std::string(name) + ".frag");
 	compile();
 }
 
-void Shader::loadShader(GLuint type, std::string filename)
-{
+void Shader::loadShader(GLuint type, std::string filename) {
 	switch (type)
 	{
 	case GL_VERTEX_SHADER:
@@ -45,8 +43,7 @@ void Shader::loadShader(GLuint type, std::string filename)
 	}
 }
 
-bool Shader::compile()
-{
+bool Shader::compile() {
 	GLint result = GL_FALSE;
 	int InfoLogLength;
 
@@ -115,46 +112,44 @@ bool Shader::disable()
     return compiled;
 }
 
-Shader::~Shader()
-{
-	std::cout << "deleting shader " << name << std::endl;
+Shader::~Shader() {
 	glDeleteProgram(ID);
 }
 
-void Shader::registerFloat4x4(const char* name, float mtx[])
-{
+void Shader::registerFloat4x4(const char* name, float mtx[]) {
 	GLuint id = glGetUniformLocation(ID, name);
 	if (id == -1) {
-		std::cerr
-			<< "[WARNING] "
-			<< "uniform mat4 variable " << name
-			<< " not found in shader " << this->name << std::endl;
+		Logger::warning(
+			"uniform mat4 variable"
+			+ std::string(name)
+			+ " not found in shader "
+			+ std::string(this->name));
 		return;
 	}
 	glUniformMatrix4fv(id, 1, GL_FALSE, mtx);
 }
 
-void Shader::registerFloat4(const char* name, float f1, float f2, float f3, float f4)
-{
+void Shader::registerFloat4(const char* name, float f1, float f2, float f3, float f4) {
 	GLuint id = glGetUniformLocation(ID, name);
 	if (id == -1) {
-		std::cerr 
-			<<"[WARNING] "
-			<< "uniform vec4 variable " << name
-			<< " not found in shader " << this->name << std::endl;
+		Logger::warning(
+			"uniform vec4 variable"
+			+ std::string(name)
+			+ " not found in shader "
+			+ std::string(this->name));
 		return;
 	}
 	glUniform4f(id, f1, f2, f3, f4);
 }
 
-void Shader::registerFloat(const char* name, float value)
-{
+void Shader::registerFloat(const char* name, float value) {
 	GLuint id = glGetUniformLocation(ID, name);
 	if (id == -1) {
-		std::cerr
-			<< "[WARNING] "
-			<< "uniform float variable " << name
-			<< " not found in shader " << this->name << std::endl;
+		Logger::warning(
+			"uniform float variable"
+			+ std::string(name)
+			+ " not found in shader "
+			+ std::string(this->name));
 		return;
 	}
 	glUniform1f(id, value);

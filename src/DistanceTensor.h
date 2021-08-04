@@ -2,17 +2,18 @@
 #include <opencv2/core/mat.hpp>
 #include <glm/vec2.hpp>
 #include <vector>
+#include <memory>
 #include "Misc/ConfigParser.h"
 #include "Detectors/EdgeDetector.h"
 
-//TODO rename + reorganise file hierarchy
+//TODO reorganise file hierarchy
 namespace tr {
 	class DistanceTensor {
 	private:
 		static ConfigParser config;
 		const float maxCost;
 		const unsigned int q;
-		const EdgeDetector* edgeDetector;
+		std::unique_ptr<EdgeDetector> edgeDetector;
 
 		const unsigned int width, height;
 
@@ -29,7 +30,6 @@ namespace tr {
 	public:
 		DistanceTensor(unsigned int width, unsigned int height);
 		~DistanceTensor() {
-			delete edgeDetector;
 			delete[] costs;
 		};
 		void setFrame(const cv::Mat& nextFrame);

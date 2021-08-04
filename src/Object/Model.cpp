@@ -200,7 +200,7 @@ void Model::generarteObject(const std::string& fileName) {
 		extractCandidates();
 		rasterizeCandidates(i);
 		renderTemplate(i, renderer.getMVP());
-		//TODO remove log
+		//TODO remove logging
 		/*cv::Mat canvas(cv::Size(800, 800), CV_8UC3);
 		canvas = cv::Scalar::all(0);
 		for (unsigned int x = 0; x < i->pos.size(); x++) {

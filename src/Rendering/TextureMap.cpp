@@ -30,8 +30,7 @@ TextureMap::TextureMap(int cvType, glm::uvec2 resolution) :
 }
 
 TextureMap::~TextureMap() {
-	//TODO implement
-	std::cout << "deleting pipeline\n";
+	glDeleteTextures(1, &glBuffer);
 }
 
 cv::Mat* TextureMap::copyToCPU() {
