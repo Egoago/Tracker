@@ -1,4 +1,4 @@
-#include "uEyeCamera.h"
+#include "uEyeCamera.hpp"
 #include <uEye.h>
 #include <iostream>
 

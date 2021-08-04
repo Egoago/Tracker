@@ -1,8 +1,8 @@
-#include "ConfigParser.h"
+#include "ConfigParser.hpp"
 #include <iostream>
 #include <fstream>
 #include <string>
-#include "Links.h"
+#include "Links.hpp"
 
 using namespace std;
 using namespace tr;

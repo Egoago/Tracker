@@ -1,9 +1,9 @@
-#include "Shader.h"
+#include "Shader.hpp"
 #include <fstream>
 #include <vector>
 #include <iostream>
-#include "../Misc/Links.h"
-#include "../Misc/Log.h"
+#include "../Misc/Links.hpp"
+#include "../Misc/Log.hpp"
 
 using namespace tr;
 

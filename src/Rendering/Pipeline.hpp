@@ -1,8 +1,8 @@
 #pragma once
 #include <vector>
 #include <memory>
-#include "TextureMap.h"
-#include "Shader.h"
+#include "TextureMap.hpp"
+#include "Shader.hpp"
 
 namespace tr
 {

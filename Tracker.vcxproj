@@ -190,7 +190,7 @@ del "$(SolutionDir)Config\*" /Q</Command>
     <ClCompile Include="src\Detectors\lsd.c" />
     <ClCompile Include="src\Detectors\LSDDetector.cpp" />
     <ClCompile Include="src\Misc\ConfigParser.cpp" />
-    <ClCompile Include="src\Misc\Links.h" />
+    <ClCompile Include="src\Misc\Links.hpp" />
     <ClCompile Include="src\Misc\Log.cpp" />
     <ClCompile Include="src\Object\AssimpGeometry.cpp" />
     <ClCompile Include="src\Object\Geometry.cpp" />
@@ -203,29 +203,29 @@ del "$(SolutionDir)Config\*" /Q</Command>
     <ClCompile Include="src\Rendering\TextureMap.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\Camera\Camera.h" />
-    <ClInclude Include="src\Camera\OpenCVCamera.h" />
-    <ClInclude Include="src\Camera\uEyeCamera.h" />
-    <ClInclude Include="src\DistanceTensor.h" />
-    <ClInclude Include="src\Detectors\CannyDetector.h" />
-    <ClInclude Include="src\Detectors\EdgeDetector.h" />
+    <ClInclude Include="src\Camera\Camera.hpp" />
+    <ClInclude Include="src\Camera\OpenCVCamera.hpp" />
+    <ClInclude Include="src\Camera\uEyeCamera.hpp" />
+    <ClInclude Include="src\DistanceTensor.hpp" />
+    <ClInclude Include="src\Detectors\CannyDetector.hpp" />
+    <ClInclude Include="src\Detectors\EdgeDetector.hpp" />
     <ClInclude Include="src\Detectors\lsd.h" />
-    <ClInclude Include="src\Detectors\LSDDetector.h" />
-    <ClInclude Include="src\Math\Tensor.h" />
-    <ClInclude Include="src\Misc\ConfigParser.h" />
-    <ClInclude Include="src\Misc\Log.h" />
-    <ClInclude Include="src\Coordinates.h" />
-    <ClInclude Include="src\Object\Geometry.h" />
-    <ClInclude Include="src\Object\AssimpGeometry.h" />
-    <ClInclude Include="src\Object\Model.h" />
-    <ClInclude Include="src\PoseEstimation\DirectEstimator.h" />
-    <ClInclude Include="src\PoseEstimation\Estimator.h" />
-    <ClInclude Include="src\PoseEstimation\PoseEstimator.h" />
-    <ClInclude Include="src\PoseEstimation\Registrator.h" />
-    <ClInclude Include="src\Rendering\Pipeline.h" />
-    <ClInclude Include="src\Rendering\Renderer.h" />
-    <ClInclude Include="src\Rendering\Shader.h" />
-    <ClInclude Include="src\Rendering\TextureMap.h" />
+    <ClInclude Include="src\Detectors\LSDDetector.hpp" />
+    <ClInclude Include="src\Math\Tensor.hpp" />
+    <ClInclude Include="src\Misc\ConfigParser.hpp" />
+    <ClInclude Include="src\Misc\Log.hpp" />
+    <ClInclude Include="src\Coordinates.hpp" />
+    <ClInclude Include="src\Object\Geometry.hpp" />
+    <ClInclude Include="src\Object\AssimpGeometry.hpp" />
+    <ClInclude Include="src\Object\Model.hpp" />
+    <ClInclude Include="src\PoseEstimation\DirectEstimator.hpp" />
+    <ClInclude Include="src\PoseEstimation\Estimator.hpp" />
+    <ClInclude Include="src\PoseEstimation\PoseEstimator.hpp" />
+    <ClInclude Include="src\PoseEstimation\Registrator.hpp" />
+    <ClInclude Include="src\Rendering\Pipeline.hpp" />
+    <ClInclude Include="src\Rendering\Renderer.hpp" />
+    <ClInclude Include="src\Rendering\Shader.hpp" />
+    <ClInclude Include="src\Rendering\TextureMap.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="src\Shaders\edge.frag" />

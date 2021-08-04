@@ -1,11 +1,11 @@
-#include "AssimpGeometry.h"
+#include "AssimpGeometry.hpp"
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 #include <iostream>
-#include "../Misc/Links.h"
+#include "../Misc/Links.hpp"
 #include <glm/geometric.hpp>
-#include "../Misc/Log.h"
+#include "../Misc/Log.hpp"
 
 using namespace tr;
 

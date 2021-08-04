@@ -1,5 +1,5 @@
 #pragma once
-#include "EdgeDetector.h"
+#include "EdgeDetector.hpp"
 
 namespace tr
 {

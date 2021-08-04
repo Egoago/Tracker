@@ -1,9 +1,9 @@
 #include <GL/glew.h>
 #include <GL/freeglut.h>
-#include "Renderer.h"
+#include "Renderer.hpp"
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/ext/matrix_clip_space.hpp>
-#include "../Misc/Links.h"
+#include "../Misc/Links.hpp"
 
 using namespace tr;
 

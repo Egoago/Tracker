@@ -1,4 +1,4 @@
-#include "LSDDetector.h"
+#include "LSDDetector.hpp"
 #include <opencv2/imgproc.hpp>
 //TODO remove debug
 //#include <opencv2/highgui.hpp>

@@ -5,7 +5,7 @@
 #include <string>
 #include <iostream>
 #include <serializer.h>
-#include "Misc/Log.h"
+#include "Misc/Log.hpp"
 
 //TODO move everything to tr
 namespace tr {

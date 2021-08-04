@@ -1,19 +1,20 @@
 #pragma once
-#include "Camera.h"
+
+#include "Camera.hpp"
+#include <opencv2/opencv.hpp>
 
 namespace tr
 {
-	class UEyeCamera : public Camera
-	{
+	class OpenCVCamera : public Camera {
 	private:
-		int id;
-		unsigned long hCam = 0;
-		char* pcImageMemory;
+		void* cap;
+		cv::Mat frame;
 	public:
-		UEyeCamera();
-		~UEyeCamera();
+		OpenCVCamera(int id = 0);
+		~OpenCVCamera();
 		virtual char* getNextFrame() override;
 		virtual double getFPS() const override;
 		virtual int getFormat() const override;
 	};
 }
+

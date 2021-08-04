@@ -2,7 +2,7 @@
 #include <initializer_list>
 #include <serializer.h>
 //TODO remove log
-#include "../Misc/Log.h"
+#include "../Misc/Log.hpp"
 
 namespace tr {
 	template <class CellType>

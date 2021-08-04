@@ -1,5 +1,5 @@
 #pragma once
-#include "Estimator.h"
+#include "Estimator.hpp"
 
 namespace tr {
 	class DirectEstimator : public Estimator {

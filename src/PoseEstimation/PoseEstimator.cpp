@@ -1,6 +1,6 @@
-#include "PoseEstimator.h"
-#include "../Misc/Links.h"
-#include "DirectEstimator.h"
+#include "PoseEstimator.hpp"
+#include "../Misc/Links.hpp"
+#include "DirectEstimator.hpp"
 
 //TODO remove debug
 #include <opencv2/highgui.hpp>

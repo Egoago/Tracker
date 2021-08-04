@@ -1,8 +1,8 @@
 #pragma once
-#include "../Math/Tensor.h"
-#include "../Coordinates.h"
+#include "../Math/Tensor.hpp"
+#include "../Coordinates.hpp"
 #include <vector>
-#include "../DistanceTensor.h"
+#include "../DistanceTensor.hpp"
 
 namespace tr {
 	class Estimator

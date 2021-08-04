@@ -1,6 +1,6 @@
 #pragma once
-#include "../Coordinates.h"
-#include "../DistanceTensor.h"
+#include "../Coordinates.hpp"
+#include "../DistanceTensor.hpp"
 
 namespace tr{
 	class Registrator {

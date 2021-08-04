@@ -1,4 +1,4 @@
-#include "OpenCVCamera.h"
+#include "OpenCVCamera.hpp"
 #include <iostream>
 #include <opencv2/highgui/highgui.hpp>
 

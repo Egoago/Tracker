@@ -1,4 +1,4 @@
-#include "Log.h"
+#include "Log.hpp"
 //TODO only for windows
 #include <Windows.h>
 

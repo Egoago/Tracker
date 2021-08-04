@@ -1,6 +1,6 @@
-#include "TextureMap.h"
+#include "TextureMap.hpp"
 #include <iostream>
-#include "../Misc/Log.h"
+#include "../Misc/Log.hpp"
 #include <GL/glew.h>
 
 using namespace tr;

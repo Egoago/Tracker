@@ -1,13 +1,13 @@
-#include "Model.h"
+#include "Model.hpp"
 #include <mutex>
 #include <random>
 #include <numeric>
 #include <opencv2/imgproc.hpp>
-#include "AssimpGeometry.h"
-#include "../Rendering/Renderer.h"
-#include "../Misc/Links.h"
+#include "AssimpGeometry.hpp"
+#include "../Rendering/Renderer.hpp"
+#include "../Misc/Links.hpp"
 //TODO remove logging
-#include "../Misc/Log.h"
+#include "../Misc/Log.hpp"
 #include <opencv2/highgui.hpp>
 
 //TODO break apart

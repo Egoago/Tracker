@@ -1,9 +1,9 @@
-#include "Misc/Links.h"
-#include "PoseEstimation/PoseEstimator.h"
-#include "Object/Model.h"
+#include "Misc/Links.hpp"
+#include "PoseEstimation/PoseEstimator.hpp"
+#include "Object/Model.hpp"
 #include <opencv2/highgui.hpp>
 #include <iostream>
-#include "Misc/Log.h"
+#include "Misc/Log.hpp"
 
 int main(int argc, char** argv) {
     tr::Logger::logProcess(__FUNCTION__);   //TODO remove logging

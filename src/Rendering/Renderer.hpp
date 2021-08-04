@@ -3,11 +3,11 @@
 #include <opencv2/core/mat.hpp>
 #include <vector>
 #include <memory>
-#include "../Misc/ConfigParser.h"
-#include "../Object/Geometry.h"
-#include "../Coordinates.h"
-#include "TextureMap.h"
-#include "Pipeline.h"
+#include "../Misc/ConfigParser.hpp"
+#include "../Object/Geometry.hpp"
+#include "../Coordinates.hpp"
+#include "TextureMap.hpp"
+#include "Pipeline.hpp"
 
 namespace tr
 {

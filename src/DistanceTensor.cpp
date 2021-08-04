@@ -1,8 +1,8 @@
-#include "DistanceTensor.h"
+#include "DistanceTensor.hpp"
 #include <opencv2/imgproc.hpp>
-#include "Misc/Links.h"
-#include "Detectors/LSDDetector.h"
-#include "Detectors/CannyDetector.h"
+#include "Misc/Links.hpp"
+#include "Detectors/LSDDetector.hpp"
+#include "Detectors/CannyDetector.hpp"
 #include <opencv2/highgui.hpp>
 
 using namespace std;

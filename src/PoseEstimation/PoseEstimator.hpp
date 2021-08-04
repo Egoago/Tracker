@@ -1,12 +1,12 @@
 #pragma once
-#include "../Coordinates.h"
+#include "../Coordinates.hpp"
 #include <opencv2/core/mat.hpp>
 #include <memory>
-#include "Estimator.h"
-#include "Registrator.h"
-#include "../Math/Tensor.h"
-#include "../Misc/ConfigParser.h"
-#include "../DistanceTensor.h"
+#include "Estimator.hpp"
+#include "Registrator.hpp"
+#include "../Math/Tensor.hpp"
+#include "../Misc/ConfigParser.hpp"
+#include "../DistanceTensor.hpp"
 
 namespace tr {
 	class PoseEstimator {

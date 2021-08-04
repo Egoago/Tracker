@@ -1,8 +1,8 @@
-#include "Geometry.h"
+#include "Geometry.hpp"
 #include <glm/geometric.hpp>
 #include <glm/gtx/vector_angle.hpp>
-#include "../Coordinates.h"
-#include "../Misc/Log.h"
+#include "../Coordinates.hpp"
+#include "../Misc/Log.hpp"
 #include <string>
 
 using namespace std;

@@ -3,8 +3,8 @@
 #include <glm/vec2.hpp>
 #include <vector>
 #include <memory>
-#include "Misc/ConfigParser.h"
-#include "Detectors/EdgeDetector.h"
+#include "Misc/ConfigParser.hpp"
+#include "Detectors/EdgeDetector.hpp"
 
 //TODO reorganise file hierarchy
 namespace tr {

@@ -1,6 +1,6 @@
-#include "Pipeline.h"
+#include "Pipeline.hpp"
 #include <opencv2/core/mat.hpp>
-#include "../Misc/Log.h"
+#include "../Misc/Log.hpp"
 
 using namespace tr;
 

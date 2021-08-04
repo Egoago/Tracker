@@ -3,9 +3,9 @@
 #include <string>
 #include <iostream>
 #include <opencv2/core/mat.hpp>
-#include "../Misc/ConfigParser.h"
-#include "../Coordinates.h"
-#include "../Math/Tensor.h"
+#include "../Misc/ConfigParser.hpp"
+#include "../Coordinates.hpp"
+#include "../Math/Tensor.hpp"
 
 namespace tr {
 	class Model {

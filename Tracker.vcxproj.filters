@@ -56,7 +56,7 @@
     <ClCompile Include="src\Misc\ConfigParser.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Misc\Links.h">
+    <ClCompile Include="src\Misc\Links.hpp">
       <Filter>Header Files\Misc</Filter>
     </ClCompile>
     <ClCompile Include="src\Detectors\LSDDetector.cpp">
@@ -91,73 +91,73 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\Camera\Camera.h">
+    <ClInclude Include="src\Camera\Camera.hpp">
       <Filter>Header Files\Camera</Filter>
     </ClInclude>
-    <ClInclude Include="src\Camera\uEyeCamera.h">
+    <ClInclude Include="src\Camera\uEyeCamera.hpp">
       <Filter>Header Files\Camera</Filter>
     </ClInclude>
-    <ClInclude Include="src\Camera\OpenCVCamera.h">
+    <ClInclude Include="src\Camera\OpenCVCamera.hpp">
       <Filter>Header Files\Camera</Filter>
     </ClInclude>
-    <ClInclude Include="src\Object\Geometry.h">
+    <ClInclude Include="src\Object\Geometry.hpp">
       <Filter>Header Files\Object</Filter>
     </ClInclude>
-    <ClInclude Include="src\Object\AssimpGeometry.h">
+    <ClInclude Include="src\Object\AssimpGeometry.hpp">
       <Filter>Header Files\Object</Filter>
     </ClInclude>
-    <ClInclude Include="src\Rendering\Shader.h">
+    <ClInclude Include="src\Rendering\Shader.hpp">
       <Filter>Header Files\Rendering</Filter>
     </ClInclude>
-    <ClInclude Include="src\Rendering\Renderer.h">
+    <ClInclude Include="src\Rendering\Renderer.hpp">
       <Filter>Header Files\Rendering</Filter>
     </ClInclude>
-    <ClInclude Include="src\Misc\ConfigParser.h">
+    <ClInclude Include="src\Misc\ConfigParser.hpp">
       <Filter>Header Files\Misc</Filter>
     </ClInclude>
-    <ClInclude Include="src\Coordinates.h">
+    <ClInclude Include="src\Coordinates.hpp">
       <Filter>Header Files\Object</Filter>
     </ClInclude>
-    <ClInclude Include="src\Detectors\EdgeDetector.h">
+    <ClInclude Include="src\Detectors\EdgeDetector.hpp">
       <Filter>Header Files\EdgeDetectors</Filter>
     </ClInclude>
-    <ClInclude Include="src\Detectors\LSDDetector.h">
+    <ClInclude Include="src\Detectors\LSDDetector.hpp">
       <Filter>Header Files\EdgeDetectors</Filter>
     </ClInclude>
     <ClInclude Include="src\Detectors\lsd.h">
       <Filter>Header Files\EdgeDetectors</Filter>
     </ClInclude>
-    <ClInclude Include="src\Detectors\CannyDetector.h">
+    <ClInclude Include="src\Detectors\CannyDetector.hpp">
       <Filter>Header Files\EdgeDetectors</Filter>
     </ClInclude>
-    <ClInclude Include="src\PoseEstimation\PoseEstimator.h">
+    <ClInclude Include="src\PoseEstimation\PoseEstimator.hpp">
       <Filter>Header Files\PoseEstimation</Filter>
     </ClInclude>
-    <ClInclude Include="src\DistanceTensor.h">
+    <ClInclude Include="src\DistanceTensor.hpp">
       <Filter>Header Files\PoseEstimation</Filter>
     </ClInclude>
-    <ClInclude Include="src\Object\Model.h">
+    <ClInclude Include="src\Object\Model.hpp">
       <Filter>Header Files\Object</Filter>
     </ClInclude>
-    <ClInclude Include="src\Rendering\TextureMap.h">
+    <ClInclude Include="src\Rendering\TextureMap.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Rendering\Pipeline.h">
+    <ClInclude Include="src\Rendering\Pipeline.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Misc\Log.h">
+    <ClInclude Include="src\Misc\Log.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Math\Tensor.h">
+    <ClInclude Include="src\Math\Tensor.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\PoseEstimation\Estimator.h">
+    <ClInclude Include="src\PoseEstimation\Estimator.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\PoseEstimation\Registrator.h">
+    <ClInclude Include="src\PoseEstimation\Registrator.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\PoseEstimation\DirectEstimator.h">
+    <ClInclude Include="src\PoseEstimation\DirectEstimator.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
