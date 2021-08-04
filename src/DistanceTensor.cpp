@@ -74,9 +74,11 @@ void DistanceTensor::setFrame(const cv::Mat& nextFrame) {
             line(tmp, A, B, Scalar(0), 1, LINE_8);
         }
         cv::imshow("detected lines", tmp);
+        cv::waitKey(1);
 
         buffers[front][i].convertTo(tmp, CV_32F, 2.0f / maxCost);
         cv::imshow("dist transform", tmp);
+        cv::waitKey(1);
         Logger::log( std::to_string(i)+ ". quanized edges");
         cv::waitKey(10000000);
     }

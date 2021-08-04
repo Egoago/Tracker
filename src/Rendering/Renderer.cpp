@@ -213,12 +213,23 @@ void Renderer::setModel(SixDOF& sixDOF) {
     updatePipelines();
 }
 
-void Renderer::render(std::vector<cv::Mat*>& outTextures) {
+void Renderer::render() {
     Logger::logProcess(__FUNCTION__);	//TODO remove logging
     glViewport(0, 0, resolution.x, resolution.y);
-    outTextures.clear();
     for (auto pipeline : pipelines)
-        pipeline->render(outTextures);
+        pipeline->render();
+    glFlush();
+    getTextures();
     Logger::logProcess(__FUNCTION__);	//TODO remove logging
+    
+}
+
+std::vector<cv::Mat*> tr::Renderer::getTextures() {
+    Logger::logProcess(__FUNCTION__);	//TODO remove logging
+    std::vector<cv::Mat*> outTextures;
+    for (auto textureMap : textureMaps)
+        outTextures.push_back(textureMap->copyToCPU());
+    Logger::logProcess(__FUNCTION__);	//TODO remove logging
+    return outTextures;
 }
 

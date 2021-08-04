@@ -26,8 +26,8 @@ void getObjectName(std::string& fName, std::string& oName) {
 void Model::generate6DOFs() {
 	Logger::logProcess(__FUNCTION__);	//TODO remove logging
 	//TODO tune granularity
-	const static Range width(config.getEntries("width", { "-120.0", "120.0", "1" }));
-	const static Range height(config.getEntries("height", { "-120.0", "120.0", "1" }));
+	const static Range width(config.getEntries("width", { "-120.0", "120.0", "2" }));
+	const static Range height(config.getEntries("height", { "-120.0", "120.0", "2" }));
 	const static Range depth(config.getEntries("depth", { "-325.0", "-8000.0", "2" }));
 	//TODO uniform sphere distr <=> homogenous tensor layout????
 	const static Range roll(config.getEntries("roll", { "0", "360", "2" }));
@@ -86,13 +86,16 @@ void floatToBinary(const cv::Mat& floatMap, cv::Mat& binary) {
 	Logger::logProcess(__FUNCTION__);	//TODO remove logging
 }
 
-void getContour(const cv::Mat& lowDirMap, cv::Mat& contourMap) {
+void getContour(const cv::Mat& maskMap, cv::Mat& contourMap) {
 	Logger::logProcess(__FUNCTION__);	//TODO remove logging
-	cv::Mat tmp;
-	floatToBinary(lowDirMap, tmp);
 	std::vector<std::vector<cv::Point> > contours;
-	cv::findContours(tmp, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_NONE);
+	cv::Mat temp = maskMap.clone();
+	temp = cv::Scalar::all(0);
+	cv::findContours(maskMap, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_NONE);
 	cv::drawContours(contourMap, contours, 0, cv::Scalar(255, 255, 255));
+	cv::drawContours(temp, contours, 0, cv::Scalar(255, 255, 255));
+	cv::imshow("contour", temp);
+	cv::waitKey(1);
 	Logger::logProcess(__FUNCTION__);	//TODO remove logging
 }
 
@@ -101,9 +104,9 @@ void Model::extractCandidates() {
 	candidates.clear();
 	cv::Mat maskMap;
 	floatToBinary(*textureMaps[Renderer::HDIR], maskMap);
-	cv::imshow("hdir mask", maskMap);
-	getContour(*textureMaps[Renderer::LDIR], maskMap);
+	getContour(*textureMaps[Renderer::MESH], maskMap);
 	cv::imshow("hdir + contour", maskMap);
+	cv::waitKey(1);
 	std::mutex mtx;
 	maskMap.forEach<uchar>(
 		[&textureMaps = textureMaps, &candidates = candidates, &mtx]
@@ -180,6 +183,7 @@ void Model::generarteObject(const std::string& fileName) {
 	//TODO add loading bar
 	Geometry geo = AssimpGeometry(fileName);
 	Renderer renderer(geo);
+	textureMaps = renderer.getTextures();
 	generate6DOFs();
 	
 	int c = 1;
@@ -192,14 +196,9 @@ void Model::generarteObject(const std::string& fileName) {
 		Logger::log("Rendered " + std::to_string(c++) +
 			"\t frames out of "+ std::to_string(templates.getSize()) + "\r", true);
 		renderer.setModel(i->sixDOF);
-		renderer.render(textureMaps);
-		cv::Mat temp;
-		textureMaps[Renderer::MESH]->convertTo(temp, CV_32F, 255.0 / 1.0);
-		cv::imshow("depth", temp);
-		/*cv::imshow("high pos", *textureMaps[HPOS]);
-		cv::imshow("high dir", *textureMaps[HDIR]);
-		cv::imshow("low pos", *textureMaps[LPOS]);
-		cv::imshow("low dir", *textureMaps[LDIR]);*/
+		renderer.render();
+		cv::imshow("mesh", *textureMaps[Renderer::MESH]);
+		cv::waitKey(1);
 		extractCandidates();
 		rasterizeCandidates(i);
 		renderTemplate(i, renderer.getMVP());
@@ -217,6 +216,7 @@ void Model::generarteObject(const std::string& fileName) {
 			circle(canvas, p2, 1, cv::Scalar(0, 0, 255), -1);
 		}
 		cv::imshow("rasterized", canvas);
+		cv::waitKey(1);
 		Logger::log("Waiting for key...");
 		cv::waitKey(10000000);
 	}

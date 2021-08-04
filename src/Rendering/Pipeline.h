@@ -29,7 +29,7 @@ namespace tr
 			GLuint depthBuffer,
 			bool drawElements);
 		~Pipeline();
-		void render(std::vector<cv::Mat*>& outTextures);
+		void render();
 	};
 }
 

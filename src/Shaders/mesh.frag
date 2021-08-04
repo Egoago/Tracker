@@ -1,9 +1,9 @@
 #version 460
 
-layout (location = 0) out uint outMask;
+layout (location = 0) out float outMask;
 
 void main() {
-	outMask = 255;
+	outMask = 1.0;
 }
 
   

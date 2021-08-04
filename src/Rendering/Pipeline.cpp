@@ -35,29 +35,20 @@ Pipeline::Pipeline(
     delete[] drawBuffers;
 }
 
-Pipeline::~Pipeline()
-{
+Pipeline::~Pipeline() {
     //TODO proper destructor fix
     glDeleteFramebuffers(1, &frameBuffer);
     delete shader;
 }
 
-void Pipeline::render(std::vector<cv::Mat*>& outTextures)
-{
-    Logger::logProcess(__FUNCTION__);
+void Pipeline::render() {
+    shader->enable();
     glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
     glClear(clearMask);
-    shader->enable();
     glBindVertexArray(VAO);
     if (drawElements)
         glDrawElements(drawPrimitive, primitiveCount, GL_UNSIGNED_INT, 0);
     else
         glDrawArrays(drawPrimitive, 0, primitiveCount);
     shader->disable();
-    glFlush();
-    Logger::logProcess("copy texture");
-    for (auto textureMap : textureMaps)
-        outTextures.push_back(textureMap->copyToCPU());
-    Logger::logProcess("copy texture");
-    Logger::logProcess(__FUNCTION__);
 }

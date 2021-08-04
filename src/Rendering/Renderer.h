@@ -43,7 +43,8 @@ namespace tr
 		glm::mat4 getMVP() const { return ProjMtx * ViewModelMtx; }
 		glm::mat4 getVM() const { return ViewModelMtx; }
 		glm::uvec2 getResolution() { return resolution; }
-		void render(std::vector<cv::Mat*>& outTextures);
+		void render();
+		std::vector<cv::Mat*>getTextures();
 	};
 }
 

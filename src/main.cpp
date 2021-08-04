@@ -13,6 +13,7 @@ int main(int argc, char** argv) {
     tr::Model model("cube");
     tr::PoseEstimator poseEstimator(frame.cols, frame.rows, model.getTemplates());
     cv::imshow("Original frame", dst);
+    cv::waitKey(1);
     std::cout << "Estimated pose: " << poseEstimator.getPose(dst);
     tr::Logger::log("Waiting for key...");
     cv::waitKey(1000000);

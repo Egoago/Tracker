@@ -41,6 +41,7 @@ SixDOF PoseEstimator::getPose(const cv::Mat& frame) {
         for (auto& i : candidate->uv)
             image.at<uchar>(cv::Point((int)(i.x * frame.cols), (int)(i.y * frame.rows))) = 255;
         cv::imshow("top candidate", image);
+        cv::waitKey(1);
         Logger::log(std::to_string(++i) + ". candidate");
         cv::waitKey(1000000000);
     }
