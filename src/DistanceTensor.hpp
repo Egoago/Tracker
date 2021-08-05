@@ -1,6 +1,7 @@
 #pragma once
 #include <opencv2/core/mat.hpp>
 #include <glm/vec2.hpp>
+#include <glm/vec3.hpp>
 #include <vector>
 #include <memory>
 #include "Misc/ConfigParser.hpp"
@@ -19,7 +20,7 @@ namespace tr {
 
 		//temp buffers
 		std::vector<Edge<glm::vec2>>* quantizedEdges;
-		cv::Mat** buffers;
+		cv::Mat** buffers; //TODO own Tensor instead of opencv
 		bool front;
 		cv::Mat tmp;
 		float* costs;
@@ -34,6 +35,7 @@ namespace tr {
 		};
 		void setFrame(const cv::Mat& nextFrame);
 		float getDist(const glm::vec2 uv, const float angle) const;
+		float getDist(const glm::uvec3 index) const;
 	};
 }
 

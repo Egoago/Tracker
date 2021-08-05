@@ -39,6 +39,8 @@ namespace tr {
 
 	inline float getOrientation(const glm::vec2 d) {
 		float angle = glm::atan(d.y / d.x);
+
+		
 		if (angle < 0.0f)
 			angle += glm::pi<float>();
 		return angle;

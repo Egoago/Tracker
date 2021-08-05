@@ -12,5 +12,6 @@ namespace tr
 	static const char* POSE_CONFIG_FILE = "pose.conf";
 	static const char* TEST_FRAME_CUBE = "Resources/TestFrames/cube.png";
 	static const char* TEST_FRAME_TRIANGLE = "Resources/TestFrames/triangle.png";
+	static const char* TEST_FRAME_CYLINDER = "Resources/TestFrames/cylinder.png";
 	static const char* SHADERS_FOLDER = "src/Shaders/";
 }

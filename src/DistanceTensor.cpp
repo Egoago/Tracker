@@ -1,8 +1,10 @@
 #include "DistanceTensor.hpp"
 #include <opencv2/imgproc.hpp>
+#include <glm/ext/scalar_constants.hpp>
 #include "Misc/Links.hpp"
 #include "Detectors/LSDDetector.hpp"
 #include "Detectors/CannyDetector.hpp"
+//TODO remove logging
 #include <opencv2/highgui.hpp>
 
 using namespace std;
@@ -10,12 +12,6 @@ using namespace cv;
 using namespace tr;
 
 ConfigParser DistanceTensor::config(DCDT3_CONFIG_FILE);
-
-constexpr inline int quantizedIndex(const float value, const unsigned int q) {
-    const constexpr float pi = glm::pi<float>();
-    const float d = pi / q;
-    return (int)(value / d) % q;
-}
 
 unsigned int getQ(ConfigParser& config) {
     return std::stoi(config.getEntry("orientation quantization", "60"));
@@ -61,8 +57,8 @@ void DistanceTensor::setFrame(const cv::Mat& nextFrame) {
     distanceTransformFromEdges(edges);
     
     directedDistanceTransform();
-    //TODO reintroduce
-    //gaussianBlur();
+
+    gaussianBlur();
     //TODO remove logging
     //while(1)
     /*for (unsigned int i = 0; i < q; i++) {
@@ -88,16 +84,70 @@ void DistanceTensor::setFrame(const cv::Mat& nextFrame) {
     Logger::logProcess(__FUNCTION__);   //TODO remove logging
 }
 
+//TODO constexpr after log remove
+inline float quantizedIndex(const float angle, const unsigned int q) {
+    const constexpr float pi = glm::pi<float>();
+#ifndef _DEBUG
+    tr::Logger::warning("Remove boundary check from release");
+#endif // !_DEBUG
+    if (angle > pi || angle < 0.0f)
+        tr::Logger::warning("angle out of bounds");
+    return (float)fmod(angle / pi * q, q);
+}
+
 float tr::DistanceTensor::getDist(const glm::vec2 uv, const float angle) const {
-    cv::Point pixel((int)std::roundf(uv.x * (width-1)),
-                    (int)std::roundf(uv.y * (height-1)));
+    cv::Point pixel((int)roundf(uv.x * (width-1)),
+                    (int)roundf(uv.y * (height-1)));
+    const glm::vec3 in(uv.x * (width - 1.0f),
+                       uv.y * (height - 1.0f),
+                       quantizedIndex(angle, q));
+    const glm::uvec3 corner1 = glm::floor(in);
+    const glm::uvec3 corner2(ceilf(in.x), ceilf(in.y), fmod(ceilf(in.z),q));
+    const glm::vec3 dists(in.x - corner1.x,
+                          in.y - corner1.y,
+                          in.z - corner1.z);
+    const glm::vec3 negDists = glm::vec3(1.0f) - dists;
+    float dist = 0.0f;
+    for (unsigned int i = 0; i < 8; i++) {
+        glm::uvec3 index;
+        float weight = 1.0f;
+        for (unsigned int dim = 0; dim < 3; dim++) {
+            const bool leftLowerCloserCorner = i & (1u << dim);
+            index[dim] = (leftLowerCloserCorner) ? corner1[dim] : corner2[dim];
+            weight *= (leftLowerCloserCorner) ? negDists[dim] : dists[dim];
+        }
+        dist += weight * getDist(index);
+    }
+    glm::uvec3 roundedIndex = glm::round(in);
+    roundedIndex.z %= q;
+    Logger::log("in "+std::to_string(in.x)+" "+std::to_string(in.y)+" "+std::to_string(in.z));
+    Logger::log("corner1 "+std::to_string(corner1.x) + " " + std::to_string(corner1.y) + " " + std::to_string(corner1.z));
+    Logger::log("corner2 "+std::to_string(corner2.x) + " " + std::to_string(corner2.y) + " " + std::to_string(corner2.z));
+    Logger::log("dists "
+        + std::to_string(dists.x) + " "
+        + std::to_string(dists.y) + " "
+        + std::to_string(dists.z));
+    Logger::log("negDists "+std::to_string(negDists.x) + " " + std::to_string(negDists.y) + " " + std::to_string(negDists.z));
+    Logger::log("roundedIndex "
+        + std::to_string(roundedIndex.x) + " "
+        + std::to_string(roundedIndex.y) + " "
+        + std::to_string(roundedIndex.z));
+    Logger::log("Losses:\tavg: " + std::to_string(dist)
+        + "\trounded: " + std::to_string(getDist(roundedIndex)));
+    return dist;
+}
+
+float tr::DistanceTensor::getDist(const glm::uvec3 index) const {
+    cv::Point pixel(index.x, index.y);
+#ifndef _DEBUG
+    Logger::warning("Remove boundary check from release");
+#endif // !_DEBUG
     if (pixel.x < 0 || pixel.x >= (int)width ||
         pixel.y < 0 || pixel.y >= (int)height) {
-        Logger::warning("Out of bounds: " + std::to_string(uv.x) + " " + std::to_string(uv.y), true);
+        Logger::warning("Out of bounds: " + std::to_string(index.x) + " " + std::to_string(index.y));
         return maxCost;
     }
-
-    return buffers[front][quantizedIndex(angle, q)].at<float>(pixel);
+    return buffers[front][index.z].at<float>(pixel);
 }
 
 void tr::DistanceTensor::distanceTransformFromEdges(const std::vector<Edge<glm::vec2>>& edges) {
@@ -105,7 +155,7 @@ void tr::DistanceTensor::distanceTransformFromEdges(const std::vector<Edge<glm::
     for (unsigned int i = 0; i < q; i++)
         quantizedEdges[i].clear();
     for (const Edge<glm::vec2>& edge : edges)
-        quantizedEdges[quantizedIndex(edge.orientation(), q)].push_back(edge);
+        quantizedEdges[(unsigned int)quantizedIndex(edge.orientation(), q)].push_back(edge);
 
     for (unsigned int i = 0; i < q; i++) {
         tmp = Scalar::all(255);

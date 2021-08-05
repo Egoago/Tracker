@@ -30,7 +30,7 @@ namespace tr {
 		void generate6DOFs();
 		bool load();
 		void extractCandidates();
-		void rasterizeCandidates(Template* temp);
+		void rasterizeCandidates(Template* temp, const glm::mat4& mvp);
 	public:
 		Model(std::string name);
 		~Model() {}

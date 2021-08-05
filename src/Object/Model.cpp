@@ -120,49 +120,45 @@ void Model::extractCandidates() {
 	//Logger::logProcess(__FUNCTION__);	//TODO remove logging
 }
 
-void Model::rasterizeCandidates(Template* temp) {
+void Model::rasterizeCandidates(Template* temp, const glm::mat4& mvp) {
 	//Logger::logProcess(__FUNCTION__);	//TODO remove logging
 
 	const unsigned int bufferSize = (unsigned int)candidates.size();
 	const static int rasterCount = std::stoi(config.getEntry("rasterization count", "100"));
-	const static float rasterOffset = stof(config.getEntry("rasterization offset", "1e-5f"));
+	const static float rasterOffset = stof(config.getEntry("rasterization offset", "0.0015"));
 	float rasterProb = (float)rasterCount / (float)bufferSize;
 	if (rasterProb > 1.0f) rasterProb = 1.0f;
 	static std::mt19937 gen(std::random_device{}());
 	static std::bernoulli_distribution dist(rasterProb);
 	std::vector<bool> mask(bufferSize); //mask generation needed for efficient allocation
-	unsigned int count = 0;
+	unsigned int chosenCount = 0;
 	std::generate(mask.begin(), mask.end(), [&] {
 		if(dist(gen)){
-			count++;
+			chosenCount++;
 			return true;
 		}
 		return false; 
 	});
-	temp->pos.resize(count);
-	temp->offsetPos.resize(count);
+	temp->pos.reserve(chosenCount);
+	temp->offsetPos.reserve(chosenCount);
+	temp->uv.reserve(chosenCount);
+	temp->angle.reserve(chosenCount);
 	//TODO parallelization-compact
-	unsigned int x = 0;
+	unsigned int validCount = 0;
 	for(unsigned int i = 0; i < bufferSize; i++)
 		if (mask[i]) {
 			const glm::vec3 p = candidates[i].pos;
-			temp->pos[x] = p;
-			temp->offsetPos[x++] = p + (candidates[i].dir * rasterOffset);
+			const glm::vec3 op = p + (candidates[i].dir * rasterOffset);
+			const glm::vec2 x = renderPoint(p, mvp);
+			const glm::vec2 ox = renderPoint(op, mvp);
+			const float angle = getOrientation(x - ox);
+			if (isnan(angle)) break;
+			temp->uv.emplace_back(x);
+			temp->angle.emplace_back(angle);
+			temp->pos.emplace_back(p);
+			temp->offsetPos.emplace_back(op);
+			validCount++;
 		}
-	//Logger::logProcess(__FUNCTION__);	//TODO remove logging
-}
-
-void renderTemplate(Template* temp, const glm::mat4& mvp) {
-	//Logger::logProcess(__FUNCTION__);	//TODO remove logging
-	const unsigned int pixelCount = (unsigned int)temp->pos.size();
-	temp->uv.resize(pixelCount);
-	temp->angle.resize(pixelCount);
-	for (unsigned int i = 0; i < pixelCount; i++) {
-		const glm::vec2 p = renderPoint(temp->pos[i], mvp);
-		const glm::vec2 op = renderPoint(temp->offsetPos[i], mvp);
-		temp->uv[i] = p;
-		temp->angle[i] = getOrientation(p - op);
-	}
 	//Logger::logProcess(__FUNCTION__);	//TODO remove logging
 }
 
@@ -198,8 +194,7 @@ void Model::generarteObject(const std::string& fileName) {
 		renderer.setModel(i->sixDOF);
 		renderer.render();
 		extractCandidates();
-		rasterizeCandidates(i);
-		renderTemplate(i, renderer.getMVP());
+		rasterizeCandidates(i, renderer.getMVP());
 		//TODO remove logging
 		/*cv::Mat canvas(cv::Size(800, 800), CV_8UC3);
 		canvas = cv::Scalar::all(0);
