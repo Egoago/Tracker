@@ -185,7 +185,7 @@ del "$(SolutionDir)Config\*" /Q</Command>
     <ClCompile Include="src\PoseEstimation\DirectEstimator.cpp" />
     <ClCompile Include="src\Camera\OpenCVCamera.cpp" />
     <ClCompile Include="src\Camera\uEyeCamera.cpp" />
-    <ClCompile Include="src\DistanceTensor.cpp" />
+    <ClCompile Include="src\PoseEstimation\DistanceTensor.cpp" />
     <ClCompile Include="src\Detectors\CannyDetector.cpp" />
     <ClCompile Include="src\Detectors\lsd.c" />
     <ClCompile Include="src\Detectors\LSDDetector.cpp" />
@@ -206,11 +206,14 @@ del "$(SolutionDir)Config\*" /Q</Command>
     <ClInclude Include="src\Camera\Camera.hpp" />
     <ClInclude Include="src\Camera\OpenCVCamera.hpp" />
     <ClInclude Include="src\Camera\uEyeCamera.hpp" />
-    <ClInclude Include="src\DistanceTensor.hpp" />
+    <ClInclude Include="src\PoseEstimation\DistanceTensor.hpp" />
     <ClInclude Include="src\Detectors\CannyDetector.hpp" />
     <ClInclude Include="src\Detectors\EdgeDetector.hpp" />
     <ClInclude Include="src\Detectors\lsd.h" />
     <ClInclude Include="src\Detectors\LSDDetector.hpp" />
+    <ClInclude Include="src\Math\Hubert.hpp" />
+    <ClInclude Include="src\Math\Loss.hpp" />
+    <ClInclude Include="src\Math\Quadratic.hpp" />
     <ClInclude Include="src\Math\Tensor.hpp" />
     <ClInclude Include="src\Misc\ConfigParser.hpp" />
     <ClInclude Include="src\Misc\Log.hpp" />

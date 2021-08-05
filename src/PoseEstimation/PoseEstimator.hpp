@@ -6,7 +6,7 @@
 #include "Registrator.hpp"
 #include "../Math/Tensor.hpp"
 #include "../Misc/ConfigParser.hpp"
-#include "../DistanceTensor.hpp"
+#include "DistanceTensor.hpp"
 
 namespace tr {
 	class PoseEstimator {

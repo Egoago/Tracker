@@ -4,8 +4,8 @@
 #include <glm/vec3.hpp>
 #include <vector>
 #include <memory>
-#include "Misc/ConfigParser.hpp"
-#include "Detectors/EdgeDetector.hpp"
+#include "../Misc/ConfigParser.hpp"
+#include "../Detectors/EdgeDetector.hpp"
 
 //TODO reorganise file hierarchy
 namespace tr {
@@ -34,8 +34,8 @@ namespace tr {
 			delete[] costs;
 		};
 		void setFrame(const cv::Mat& nextFrame);
-		float getDist(const glm::vec2 uv, const float angle) const;
-		float getDist(const glm::uvec3 index) const;
+		float at(const glm::vec2 uv, const float angle) const;
+		float operator()(const std::vector<unsigned int>& indices) const;
 	};
 }
 

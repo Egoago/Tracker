@@ -2,7 +2,7 @@
 #include "../Math/Tensor.hpp"
 #include "../Coordinates.hpp"
 #include <vector>
-#include "../DistanceTensor.hpp"
+#include "DistanceTensor.hpp"
 
 namespace tr {
 	class Estimator

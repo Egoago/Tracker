@@ -68,7 +68,7 @@
     <ClCompile Include="src\Detectors\CannyDetector.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\DistanceTensor.cpp">
+    <ClCompile Include="src\PoseEstimation\DistanceTensor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\PoseEstimation\PoseEstimator.cpp">
@@ -133,7 +133,7 @@
     <ClInclude Include="src\PoseEstimation\PoseEstimator.hpp">
       <Filter>Header Files\PoseEstimation</Filter>
     </ClInclude>
-    <ClInclude Include="src\DistanceTensor.hpp">
+    <ClInclude Include="src\PoseEstimation\DistanceTensor.hpp">
       <Filter>Header Files\PoseEstimation</Filter>
     </ClInclude>
     <ClInclude Include="src\Object\Model.hpp">
@@ -158,6 +158,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\PoseEstimation\DirectEstimator.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\Loss.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\Hubert.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\Quadratic.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

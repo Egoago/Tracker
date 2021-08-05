@@ -1,9 +1,10 @@
 #include "DistanceTensor.hpp"
 #include <opencv2/imgproc.hpp>
+#include <initializer_list>
 #include <glm/ext/scalar_constants.hpp>
-#include "Misc/Links.hpp"
-#include "Detectors/LSDDetector.hpp"
-#include "Detectors/CannyDetector.hpp"
+#include "../Misc/Links.hpp"
+#include "../Detectors/LSDDetector.hpp"
+#include "../Detectors/CannyDetector.hpp"
 //TODO remove logging
 #include <opencv2/highgui.hpp>
 
@@ -58,7 +59,7 @@ void DistanceTensor::setFrame(const cv::Mat& nextFrame) {
     
     directedDistanceTransform();
 
-    gaussianBlur();
+    //gaussianBlur();
     //TODO remove logging
     //while(1)
     /*for (unsigned int i = 0; i < q; i++) {
@@ -86,68 +87,69 @@ void DistanceTensor::setFrame(const cv::Mat& nextFrame) {
 
 //TODO constexpr after log remove
 inline float quantizedIndex(const float angle, const unsigned int q) {
-    const constexpr float pi = glm::pi<float>();
+    static const constexpr float pi = glm::pi<float>();
 #ifndef _DEBUG
     tr::Logger::warning("Remove boundary check from release");
 #endif // !_DEBUG
     if (angle > pi || angle < 0.0f)
         tr::Logger::warning("angle out of bounds");
-    return (float)fmod(angle / pi * q, q);
+    return angle * (float)q / pi;
 }
 
-float tr::DistanceTensor::getDist(const glm::vec2 uv, const float angle) const {
-    cv::Point pixel((int)roundf(uv.x * (width-1)),
-                    (int)roundf(uv.y * (height-1)));
-    const glm::vec3 in(uv.x * (width - 1.0f),
-                       uv.y * (height - 1.0f),
-                       quantizedIndex(angle, q));
-    const glm::uvec3 corner1 = glm::floor(in);
-    const glm::uvec3 corner2(ceilf(in.x), ceilf(in.y), fmod(ceilf(in.z),q));
-    const glm::vec3 dists(in.x - corner1.x,
-                          in.y - corner1.y,
-                          in.z - corner1.z);
-    const glm::vec3 negDists = glm::vec3(1.0f) - dists;
-    float dist = 0.0f;
-    for (unsigned int i = 0; i < 8; i++) {
-        glm::uvec3 index;
-        float weight = 1.0f;
-        for (unsigned int dim = 0; dim < 3; dim++) {
-            const bool leftLowerCloserCorner = i & (1u << dim);
-            index[dim] = (leftLowerCloserCorner) ? corner1[dim] : corner2[dim];
-            weight *= (leftLowerCloserCorner) ? negDists[dim] : dists[dim];
-        }
-        dist += weight * getDist(index);
+template<unsigned int nDim, typename Functor>
+float nDimInterpolation(std::initializer_list<float> indices, const Functor* query) {
+    unsigned int low[nDim], high[nDim];
+    float t[nDim], _t[nDim];
+    unsigned int interpolationOmitted= 0u; //bitmask
+    unsigned int maxEvaluations = 1u;
+    for (unsigned int i = 0; i < nDim; i++) {
+        maxEvaluations *= 2u;
+        const float index = indices.begin()[i];
+        low[i] = (unsigned int)floorf(index);
+        high[i] = (unsigned int)ceilf(index);
+        if(low[i] == high[i])
+            interpolationOmitted |= 1u << i;
+        t[i] = index - low[i];
+        _t[i] = 1.0f - t[i];
     }
-    glm::uvec3 roundedIndex = glm::round(in);
-    roundedIndex.z %= q;
-    Logger::log("in "+std::to_string(in.x)+" "+std::to_string(in.y)+" "+std::to_string(in.z));
-    Logger::log("corner1 "+std::to_string(corner1.x) + " " + std::to_string(corner1.y) + " " + std::to_string(corner1.z));
-    Logger::log("corner2 "+std::to_string(corner2.x) + " " + std::to_string(corner2.y) + " " + std::to_string(corner2.z));
-    Logger::log("dists "
-        + std::to_string(dists.x) + " "
-        + std::to_string(dists.y) + " "
-        + std::to_string(dists.z));
-    Logger::log("negDists "+std::to_string(negDists.x) + " " + std::to_string(negDists.y) + " " + std::to_string(negDists.z));
-    Logger::log("roundedIndex "
-        + std::to_string(roundedIndex.x) + " "
-        + std::to_string(roundedIndex.y) + " "
-        + std::to_string(roundedIndex.z));
-    Logger::log("Losses:\tavg: " + std::to_string(dist)
-        + "\trounded: " + std::to_string(getDist(roundedIndex)));
-    return dist;
+    float value = 0.0f;
+    std::vector<unsigned int> index(nDim);
+    int c = 0;
+    for (unsigned int i = 0; i < maxEvaluations; i++) {
+        if (i & interpolationOmitted) break;
+        c++;
+        float weight = 1.0f;
+        for (unsigned int dim = 0; dim < nDim; dim++) {
+            const bool useHigher = i & (1u << dim);
+            weight *= (useHigher) ? t[dim] : _t[dim];
+            index[dim] = (useHigher) ? high[dim] : low[dim];
+        }
+        value += weight * query->operator()( index );
+    }
+    return value;
 }
 
-float tr::DistanceTensor::getDist(const glm::uvec3 index) const {
-    cv::Point pixel(index.x, index.y);
+float tr::DistanceTensor::at(const glm::vec2 uv, const float angle) const {
 #ifndef _DEBUG
-    Logger::warning("Remove boundary check from release");
+    Logger::warning("remove at from release");
 #endif // !_DEBUG
+    return nDimInterpolation<3>({uv.x * (width - 1.0f),
+                                 uv.y * (height - 1.0f),
+                                 quantizedIndex(angle, q)}, this);
+}
+
+float tr::DistanceTensor::operator()(const std::vector<unsigned int>& indices) const
+{
+    const cv::Point pixel(indices[0], indices[1]);
+#ifdef _DEBUG
     if (pixel.x < 0 || pixel.x >= (int)width ||
-        pixel.y < 0 || pixel.y >= (int)height) {
-        Logger::warning("Out of bounds: " + std::to_string(index.x) + " " + std::to_string(index.y));
+        pixel.y < 0 || pixel.y >= (int)height ||
+        indices[2] < 0 || indices[2] >= q) {
+        Logger::warning("Out of bounds");
         return maxCost;
     }
-    return buffers[front][index.z].at<float>(pixel);
+#endif // _DEBUG
+    return buffers[front][indices[2] % q].at<float>(pixel);
 }
 
 void tr::DistanceTensor::distanceTransformFromEdges(const std::vector<Edge<glm::vec2>>& edges) {
@@ -185,7 +187,7 @@ std::shared_ptr<unsigned int[]> getIndices(const cv::Mat& buffer) {
 
 void DistanceTensor::directedDistanceTransform() {
     Logger::logProcess(__FUNCTION__);   //TODO remove logging
-    const static float lambda = stof(config.getEntry("lambda", "3000.0"));
+    const static float lambda = stof(config.getEntry("lambda", "100.0"));
     const static float dirCost = lambda*glm::pi<float>()/q;
     const static auto indices = getIndices(buffers[front][0]);
     //TODO parallelization

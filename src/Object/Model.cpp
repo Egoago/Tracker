@@ -60,9 +60,13 @@ void Model::generate6DOFs() {
 }
 
 glm::vec2 renderPoint(const glm::vec3& p, const glm::mat4& mvp) {
-	glm::vec4 pPos = mvp * glm::vec4(p, 1.0f);
-	pPos /= pPos.w;
-	pPos = (pPos + 1.0f) / 2.0f;
+	glm::vec4 pPos = mvp * glm::vec4(p, 1.0f);	//model -> NDC
+	pPos /= pPos.w;								//Perspective divide
+	pPos = (pPos + 1.0f) / 2.0f;				//NDC -> screen
+	if (pPos.x < 0.0f || pPos.x >= 1.0f ||		//clip
+		pPos.y < 0.0f || pPos.y >= 1.0f) {
+		return glm::vec2(-1.0f, -1.0f);
+	}
 	return glm::vec2(pPos.x, pPos.y);
 }
 
@@ -152,7 +156,7 @@ void Model::rasterizeCandidates(Template* temp, const glm::mat4& mvp) {
 			const glm::vec2 x = renderPoint(p, mvp);
 			const glm::vec2 ox = renderPoint(op, mvp);
 			const float angle = getOrientation(x - ox);
-			if (isnan(angle)) break;
+			if (isnan(angle) || x.x < 0.0f) break;
 			temp->uv.emplace_back(x);
 			temp->angle.emplace_back(angle);
 			temp->pos.emplace_back(p);
