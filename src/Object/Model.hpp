@@ -3,8 +3,10 @@
 #include <string>
 #include <iostream>
 #include <opencv2/core/mat.hpp>
+#include <glm/ext/matrix_float4x4.hpp>
 #include "../Misc/ConfigParser.hpp"
-#include "../Coordinates.hpp"
+#include "../Misc/Base.hpp"
+#include "../Math/Template.hpp"
 #include "../Math/Tensor.hpp"
 
 namespace tr {
@@ -12,6 +14,7 @@ namespace tr {
 		static ConfigParser config;
 		std::string objectName;
 		Tensor<Template> templates;
+		emat4 P;
 
 		//Convenience declarations
 		struct Candidate {
@@ -38,6 +41,8 @@ namespace tr {
 		void save(std::string fileName = "");
 
 		void setName(const char* str) { objectName = str; }
+
+		inline emat4 getP() { return P; }
 
 		Tensor<Template>& getTemplates() { return templates; }
 

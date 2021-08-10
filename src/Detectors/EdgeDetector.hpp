@@ -2,7 +2,7 @@
 #include <vector>
 #include <opencv2/core/mat.hpp>
 #include <glm/vec2.hpp>
-#include "../Coordinates.hpp"
+#include "../Math/Edge.hpp"
 
 namespace tr {
 	class EdgeDetector {

@@ -1,10 +1,11 @@
 #pragma once
 #include <opencv2/core/mat.hpp>
 #include <glm/vec2.hpp>
-#include <glm/vec3.hpp>
 #include <vector>
 #include <memory>
 #include "../Misc/ConfigParser.hpp"
+#include "../Misc/Base.hpp"
+#include "../Math/Edge.hpp"
 #include "../Detectors/EdgeDetector.hpp"
 
 //TODO reorganise file hierarchy
@@ -13,10 +14,10 @@ namespace tr {
 	private:
 		static ConfigParser config;
 		const float maxCost;
-		const unsigned int q;
+		const uint q;
 		std::unique_ptr<EdgeDetector> edgeDetector;
 
-		const unsigned int width, height;
+		const uint width, height;
 
 		//temp buffers
 		std::vector<Edge<glm::vec2>>* quantizedEdges;
@@ -29,13 +30,13 @@ namespace tr {
 		void distanceTransformFromEdges(const std::vector< Edge<glm::vec2>>& edges);
 		void gaussianBlur();
 	public:
-		DistanceTensor(unsigned int width, unsigned int height);
+		DistanceTensor(uint width, uint height);
 		~DistanceTensor() {
 			delete[] costs;
 		};
 		void setFrame(const cv::Mat& nextFrame);
 		float at(const glm::vec2 uv, const float angle) const;
-		float operator()(const std::vector<unsigned int>& indices) const;
+		float operator()(const std::vector<uint>& indices) const;
 	};
 }
 

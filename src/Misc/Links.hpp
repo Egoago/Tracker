@@ -1,7 +1,6 @@
 #pragma once
 
-namespace tr
-{
+namespace tr {
 	static const char* CONFIG_FOLDER = "Config/";
 	static const char* MODELS_FOLDER = "Resources/Models/";
 	static const char* LOADED_OBJECTS_FOLDER = "Resources/Models/Loaded/";

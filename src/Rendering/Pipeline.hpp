@@ -3,9 +3,9 @@
 #include <memory>
 #include "TextureMap.hpp"
 #include "Shader.hpp"
+#include "../Misc/Base.hpp"
 
-namespace tr
-{
+namespace tr {
 	class Pipeline {
 		GLuint frameBuffer;
 		std::shared_ptr<Shader> shader;
@@ -14,10 +14,10 @@ namespace tr
 		GLenum drawPrimitive;
 		GLuint VAO = 0;
 
-		unsigned int primitiveCount = 0;
+		uint primitiveCount = 0;
 		bool drawElements;
 	public:
-		inline void setGeometry(GLuint vao, unsigned int primitiveCount) {
+		inline void setGeometry(GLuint vao, uint primitiveCount) {
 			VAO = vao;
 			this->primitiveCount = primitiveCount;
 		}

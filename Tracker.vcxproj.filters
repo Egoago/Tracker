@@ -89,6 +89,18 @@
     <ClCompile Include="src\PoseEstimation\DirectEstimator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\PoseEstimation\CeresRegistrator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Math\SixDOF.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Math\Template.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Math\RasterPoint.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Camera\Camera.hpp">
@@ -115,7 +127,7 @@
     <ClInclude Include="src\Misc\ConfigParser.hpp">
       <Filter>Header Files\Misc</Filter>
     </ClInclude>
-    <ClInclude Include="src\Coordinates.hpp">
+    <ClInclude Include="src\Misc\Base.hpp">
       <Filter>Header Files\Object</Filter>
     </ClInclude>
     <ClInclude Include="src\Detectors\EdgeDetector.hpp">
@@ -160,13 +172,25 @@
     <ClInclude Include="src\PoseEstimation\DirectEstimator.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Math\Loss.hpp">
+    <ClInclude Include="src\PoseEstimation\CeresRegistrator.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Math\Hubert.hpp">
+    <ClInclude Include="src\Math\SixDOF.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Math\Quadratic.hpp">
+    <ClInclude Include="src\Math\Edge.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\Template.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Misc\Range.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\Rotation.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\RasterPoint.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

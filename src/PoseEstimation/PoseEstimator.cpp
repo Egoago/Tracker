@@ -1,6 +1,7 @@
 #include "PoseEstimator.hpp"
 #include "../Misc/Links.hpp"
 #include "DirectEstimator.hpp"
+#include "CeresRegistrator.hpp"
 
 //TODO remove debug
 #include <opencv2/highgui.hpp>
@@ -19,9 +20,21 @@ Estimator* getEstimator(ConfigParser& config, Tensor<Template>& templates) {
     }
 }
 
-PoseEstimator::PoseEstimator(const int width, const int height, Tensor<Template>& templates) :
+Registrator* getRegistrator(ConfigParser& config, const emat4& P) {
+    Estimator* estimator = nullptr;
+    switch (strHash(config.getEntry("registrator", "ceres").c_str())) {
+    case strHash("ceres"): return new CeresRegistrator(P);
+    default: return new CeresRegistrator(P);
+    }
+}
+
+PoseEstimator::PoseEstimator(const int width,
+                             const int height,
+                             Tensor<Template>& templates,
+                             const emat4& P) :
     distanceTensor(width, height),
-    estimator(getEstimator(config, templates)) {
+    estimator(getEstimator(config, templates)),
+    registrator(getRegistrator(config, P)) {
 }
 
 SixDOF PoseEstimator::getPose(const cv::Mat& frame) {
@@ -29,19 +42,20 @@ SixDOF PoseEstimator::getPose(const cv::Mat& frame) {
     distanceTensor.setFrame(frame);
     std::vector<Template*> candidates = estimator->estimate(distanceTensor);
     int c=0;
+    //TODO remove logging
     for (auto& candidate : candidates) {
         cv::Mat image(frame.rows, frame.cols, CV_8U, cv::Scalar(0));
-        for (auto& i : candidate->uv)
-            image.at<uchar>(cv::Point((int)(i.x * frame.cols), (int)(i.y * frame.rows))) = 255;
+        for (const auto& rasterPoint : candidate->rasterPoints) {
+            glm::vec2 uv = rasterPoint.getUV();
+            image.at<uchar>(cv::Point((int)(uv.x * frame.cols), (int)(uv.y * frame.rows))) = 255;
+        }
         cv::imshow("candidate", image);
         cv::waitKey(1);
-        Logger::log(std::to_string(++c) + ". candidate. " + std::to_string(candidate->uv.size()) + " points.");
+        Logger::log(std::to_string(++c) + ". candidate. " + std::to_string(candidate->rasterPoints.size()) + " points.");
         cv::waitKey(1000000000);
     }
     //TODO parallel registration
-    //return registrator.registrate(templates.begin(),)
     
     Logger::logProcess(__FUNCTION__);   //TODO remove logging
-    //TODO registration
-    return candidates.front()->sixDOF;
+    return registrator->registrate(distanceTensor, candidates[0]);
 }

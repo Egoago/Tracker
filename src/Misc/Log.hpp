@@ -4,8 +4,7 @@
 #include <unordered_map>
 #include <chrono>
 
-namespace tr
-{
+namespace tr {
 	class Logger {
 		typedef std::chrono::time_point<std::chrono::steady_clock> TimePoint;
 		static std::unordered_map<std::string, TimePoint> runningProcesses;

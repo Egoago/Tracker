@@ -3,16 +3,15 @@
 #include <opencv2/core/mat.hpp>
 #include <vector>
 #include <memory>
+#include "../Math/SixDOF.hpp"
 #include "../Misc/ConfigParser.hpp"
+#include "../Misc/Base.hpp"
 #include "../Object/Geometry.hpp"
-#include "../Coordinates.hpp"
 #include "TextureMap.hpp"
 #include "Pipeline.hpp"
 
-namespace tr
-{
-	class Renderer
-	{
+namespace tr {
+	class Renderer {
 	private:
 		static ConfigParser config;
 
@@ -42,10 +41,11 @@ namespace tr
 		Renderer(const Geometry& geometry);
 		~Renderer();
 		void setProj(float fov, float nearP, float farP, float aspect);
-		void setModel(SixDOF& sixDOF);
-		glm::mat4 getMVP() const { return ProjMtx * ViewModelMtx; }
-		glm::mat4 getVM() const { return ViewModelMtx; }
-		glm::uvec2 getResolution() { return resolution; }
+		void setVM(const glm::mat4& MV);
+		inline glm::mat4 getPVM() const { return ProjMtx * ViewModelMtx; }
+		inline glm::mat4 getVM() const { return ViewModelMtx; }
+		inline glm::mat4 getP() const { return ProjMtx; }
+		inline glm::uvec2 getResolution() { return resolution; }
 		void render();
 		std::vector<cv::Mat*>getTextures();
 	};

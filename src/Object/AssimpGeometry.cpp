@@ -3,8 +3,8 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 #include <iostream>
-#include "../Misc/Links.hpp"
 #include <glm/geometric.hpp>
+#include "../Misc/Links.hpp"
 #include "../Misc/Log.hpp"
 
 using namespace tr;

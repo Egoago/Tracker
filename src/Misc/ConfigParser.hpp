@@ -4,10 +4,8 @@
 #include <vector>
 //TODO remove #include <serializer.h>
 
-namespace tr
-{
-	class ConfigParser
-	{
+namespace tr {
+	class ConfigParser {
 
 	private:
 		const std::string delimiter = "=";

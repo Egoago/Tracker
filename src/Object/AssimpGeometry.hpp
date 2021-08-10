@@ -2,8 +2,7 @@
 #include "Geometry.hpp"
 #include <string>
 
-namespace tr
-{
+namespace tr {
 	class AssimpGeometry : public Geometry
 	{
 	public:

@@ -80,7 +80,7 @@
     <LinkIncremental>true</LinkIncremental>
     <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>Build\$(Platform)\$(Configuration)\</IntDir>
-    <IncludePath>$(SolutionDir)Common\ceres\Include;$(SolutionDir)Common\Eigen\Include;$(SolutionDir)Common\Serializer\Include;$(SolutionDir)Common\glm;$(SolutionDir)Common\assimp\Include;$(SolutionDir)Common\uEye\Include;$(SolutionDir)Common\freeglut\Include;$(SolutionDir)Common\glew-2.1.0\Include;$(SolutionDir)Common\Opencv\Include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)Common\Serializer\Include;$(SolutionDir)Common\ceres\Include;$(SolutionDir)Common\Eigen\Include;$(SolutionDir)Common\glm;$(SolutionDir)Common\assimp\Include;$(SolutionDir)Common\uEye\Include;$(SolutionDir)Common\freeglut\Include;$(SolutionDir)Common\glew-2.1.0\Include;$(SolutionDir)Common\Opencv\Include;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)Common\ceres\Lib\Debug;$(SolutionDir)Common\uEye\Lib;$(SolutionDir)Common\freeglut\Lib;$(SolutionDir)Common\assimp\Lib;$(SolutionDir)Common\glew-2.1.0\Lib\Release\x64;$(SolutionDir)Common\OpenCV\Lib;$(LibraryPath)</LibraryPath>
     <SourcePath>$(SourcePath)</SourcePath>
     <CustomBuildBeforeTargets>Build</CustomBuildBeforeTargets>
@@ -89,7 +89,7 @@
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>Build\$(Platform)\$(Configuration)\</IntDir>
-    <IncludePath>$(SolutionDir)Common\Eigen\Include;$(SolutionDir)Common\ceres\Include;$(SolutionDir)Common\Serializer\Include;$(SolutionDir)Common\glm;$(SolutionDir)Common\glew-2.1.0\Include;$(SolutionDir)Common\assimp\Include;$(SolutionDir)Common\uEye\Include;$(SolutionDir)Common\freeglut\Include;$(SolutionDir)Common\Opencv\Include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)Common\Serializer\Include;$(SolutionDir)Common\Eigen\Include;$(SolutionDir)Common\ceres\Include;$(SolutionDir)Common\glm;$(SolutionDir)Common\glew-2.1.0\Include;$(SolutionDir)Common\assimp\Include;$(SolutionDir)Common\uEye\Include;$(SolutionDir)Common\freeglut\Include;$(SolutionDir)Common\Opencv\Include;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)Common\ceres\Lib\Release;$(SolutionDir)Common\uEye\Lib;$(SolutionDir)Common\freeglut\Lib;$(SolutionDir)Common\assimp\Lib;$(SolutionDir)Common\glew-2.1.0\Lib\Release\x64;$(SolutionDir)Common\OpenCV\Lib;$(LibraryPath)</LibraryPath>
     <SourcePath>$(SourcePath)</SourcePath>
     <CustomBuildBeforeTargets>Build</CustomBuildBeforeTargets>
@@ -182,6 +182,9 @@ del "$(SolutionDir)Config\*" /Q</Command>
     </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\Math\RasterPoint.cpp" />
+    <ClCompile Include="src\Math\SixDOF.cpp" />
+    <ClCompile Include="src\PoseEstimation\CeresRegistrator.cpp" />
     <ClCompile Include="src\PoseEstimation\DirectEstimator.cpp" />
     <ClCompile Include="src\Camera\OpenCVCamera.cpp" />
     <ClCompile Include="src\Camera\uEyeCamera.cpp" />
@@ -201,23 +204,28 @@ del "$(SolutionDir)Config\*" /Q</Command>
     <ClCompile Include="src\Rendering\Shader.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\Rendering\TextureMap.cpp" />
+    <ClCompile Include="src\Math\Template.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Math\Edge.hpp" />
+    <ClInclude Include="src\Math\RasterPoint.hpp" />
+    <ClInclude Include="src\Math\Rotation.hpp" />
+    <ClInclude Include="src\Math\SixDOF.hpp" />
     <ClInclude Include="src\Camera\Camera.hpp" />
     <ClInclude Include="src\Camera\OpenCVCamera.hpp" />
     <ClInclude Include="src\Camera\uEyeCamera.hpp" />
+    <ClInclude Include="src\Math\Template.hpp" />
+    <ClInclude Include="src\Misc\Range.hpp" />
+    <ClInclude Include="src\PoseEstimation\CeresRegistrator.hpp" />
     <ClInclude Include="src\PoseEstimation\DistanceTensor.hpp" />
     <ClInclude Include="src\Detectors\CannyDetector.hpp" />
     <ClInclude Include="src\Detectors\EdgeDetector.hpp" />
     <ClInclude Include="src\Detectors\lsd.h" />
     <ClInclude Include="src\Detectors\LSDDetector.hpp" />
-    <ClInclude Include="src\Math\Hubert.hpp" />
-    <ClInclude Include="src\Math\Loss.hpp" />
-    <ClInclude Include="src\Math\Quadratic.hpp" />
     <ClInclude Include="src\Math\Tensor.hpp" />
     <ClInclude Include="src\Misc\ConfigParser.hpp" />
     <ClInclude Include="src\Misc\Log.hpp" />
-    <ClInclude Include="src\Coordinates.hpp" />
+    <ClInclude Include="src\Misc\Base.hpp" />
     <ClInclude Include="src\Object\Geometry.hpp" />
     <ClInclude Include="src\Object\AssimpGeometry.hpp" />
     <ClInclude Include="src\Object\Model.hpp" />

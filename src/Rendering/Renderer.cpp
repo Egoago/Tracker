@@ -38,7 +38,7 @@ Renderer::Renderer(const Geometry& geometry) {
     textureMaps.reserve(5);
     textureMaps.emplace_back(new TextureMap(CV_8U, resolution));
     //Four textures for pos and dir maps for both thresholds
-    for(unsigned int i = 0; i < 4; i++)
+    for(uint i = 0; i < 4; i++)
         textureMaps.emplace_back(new TextureMap(CV_32FC3, resolution));
 
     // Z buffer
@@ -116,7 +116,7 @@ void Renderer::setGeometry(const Geometry& geometry)
     std::vector<glm::vec3> lowEdges, highEdges, lowDirections, highDirections;
     const float lowThreshold = std::stof(config.getEntry("low threshold", "1e-3"));
     const float highThreshold = std::stof(config.getEntry("high threshold", "30.0"));
-    for (unsigned int i = 0; i < geometry.getEdgeCount(); i++) {
+    for (uint i = 0; i < geometry.getEdgeCount(); i++) {
         float curvature = geometry.getCurvatures()[i];
         if (curvature > glm::radians(lowThreshold)) {
             glm::vec3 a = geometry.getEdges()[2 * i];
@@ -157,7 +157,7 @@ void Renderer::setGeometry(const Geometry& geometry)
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
     //register
-    pipelines.at(1)->setGeometry(VAO, (unsigned int)highEdges.size());
+    pipelines.at(1)->setGeometry(VAO, (uint)highEdges.size());
 
     //====== Low Thresh buffers =======
     glGenVertexArrays(1, &VAO);
@@ -178,7 +178,7 @@ void Renderer::setGeometry(const Geometry& geometry)
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
     //register
-    pipelines.at(2)->setGeometry(VAO, (unsigned int)lowEdges.size());
+    pipelines.at(2)->setGeometry(VAO, (uint)lowEdges.size());
 }
 
 void Renderer::updatePipelines()
@@ -201,14 +201,8 @@ void Renderer::setProj(float fov, float nearP, float farP, float aspect)
     updatePipelines();
 }
 
-void Renderer::setModel(SixDOF& sixDOF) {
-	ViewModelMtx = glm::mat4(1.0f);
-	ViewModelMtx = glm::translate(ViewModelMtx, glm::vec3(sixDOF.position.x,
-                                            sixDOF.position.y,
-                                            sixDOF.position.z));
-	ViewModelMtx = glm::rotate(ViewModelMtx, sixDOF.orientation.p, glm::vec3(1,0,0));
-	ViewModelMtx = glm::rotate(ViewModelMtx, sixDOF.orientation.y, glm::vec3(0,1,0));
-	ViewModelMtx = glm::rotate(ViewModelMtx, sixDOF.orientation.r, glm::vec3(0,0,1));
+void Renderer::setVM(const glm::mat4& MV) {
+    ViewModelMtx = MV;
     updatePipelines();
 }
 

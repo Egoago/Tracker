@@ -1,11 +1,12 @@
 #pragma once
-#include "../Coordinates.hpp"
 #include <opencv2/core/mat.hpp>
 #include <memory>
 #include "Estimator.hpp"
 #include "Registrator.hpp"
 #include "../Math/Tensor.hpp"
+#include "../Math/Template.hpp"
 #include "../Misc/ConfigParser.hpp"
+#include "../Misc/Base.hpp"
 #include "DistanceTensor.hpp"
 
 namespace tr {
@@ -15,7 +16,7 @@ namespace tr {
 		std::unique_ptr<Estimator> estimator;
 		std::unique_ptr<Registrator> registrator;
 	public:
-		PoseEstimator(const int width, const int height, Tensor<Template>& templates);
+		PoseEstimator(const int width, const int height, Tensor<Template>& templates, const emat4& P);
 		SixDOF getPose(const cv::Mat& frame);
 	};
 

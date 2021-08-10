@@ -3,12 +3,13 @@
 #include <serializer.h>
 //TODO remove log
 #include "../Misc/Log.hpp"
+#include "../Misc/Base.hpp"
 
 namespace tr {
 	template <class CellType>
 	class Tensor
 	{
-		typedef unsigned int uint;
+		typedef uint uint;
 
 		uint* _shape = nullptr;
 		uint _dims = 0u;

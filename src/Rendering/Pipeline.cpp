@@ -22,9 +22,9 @@ Pipeline::Pipeline(
     glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
 
     //Bind
-    unsigned int size = (unsigned int)textureMaps.size();
+    uint size = (uint)textureMaps.size();
     GLenum* drawBuffers = new GLenum[size];
-    for (unsigned int i = 0; i < size; i++)
+    for (uint i = 0; i < size; i++)
         drawBuffers[i] = textureMaps[i]->bind(i);
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthBuffer);
     if (size > 0)
