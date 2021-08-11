@@ -31,12 +31,12 @@ void getObjectName(std::string& fName, std::string& oName) {
 void Model::generate6DOFs() {
 	Logger::logProcess(__FUNCTION__);	//TODO remove logging
 	//TODO tune granularity
-	const static Range width(config.getEntries("width", { "-120.0", "120.0", "1" }));//7
-	const static Range height(config.getEntries("height", { "-120.0", "120.0", "1" }));//7
-	const static Range depth(config.getEntries("depth", { "-325.0", "-4000.0", "3" }));//5
+	const static Range width(config.getEntries("width", { "-120.0", "120.0", "7" }));//7
+	const static Range height(config.getEntries("height", { "-120.0", "120.0", "7" }));//7
+	const static Range depth(config.getEntries("depth", { "-325.0", "-2000.0", "5" }));//5
 	//TODO uniform sphere distr <=> homogenous tensor layout????
-	const static Range roll(config.getEntries("roll", { "0", "0", "1" }));//6
-	const static Range yaw(config.getEntries("yaw", { "0", "0", "1" }));//6
+	const static Range roll(config.getEntries("roll", { "0", "360", "6" }));//6
+	const static Range yaw(config.getEntries("yaw", { "0", "360", "6" }));//6
 	const static Range pitch(config.getEntries("pitch", { "0", "180", "3" }));//3
 	templates.allocate({
 		width.resolution,
@@ -189,23 +189,23 @@ void Model::generarteObject(const std::string& fileName) {
 		extractCandidates();
 		rasterizeCandidates(i, renderer.getPVM());
 		//TODO remove logging
-		cv::Mat canvas(cv::Size(800, 800), CV_8UC3);
-		canvas = cv::Scalar::all(0);
-		for (const auto& rasterPoint : i->rasterPoints) {
-			glm::vec2 uv1 = rasterPoint.getUV();
-			cv::Point p1((int)std::roundf(uv1.x * (canvas.cols - 1)),
-						 (int)std::roundf(uv1.y * (canvas.rows - 1)));
-			evec2 uv2;
-			reg.project(i->sixDOF.data, &rasterPoint.pos[0], uv2.data());
-			cv::Point p2((int)std::roundf(uv2.x() * (canvas.cols - 1)),
-						 (int)std::roundf(uv2.y() * (canvas.rows - 1)));
-			//line(canvas, p1, p2, cv::Scalar(255, 0, 0));
-			circle(canvas, p1, 1, cv::Scalar(0, 255, 0), -1);
-			circle(canvas, p2, 1, cv::Scalar(0, 0, 255), -1);
-			Logger::log(std::to_string(uv1.x-uv2.x()) + " " + std::to_string(uv1.y - uv2.y()));
-		}
-		cv::imshow("rasterized", canvas);
-		cv::waitKey(10000000);
+		//cv::Mat canvas(cv::Size(800, 800), CV_8UC3);
+		//canvas = cv::Scalar::all(0);
+		//for (const auto& rasterPoint : i->rasterPoints) {
+		//	glm::vec2 uv1 = rasterPoint.getUV();
+		//	cv::Point p1((int)std::roundf(uv1.x * (canvas.cols - 1)),
+		//				 (int)std::roundf(uv1.y * (canvas.rows - 1)));
+		//	/*evec2 uv2;
+		//	reg.project(i->sixDOF.data, &rasterPoint.pos[0], uv2.data());
+		//	cv::Point p2((int)std::roundf(uv2.x() * (canvas.cols - 1)),
+		//				 (int)std::roundf(uv2.y() * (canvas.rows - 1)));*/
+		//	//line(canvas, p1, p2, cv::Scalar(255, 0, 0));
+		//	circle(canvas, p1, 1, cv::Scalar(0, 255, 0), -1);
+		//	//circle(canvas, p2, 1, cv::Scalar(0, 0, 255), -1);
+		//	//Logger::log(std::to_string(uv1.x-uv2.x()) + " " + std::to_string(uv1.y - uv2.y()));
+		//}
+		//cv::imshow("rasterized", canvas);
+		//cv::waitKey(10000000);
 		//TODO remove monitoring
 		rasterCounts.push_back((tr::uint)i->rasterPoints.size());
 		Logger::log("Rendered " + std::to_string(c++)

@@ -12,6 +12,7 @@ namespace tr {
 
 	typedef Eigen::Matrix<real, 4, 4> emat4;
 	typedef Eigen::Matrix<real, 2, 1> evec2;
+	typedef Eigen::Matrix<real, 3, 1> evec3;
 	typedef Eigen::Matrix<real, 4, 1> evec4;
 	typedef glm::mat<4, 4, real> gmat4;
 

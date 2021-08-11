@@ -21,7 +21,7 @@ RasterPoint::RasterPoint() :
 	RasterPoint(glm::vec3(0), glm::vec3(0)) {}
 
 RasterPoint::RasterPoint(const glm::vec3 pos, const glm::vec3 offsetPos) :
-	pos(pos), offsetPos(offsetPos), uv(0), angle(0), rendered(false) {
+	pos(pos), offsetPos(offsetPos), uv(0), angle(0) {
 }
 
 bool tr::RasterPoint::render(const glm::mat4& mvp) {
