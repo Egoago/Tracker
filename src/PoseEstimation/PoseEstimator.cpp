@@ -46,8 +46,8 @@ SixDOF PoseEstimator::getPose(const cv::Mat& frame) {
     for (auto& candidate : candidates) {
         cv::Mat image(frame.rows, frame.cols, CV_8U, cv::Scalar(0));
         for (const auto& rasterPoint : candidate->rasterPoints) {
-            glm::vec2 uv = rasterPoint.getUV();
-            image.at<uchar>(cv::Point((int)(uv.x * frame.cols), (int)(uv.y * frame.rows))) = 255;
+            image.at<uchar>(cv::Point((int)(rasterPoint.uv.x * frame.cols),
+                                      (int)(rasterPoint.uv.y * frame.rows))) = 255;
         }
         cv::imshow("candidate", image);
         cv::waitKey(1);

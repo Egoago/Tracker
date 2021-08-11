@@ -17,7 +17,7 @@ std::vector<Template*> tr::DirectEstimator::estimate(const DistanceTensor& dcd3t
         float distance = 0.0f;
         //TODO generalize with custom loss functions as layer
         for (uint i = 0; i < pixelCount; i++)
-            distance += std::powf(dcd3t.at(temp->rasterPoints[i].getUV(), temp->rasterPoints[i].getAngle()),2.0f);
+            distance += std::powf(dcd3t.at(temp->rasterPoints[i].indexData),2.0f);
         distance /= (float)pixelCount;
         if (pixelCount <= 20)
             distance = 1000000000000.0f;

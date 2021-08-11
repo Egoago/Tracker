@@ -9,11 +9,8 @@ namespace tr{
 	class Registrator {
 	protected:
 		const emat4 P;
-		
 	public:
 		Registrator(const emat4& P) : P(P) {}
 		virtual SixDOF registrate(const DistanceTensor& distanceTensor, const Template* candidate) = 0;
 	};
 }
-
-

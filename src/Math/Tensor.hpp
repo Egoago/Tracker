@@ -7,8 +7,7 @@
 
 namespace tr {
 	template <class CellType>
-	class Tensor
-	{
+	class Tensor {
 		typedef uint uint;
 
 		uint* _shape = nullptr;
@@ -16,7 +15,7 @@ namespace tr {
 		CellType* storage = nullptr;
 		bool allocated = false;
 		uint size = 0u;
-		void error(const std::string& msg) {
+		void error(const std::string& msg) const {
 			Logger::error(msg);
 			exit(1);
 		}
@@ -58,8 +57,10 @@ namespace tr {
 
 		//Access element with range check, slower
 		CellType& at(std::initializer_list<uint> indices);
+		const CellType& at(std::initializer_list<uint> indices) const;
 		//Access element without range check, faster
 		CellType& operator()(std::initializer_list<uint> indices);
+		const CellType& operator()(std::initializer_list<uint> indices) const;
 		inline CellType* begin() { return storage; }
 		inline const CellType* begin() const { return storage; }
 		inline CellType* end() { return storage + size; }
@@ -204,7 +205,45 @@ namespace tr {
 	}
 
 	template<class CellType>
+	inline const CellType& Tensor<CellType>::at(std::initializer_list<uint> indices) const {
+#ifndef _DEBUG
+		Logger::warning("remove at from release");
+#endif // !_DEBUG
+
+		if (!allocated)
+			error("tensor not yet allocated");
+		if (indices.size() != _dims)
+			error(std::to_string(indices.size())
+				+ " indices given for a tensor with dimensionality of "
+				+ std::to_string(_dims));
+		uint i = 0u;
+		for (const auto index : indices) {
+			if (index >= _shape[i])
+				error("index"
+					+ std::to_string(index)
+					+ " at dimension "
+					+ std::to_string(i)
+					+ " is out of range of "
+					+ std::to_string(_shape[i]));
+			i++;
+		}
+		return this->operator()(indices);
+	}
+
+	template<class CellType>
 	inline CellType& Tensor<CellType>::operator()(std::initializer_list<uint> indices) {
+		uint indexSum = 0u;
+		uint i = 0;
+		for (const auto index : indices) {
+			indexSum *= _shape[i];
+			indexSum += index;
+			i++;
+		}
+		return storage[indexSum];
+	}
+
+	template<class CellType>
+	inline const CellType& Tensor<CellType>::operator()(std::initializer_list<uint> indices) const {
 		uint indexSum = 0u;
 		uint i = 0;
 		for (const auto index : indices) {

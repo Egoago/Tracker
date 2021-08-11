@@ -8,4 +8,3 @@ namespace tr {
 		virtual SixDOF registrate(const DistanceTensor& distanceTensor, const Template* candidate) override;
 	};
 }
-
