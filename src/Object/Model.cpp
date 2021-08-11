@@ -173,7 +173,7 @@ void Model::generarteObject(const std::string& fileName) {
 	Geometry geo = AssimpGeometry(fileName);
 	Renderer renderer(geo);
 	textureMaps = renderer.getTextures();
-	P = GlmMatToEigen(renderer.getP());
+	P = GLM2E(renderer.getP());
 	CeresRegistrator reg(P);
 	generate6DOFs();
 	

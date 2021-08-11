@@ -17,23 +17,35 @@ namespace tr {
 	typedef glm::mat<4, 4, real> gmat4;
 
 	//TODO remove glm
-	inline gmat4 EigenToGlmMat(const tr::emat4& v) {
-		gmat4 result;
-		for (uint i = 0u; i < 4u; ++i) {
-			for (uint j = 0u; j < 4u; ++j) {
-				result[i][j] = v(j, i);
-			}
-		}
-		return result;
+	template<typename T, uint m, uint n>
+	inline glm::mat<m, n, T> E2GLM(const Eigen::Matrix<T, m, n>& em) {
+		glm::mat<m, n, T> gm;
+		for (uint i = 0; i < m; ++i)
+			for (uint j = 0; j < n; ++j)
+				gm[j][i] = em(i, j);
+		return gm;
 	}
-	inline tr::emat4 GlmMatToEigen(const gmat4& v) {
-		tr::emat4 result;
-		for (uint i = 0u; i < 4u; ++i) {
-			for (uint j = 0u; j < 4u; ++j) {
-				result(j, i) = v[i][j];
-			}
-		}
-		return result;
+	template<typename T, uint m>
+	inline glm::vec<m, T> E2GLM(const Eigen::Matrix<T, m, 1>& em) {
+		glm::vec<m, T> gm;
+		for (uint i = 0; i < m; ++i)
+				gm[i] = em[i];
+		return gm;
+	}
+	template<typename T, uint m, uint n>
+	inline Eigen::Matrix<T, m, n> GLM2E(const glm::mat<m, n, T>& gm) {
+		Eigen::Matrix<T, m, n> em;
+		for (uint i = 0; i < m; ++i)
+			for (uint j = 0; j < n; ++j)
+				em(i, j) = gm[j][i];
+		return em;
+	}
+	template<typename T, uint m>
+	inline Eigen::Matrix<T, m, 1> GLM2E(const glm::vec<m, T>& gm) {
+		Eigen::Matrix<T, m, 1> em;
+		for (uint i = 0; i < m; ++i)
+				em[i] = gm[i];
+		return em;
 	}
 
 	//TODO use quat vs euler
