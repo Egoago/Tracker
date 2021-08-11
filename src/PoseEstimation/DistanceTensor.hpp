@@ -5,6 +5,7 @@
 #include <memory>
 #include "../Misc/ConfigParser.hpp"
 #include "../Misc/Base.hpp"
+#include "../Math/Tensor.hpp"
 #include "../Math/Edge.hpp"
 #include "../Detectors/EdgeDetector.hpp"
 
@@ -21,22 +22,24 @@ namespace tr {
 
 		//temp buffers
 		std::vector<Edge<glm::vec2>>* quantizedEdges;
-		cv::Mat** buffers; //TODO own Tensor instead of opencv
+		Tensor<float> buffers;
+
 		bool front;
 		cv::Mat tmp;
-		float* costs;
 
 		void directedDistanceTransform();
 		void distanceTransformFromEdges(const std::vector< Edge<glm::vec2>>& edges);
 		void gaussianBlur();
+		void calculateDerivatives();
+
 	public:
 		DistanceTensor(uint width, uint height);
 		~DistanceTensor() {
-			delete[] costs;
+			delete[] quantizedEdges;
 		};
 		void setFrame(const cv::Mat& nextFrame);
-		float at(const glm::vec2 uv, const float angle) const;
-		float operator()(const std::vector<uint>& indices) const;
+		float at(const float indices[3], double partialDerivatives[3] = nullptr) const;
+		float operator()(const std::vector<real>& indices) const;
 	};
 }
 
