@@ -134,7 +134,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>opencv_world452d.lib;uEye_api_64.lib;uEye_tools_64.lib;freeglut64.lib;assimp-vc142-mtd.lib;glew32.lib;ceres_static.lib;libglog_static.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opencv_world452d.lib;uEye_api_64.lib;uEye_tools_64.lib;freeglut64.lib;assimp-vc142-mtd.lib;glew32.lib;ceres.lib;libglog_static.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
     </Link>
     <CustomBuildStep>
@@ -142,10 +142,11 @@
 copy "$(SolutionDir)Common\freeglut\Bin\x64\freeglut.dll" "$(SolutionDir)Bin\$(Platform)\$(Configuration)\freeglut.dll" /Y
 copy "$(SolutionDir)Common\assimp\Bin\assimp-vc142-mtd.dll" "$(SolutionDir)Bin\$(Platform)\$(Configuration)\assimp-vc142-mtd.dll" /Y
 copy "$(SolutionDir)Common\glew-2.1.0\Bin\Release\x64\glew32.dll" "$(SolutionDir)Bin\$(Platform)\$(Configuration)\glew32.dll" /Y
+copy "$(SolutionDir)Common\ceres\Bin\Debug\ceres.dll" "$(SolutionDir)Bin\$(Platform)\$(Configuration)\ceres.dll" /Y
 del "$(SolutionDir)Config\*" /Q</Command>
     </CustomBuildStep>
     <CustomBuildStep>
-      <Outputs>$(SolutionDir)Bin\$(Platform)\$(Configuration)\opencv_world452d.dll;$(SolutionDir)Bin\$(Platform)\$(Configuration)\freeglut.dll;$(SolutionDir)Bin\$(Platform)\$(Configuration)\assimp-vc142-mtd.dll;$(SolutionDir)Bin\$(Platform)\$(Configuration)\glew32.dll</Outputs>
+      <Outputs>$(SolutionDir)Bin\$(Platform)\$(Configuration)\opencv_world452d.dll;$(SolutionDir)Bin\$(Platform)\$(Configuration)\freeglut.dll;$(SolutionDir)Bin\$(Platform)\$(Configuration)\assimp-vc142-mtd.dll;$(SolutionDir)Bin\$(Platform)\$(Configuration)\glew32.dll;$(SolutionDir)Bin\$(Platform)\$(Configuration)\ceres.dll</Outputs>
     </CustomBuildStep>
     <Bscmake>
       <PreserveSbr>true</PreserveSbr>
@@ -167,7 +168,7 @@ del "$(SolutionDir)Config\*" /Q</Command>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>opencv_world452.lib;uEye_api_64.lib;uEye_tools_64.lib;freeglut64.lib;assimp-vc142-mtd.lib;glew32.lib;ceres_static.lib;libglog_static.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opencv_world452.lib;uEye_api_64.lib;uEye_tools_64.lib;freeglut64.lib;assimp-vc142-mtd.lib;glew32.lib;ceres.lib;libglog_static.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
     <CustomBuildStep>
@@ -175,10 +176,11 @@ del "$(SolutionDir)Config\*" /Q</Command>
 copy "$(SolutionDir)Common\freeglut\Bin\x64\freeglut.dll" "$(SolutionDir)Bin\$(Platform)\$(Configuration)\freeglut.dll" /Y
 copy "$(SolutionDir)Common\assimp\Bin\assimp-vc142-mtd.dll" "$(SolutionDir)Bin\$(Platform)\$(Configuration)\assimp-vc142-mtd.dll" /Y
 copy "$(SolutionDir)Common\glew-2.1.0\Bin\Release\x64\glew32.dll" "$(SolutionDir)Bin\$(Platform)\$(Configuration)\glew32.dll" /Y
+copy "$(SolutionDir)Common\ceres\Bin\Release\ceres.dll" "$(SolutionDir)Bin\$(Platform)\$(Configuration)\ceres.dll" /Y
 del "$(SolutionDir)Config\*" /Q</Command>
     </CustomBuildStep>
     <CustomBuildStep>
-      <Outputs>$(SolutionDir)Bin\$(Platform)\$(Configuration)\opencv_world452.dll;$(SolutionDir)Bin\$(Platform)\$(Configuration)\freeglut.dll;$(SolutionDir)Bin\$(Platform)\$(Configuration)\assimp-vc142-mtd.dll;$(SolutionDir)Bin\$(Platform)\$(Configuration)\glew32.dll</Outputs>
+      <Outputs>$(SolutionDir)Bin\$(Platform)\$(Configuration)\opencv_world452.dll;$(SolutionDir)Bin\$(Platform)\$(Configuration)\freeglut.dll;$(SolutionDir)Bin\$(Platform)\$(Configuration)\assimp-vc142-mtd.dll;$(SolutionDir)Bin\$(Platform)\$(Configuration)\glew32.dll;$(SolutionDir)Bin\$(Platform)\$(Configuration)\ceres.dll</Outputs>
     </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -208,6 +210,7 @@ del "$(SolutionDir)Config\*" /Q</Command>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Math\Edge.hpp" />
+    <ClInclude Include="src\Math\Interpolator.hpp" />
     <ClInclude Include="src\Math\RasterPoint.hpp" />
     <ClInclude Include="src\Math\Rotation.hpp" />
     <ClInclude Include="src\Math\SixDOF.hpp" />
