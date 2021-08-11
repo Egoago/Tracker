@@ -1,9 +1,7 @@
 #pragma once
 
-namespace tr
-{
-	class Camera
-	{
+namespace tr {
+	class Camera {
 	protected:
 		int width, height;
 		int nBitsPerPixel;

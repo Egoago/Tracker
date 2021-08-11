@@ -54,8 +54,7 @@ SixDOF PoseEstimator::getPose(const cv::Mat& frame) {
         Logger::log(std::to_string(++c) + ". candidate. " + std::to_string(candidate->rasterPoints.size()) + " points.");
         cv::waitKey(1000000000);
     }
-    //TODO parallel registration
-    
     Logger::logProcess(__FUNCTION__);   //TODO remove logging
+    //TODO parallel registration
     return registrator->registrate(distanceTensor, candidates[0]);
 }

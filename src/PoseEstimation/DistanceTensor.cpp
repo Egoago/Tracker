@@ -56,32 +56,44 @@ inline float quantizedIndex(const float angle, const uint q) {
     return angle * (float)q / pi;
 }
 
-float DistanceTensor::at(const float indices[3], double partialDerivatives[3]) const {
-    static Interpolator<float> interpolator(3);
-    interpolator.interpolate({indices[0] * (width - 1.0f),      //u
-                              indices[1] * (height - 1.0f),     //v
-                              quantizedIndex(indices[2], q)});  //angle
-    
-   /* if (partialDerivatives != nullptr) {
-
-    }*/
-    return interpolator.execute<float>([&](const std::vector<real>& indices)
-                                    { return this->operator()(indices); });
-}
-
-float DistanceTensor::operator()(const std::vector<real>& indices) const {
-#ifdef _DEBUG
+bool DistanceTensor::checkIndices(const std::vector<real>& indices) const {
+#ifndef _DEBUG
+    tr::Logger::warning("Remove boundary check from release");
+#endif // !_DEBUG
     if (indices[0] < 0 || indices[0] >= width ||
         indices[1] < 0 || indices[1] >= height ||
         indices[2] < 0 || indices[2] >= q) {
         Logger::warning("Distance tensor out of bounds");
         return maxCost;
     }
-#endif // _DEBUG
-    return buffers.at({ front,
+    return true;
+}
+
+float DistanceTensor::at(const float indices[3], double partialDerivatives[3]) const {
+    static Interpolator<float> interpolator(3);
+    interpolator.interpolate({indices[0] * (width - 1.0f),      //u
+                              indices[1] * (height - 1.0f),     //v
+                              quantizedIndex(indices[2], q)});  //angle
+    
+    if (partialDerivatives != nullptr) {
+        for(uint i = 0; i < 3; i++)
+            partialDerivatives[i] =
+                interpolator.execute<real>(
+                    [&](const std::vector<real>& indices) {
+                        checkIndices(indices);
+                        return buffers.at({
+                            2u+i,
+                            (uint)indices[2] % q,
+                            (uint)indices[1] % height,
+                            (uint)indices[0] % width });});
+    }
+    return interpolator.execute<real>(
+        [&](const std::vector<real>& indices) {
+            checkIndices(indices);
+            return buffers.at({ front,
                         (uint)indices[2] % q,
                         (uint)indices[1] % height,
-                        (uint)indices[0] % width });
+                        (uint)indices[0] % width });});
 }
 
 void DistanceTensor::setFrame(const cv::Mat& nextFrame) {
@@ -158,7 +170,7 @@ void DistanceTensor::directedDistanceTransform() {
     float* const frameStart = &buffers.at({ front, 0, 0, 0 });
 	for (uint pixelIndex = 0; pixelIndex < pixelCount; pixelIndex++) {
 		for (uint i = 0; i < q; i++) {
-			costs[i] = *(frameStart + i * pixelCount + pixelIndex);
+			costs[i] = *(frameStart + (i * pixelCount + pixelIndex));
 			if (costs[i] > maxCost)
 				costs[i] = maxCost;
 		}
@@ -192,13 +204,12 @@ void DistanceTensor::directedDistanceTransform() {
 			else break;
 
 		for (uint i = 0; i < q; i++)
-            *(frameStart + i * pixelCount + pixelIndex) = costs[i];
+            *(frameStart + (i * pixelCount + pixelIndex)) = costs[i];
 	}
     delete[] costs;
     Logger::logProcess(__FUNCTION__);   //TODO remove logging
 }
 
-//TODO merge blur with ddt?
 void DistanceTensor::gaussianBlur() {
     Logger::logProcess(__FUNCTION__);   //TODO remove logging
     const static uint pixelCount = width * height;
@@ -210,16 +221,17 @@ void DistanceTensor::gaussianBlur() {
                 const uint prev = (dir == 0) ? q-1 : dir - 1;
                 const uint next = (dir == q-1) ? 0 : dir + 1;
                 //TODO localization
-                *(backStart + dir * pixelCount + pixelIndex) =
-                    0.25f * (*(frontStart + prev * pixelCount + pixelIndex)) +
-                    0.5f  * (*(frontStart + dir  * pixelCount + pixelIndex)) +
-                    0.25f * (*(frontStart + next * pixelCount + pixelIndex));
+                *(backStart + (dir * pixelCount + pixelIndex)) =
+                    0.25f * (*(frontStart + (prev * pixelCount + pixelIndex))) +
+                    0.5f  * (*(frontStart + (dir  * pixelCount + pixelIndex))) +
+                    0.25f * (*(frontStart + (next * pixelCount + pixelIndex)));
             }
         }
     front = !front; //swap buffers
     Logger::logProcess(__FUNCTION__);   //TODO remove logging
 }
 
+//TODO merge ddt, blur, der? HINT: Same for structure
 void DistanceTensor::calculateDerivatives() {
     Logger::logProcess(__FUNCTION__);   //TODO remove logging
     const static uint pixelCount = width * height;
@@ -244,16 +256,17 @@ void DistanceTensor::calculateDerivatives() {
     uint angle = 0, prevAngle = q - 1, nextAngle = 1;
     while ( angle < q ) {
         for (uint pixelIndex = 0; pixelIndex < pixelCount; pixelIndex++) {  //TODO parallelization
-            *(angleDerStart + angle * pixelCount + pixelIndex) = 0.5f *
-                (*(distStart + nextAngle * pixelCount + pixelIndex) -
-                 *(distStart + prevAngle * pixelCount + pixelIndex));
+            *(angleDerStart + (angle * pixelCount + pixelIndex)) = 0.5f *
+                (*(distStart + (nextAngle * pixelCount + pixelIndex)) -
+                 *(distStart + (prevAngle * pixelCount + pixelIndex)));
         }
         angle++;
         prevAngle = angle - 1;
         nextAngle = (angle + 1) % q;
     }
     Logger::logProcess("angle derivatives");   //TODO remove logging
-    for (uint i = 0u; i < q; i++) {
+    //TODO remove logging
+    /*for (uint i = 0u; i < q; i++) {
         const uint offset = i * pixelCount;
         cv::Mat distWrapper(height, width, CV_32F, distStart + offset);
         cv::Mat xWrapper(height, width, CV_32F, xDerStart + offset);
@@ -266,10 +279,10 @@ void DistanceTensor::calculateDerivatives() {
         cv::imshow("x", tmp);
         yWrapper.convertTo(tmp, CV_32F, 2.0f / maxCost);
         cv::imshow("y", tmp);
-        angleWrapper.convertTo(tmp, CV_32F, 2.0f / maxCost);
+        angleWrapper.convertTo(tmp, CV_32F, 10.0f / maxCost);
         cv::imshow("angle", tmp);
         cv::waitKey(50000000);
     
-    }
+    }*/
     Logger::logProcess(__FUNCTION__);   //TODO remove logging
 }

@@ -2,6 +2,7 @@
 #include <opencv2/core/mat.hpp>
 #include <glm/vec2.hpp>
 #include <vector>
+#include <initializer_list>
 #include <memory>
 #include "../Misc/ConfigParser.hpp"
 #include "../Misc/Base.hpp"
@@ -31,7 +32,6 @@ namespace tr {
 		void distanceTransformFromEdges(const std::vector< Edge<glm::vec2>>& edges);
 		void gaussianBlur();
 		void calculateDerivatives();
-
 	public:
 		DistanceTensor(uint width, uint height);
 		~DistanceTensor() {
@@ -39,7 +39,8 @@ namespace tr {
 		};
 		void setFrame(const cv::Mat& nextFrame);
 		float at(const float indices[3], double partialDerivatives[3] = nullptr) const;
-		float operator()(const std::vector<real>& indices) const;
+		bool checkIndices(const std::vector<real>& indices) const;
+		inline float operator()(const std::initializer_list<uint>& indices) const { return buffers.at(indices); }
 	};
 }
 

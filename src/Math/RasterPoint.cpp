@@ -20,6 +20,7 @@ bool renderPoint(const glm::vec3 p, const glm::mat4& mvp, glm::vec2& uv) {
 RasterPoint::RasterPoint() : 
 	RasterPoint(glm::vec3(0), glm::vec3(0)) {}
 
+#pragma warning(suppress : 26495)
 RasterPoint::RasterPoint(const glm::vec3 pos, const glm::vec3 offsetPos) :
 	pos(pos), offsetPos(offsetPos), uv(0), angle(0) {
 }

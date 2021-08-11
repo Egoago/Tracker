@@ -1,23 +1,50 @@
 #include "Log.hpp"
+#include <iostream>
+#include <unordered_set>
+#include <unordered_map>
+#include <chrono>
 //TODO only for windows
 #include <Windows.h>
 
 using namespace std;
 using namespace tr;
 
-void* Logger::hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-unordered_map<string, Logger::TimePoint> Logger::runningProcesses;
-unordered_set<string> Logger::warnings;
-unordered_set<string> Logger::errors;
-bool Logger::logging = true;
-int Logger::defaultColor = 7;
-ostream& Logger::os = std::cout;
+//hidden class to preserve includes in cpp
+class InternalLogger {
+	typedef std::chrono::time_point<std::chrono::steady_clock> TimePoint;
+	static std::unordered_map<std::string, TimePoint> runningProcesses;
+	static std::unordered_set<std::string> warnings, errors;
+	static void* hConsole;
+	static void printTabs();
+	static int defaultColor;
+	InternalLogger() {} //disable instantiation
+	static std::ostream& os;
+public:
+	static bool logging;
+	static void logProcess(const std::string& processName);
 
-void Logger::printTabs() {
+	static void log(const std::string& message, bool noEndl = false);
+	static void warning(const std::string& message, bool repeat = false);
+	static void error(const std::string& message);
+};
+
+void* InternalLogger::hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+unordered_map<string, InternalLogger::TimePoint> InternalLogger::runningProcesses;
+unordered_set<string> InternalLogger::warnings;
+unordered_set<string> InternalLogger::errors;
+bool InternalLogger::logging = true;
+int InternalLogger::defaultColor = 7;
+ostream& InternalLogger::os = std::cout;
+
+void InternalLogger::printTabs() {
 	os << string(runningProcesses.size(), '\t');
 }
 
 void Logger::logProcess(const string& processName) {
+	InternalLogger::logProcess(processName);
+} 
+
+void InternalLogger::logProcess(const string& processName) {
 	using namespace std::chrono;
 	if (!logging) return;
 	if (runningProcesses.count(processName) == 0) {
@@ -39,9 +66,12 @@ void Logger::logProcess(const string& processName) {
 }
 
 void Logger::log(const string& message, bool noEndl) {
+	InternalLogger::log(message,  noEndl);
+}
+void InternalLogger::log(const string& message, bool noEndl) {
 	if (!logging) return;
 	SetConsoleTextAttribute(hConsole, 8);
-	Logger::printTabs();
+	InternalLogger::printTabs();
 	os << message;
 	if (!noEndl)
 		os << endl;
@@ -49,23 +79,31 @@ void Logger::log(const string& message, bool noEndl) {
 }
 
 void Logger::warning(const string& message, bool repeat) {
+	InternalLogger::warning(message, repeat);
+}
+
+void InternalLogger::warning(const string& message, bool repeat) {
 	if (!logging) return;
 	if (warnings.count(message) != 0) {
 		if(!repeat) return;
 	}
 	else warnings.insert(message);
 	SetConsoleTextAttribute(hConsole, 14);
-	Logger::printTabs();
+	InternalLogger::printTabs();
 	os << "[WARNING] ";
 	os << message << endl;
 	SetConsoleTextAttribute(hConsole, defaultColor);
 }
 
 void Logger::error(const string& message) {
+	InternalLogger::error(message);
+}
+
+void InternalLogger::error(const string& message) {
 	if (errors.count(message) != 0) return;
 	errors.insert(message);
 	SetConsoleTextAttribute(hConsole, 12);
-	Logger::printTabs();
+	InternalLogger::printTabs();
 	os << "[ERROR] ";
 	os << message << endl;
 	SetConsoleTextAttribute(hConsole, defaultColor);

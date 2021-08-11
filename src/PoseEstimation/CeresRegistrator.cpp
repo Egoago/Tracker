@@ -1,6 +1,7 @@
 #include "CeresRegistrator.hpp"
 #include <ceres/ceres.h>
-//#include <glog/logging.h>
+//TODO remove glog
+#include <glog/logging.h>
 #include "../Misc/log.hpp"
 
 using namespace tr;
@@ -42,10 +43,10 @@ struct RasterPointCost {
     inline void project(const T transf[6], const evec3& p, T uv[2]) const {
         Eigen::Quaternion<T> q = RPYToQ(&transf[3]);
         Eigen::Map<const Eigen::Matrix<T, 3, 1>> t(transf);
-        const auto cam = q * p + t;
+        const auto cam = q * p.cast<T>() + t;
         Eigen::Matrix<T, 3, 1> proj = (P.cast<T>() * cam.homogeneous()).hnormalized();
-        constexpr const T one(1);
-        constexpr const T two(2);
+        const T one(1);
+        const T two(2);
         for (uint i = 0; i < 2; i++)
             uv[i] = (proj[i] + one) / two;
     }
@@ -57,44 +58,48 @@ struct RasterPointCost {
         project(transf, point, indices);
         project(transf, offsetPoint, ouv);
         T dir[2] = { indices[0] - ouv[0], indices[1] - ouv[1] };
-        indices[2] = atan(dir[1] / dir[0]);
+        indices[2] = ceres::atan(dir[1] / dir[0]);
         (*distanceTensorWrapper)(indices, residuals);
         return true;
     }
 };
 
+tr::CeresRegistrator::CeresRegistrator(const emat4& P) : Registrator(P) {
+    google::InitGoogleLogging("Tracker");
+}
+
 SixDOF CeresRegistrator::registrate(const DistanceTensor& distanceTensor, const Template* candidate) {
     Logger::logProcess(__FUNCTION__);   //TODO remove logging
-    //google::InitGoogleLogging(argv[0]);
+    SixDOF result;
     //The variable to solve for with its initial value. It will be
     //mutated in place by the solver.
-     
-    
-    //double params[6];
-    //for (uint i = 0; i < 6; i++)
-    //    params[i] = candidate->sixDOF.data[i];
+    double params[6];
+    for (uint i = 0; i < 6; i++)
+        params[i] = (float)candidate->sixDOF.data[i];
 
-    //// Build the problem.
-    //ceres::Problem problem;
+    // Build the problem.
+    ceres::Problem problem;
 
-    //// Set up the only cost function (also known as residual). This uses
-    //// auto-differentiation to obtain the derivative (jacobian).
-    ////for(unsigned int i = 0; i < candidate->rasterCount(); i++)
-    //for (const RasterPoint& rasterPoint : candidate->rasterPoints) {
-    //    auto rast = new RasterPointCost(P, rasterPoint, distanceTensor);
-    //    CostFunction* cost_function =
-    //        new AutoDiffCostFunction<RasterPointCost, 1, 1>(rast);
-    //    problem.AddResidualBlock(cost_function, new HuberLoss(1.0), params);
-    //}
+    // Set up the only cost function (also known as residual). This uses
+    // auto-differentiation to obtain the derivative (jacobian).
+    //for(unsigned int i = 0; i < candidate->rasterCount(); i++)
+    for (const RasterPoint& rasterPoint : candidate->rasterPoints) {
+        auto rast = new RasterPointCost(P, rasterPoint, distanceTensor);
+        CostFunction* cost_function =
+            new AutoDiffCostFunction<RasterPointCost, 1, 1>(rast);
+        problem.AddResidualBlock(cost_function, new HuberLoss(1.0), params);
+    }
 
-    //// Run the solver!
-    //ceres::Solver::Options options;
-    //options.minimizer_progress_to_stdout = true;
-    //ceres::Solver::Summary summary;
-    //ceres::Solve(options, &problem, &summary);
+    // Run the solver!
+    ceres::Solver::Options options;
+    options.minimizer_progress_to_stdout = true;
+    ceres::Solver::Summary summary;
+    ceres::Solve(options, &problem, &summary);
 
-    //Logger::log(summary.FullReport());
+    Logger::log(summary.FullReport());
 
+    for (uint i = 0; i < 6; i++)
+        result.data[i] = (float)params[i];
     Logger::logProcess(__FUNCTION__);   //TODO remove logging
-    return candidate->sixDOF;
+    return result;
 }

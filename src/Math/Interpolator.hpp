@@ -23,10 +23,11 @@ namespace tr {
 	template<typename IndexType>
 	inline Interpolator<IndexType>::Interpolator(const unsigned int iDim) :
 		iDim(iDim), maxEvaluations(0u), interpolationOmitted(0u) {
-		buffer = new char[2u * iDim * sizeof(IndexType) + 2u * iDim * sizeof(double)];
+		buffer = new char[2u * iDim * (unsigned int)sizeof(IndexType) +
+						  2u * iDim * (unsigned int)sizeof(double)];
 		low = (IndexType*)buffer;
 		high = &low[iDim];
-		t = (double*)(buffer + 2u * iDim * sizeof(IndexType));
+		t = (double*)(buffer + (2u * iDim * (unsigned int)sizeof(IndexType)));
 		_t = &t[iDim];
 	}
 
@@ -40,7 +41,7 @@ namespace tr {
 			low[i] = floor(index);
 			high[i] = ceil(index);
 			interpolationOmitted |= (low[i] == high[i]) << i;
-			t[i] = index - low[i];
+			t[i] = (double)index - (double)low[i];
 			_t[i] = 1.0 - t[i];
 			i++;
 		}

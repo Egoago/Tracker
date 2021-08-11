@@ -51,9 +51,9 @@ namespace tr {
 	//TODO use quat vs euler
 	template<typename T>
 	Eigen::Quaternion<T> RPYToQ(const T rotation[3]) {
-		return Eigen::AngleAxisf(rotation[2], Eigen::Vector3f::UnitX())
-			 * Eigen::AngleAxisf(rotation[1], Eigen::Vector3f::UnitY())
-			 * Eigen::AngleAxisf(rotation[0], Eigen::Vector3f::UnitZ());
+		return Eigen::AngleAxis<T>(rotation[2], Eigen::Matrix<T, 3, 1>::UnitX())
+			 * Eigen::AngleAxis<T>(rotation[1], Eigen::Matrix<T, 3, 1>::UnitY())
+			 * Eigen::AngleAxis<T>(rotation[0], Eigen::Matrix<T, 3, 1>::UnitZ());
 	}
 
 	inline uint64_t constexpr mix(char m, uint64_t s) {
