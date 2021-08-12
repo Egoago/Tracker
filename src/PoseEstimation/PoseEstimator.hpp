@@ -16,7 +16,7 @@ namespace tr {
 		std::unique_ptr<Estimator> estimator;
 		std::unique_ptr<Registrator> registrator;
 	public:
-		PoseEstimator(const int width, const int height, Tensor<Template>& templates, const emat4& P);
+		PoseEstimator(const int width, const int height, Tensor<Template>& templates, const glm::mat4& P);
 		SixDOF getPose(const cv::Mat& frame);
 	};
 

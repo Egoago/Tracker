@@ -14,7 +14,7 @@ namespace tr {
 		static ConfigParser config;
 		std::string objectName;
 		Tensor<Template> templates;
-		emat4 P;
+		glm::mat4 P;
 
 		//Convenience declarations
 		struct Candidate {
@@ -42,7 +42,7 @@ namespace tr {
 
 		void setName(const char* str) { objectName = str; }
 
-		inline emat4 getP() { return P; }
+		inline glm::mat4 getP() { return P; }
 
 		Tensor<Template>& getTemplates() { return templates; }
 

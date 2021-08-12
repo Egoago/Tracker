@@ -3,8 +3,8 @@
 
 using namespace tr;
 
-SixDOF::SixDOF(glm::vec<3, real> position,
-	glm::vec<3, real> orientation) : position(position), orientation(orientation) {}
+SixDOF::SixDOF(glm::vec3 position,
+	glm::vec3 orientation) : position(position), orientation(orientation) {}
 
 glm::mat4 SixDOF::getModelTransformMatrix() const {
 	glm::mat4 M = glm::mat4(1.0f);

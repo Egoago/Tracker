@@ -65,6 +65,8 @@ namespace tr {
 		inline const CellType* begin() const { return storage; }
 		inline CellType* end() { return storage + size; }
 		inline const CellType* end() const { return storage + size; }
+		template <const unsigned int iDim, typename IndexType = float>
+		const CellType interpolate(std::initializer_list<IndexType> indices) const;
 
 		//[Serialization]
 		friend std::ostream& operator<<(std::ostream& out, Bits<Tensor<CellType>&> o) {
@@ -252,6 +254,42 @@ namespace tr {
 			i++;
 		}
 		return storage[indexSum];
+	}
+
+	template<class CellType>
+	template<const unsigned int iDim, typename IndexType>
+	inline const CellType Tensor<CellType>::interpolate(std::initializer_list<IndexType> indices) const {
+#ifdef _DEBUG
+		if (iDim != indices.size())
+			error("wrong number of indices");
+#endif // _DEBUG
+		unsigned int maxEvaluations = 1u;
+		unsigned int interpolationOmitted = 0u;
+		unsigned int i = 0u;
+		IndexType low[iDim], high[iDim], t[iDim], _t[iDim];
+		for (const IndexType index : indices) {
+			maxEvaluations *= 2u;
+			low[i] = floor(index);
+			high[i] = ceil(index);
+			interpolationOmitted |= (low[i] == high[i]) << i;
+			t[i] = (double)index - (double)low[i];
+			_t[i] = 1.0 - t[i];
+			i++;
+		}
+		CellType value = CellType(0);
+		for (unsigned int i = 0; i < maxEvaluations; i++) {
+			if (i & interpolationOmitted) break;
+			IndexType weight = 1.0;
+			unsigned int indexSum = 0u;
+			for (unsigned int dim = 0; dim < iDim; dim++) {
+				const bool useHigher = i & (1u << dim);
+				weight *= (useHigher) ? t[dim] : _t[dim];
+				indexSum *= _shape[dim];
+				indexSum += (useHigher) ? high[dim] : low[dim];
+			}
+			value += storage[indexSum] * CellType(weight);
+		}
+		return value;
 	}
 }
 

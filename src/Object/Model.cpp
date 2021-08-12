@@ -12,7 +12,6 @@
 //TODO remove logging
 #include "../Misc/Log.hpp"
 #include <opencv2/highgui.hpp>
-#include "../PoseEstimation/CeresRegistrator.hpp"
 
 //TODO break apart
 using namespace tr;
@@ -173,8 +172,8 @@ void Model::generarteObject(const std::string& fileName) {
 	Geometry geo = AssimpGeometry(fileName);
 	Renderer renderer(geo);
 	textureMaps = renderer.getTextures();
-	P = GLM2E(renderer.getP());
-	CeresRegistrator reg(P);
+	P = renderer.getP();
+
 	generate6DOFs();
 	
 	int c = 1;

@@ -28,15 +28,15 @@ Registrator* getRegistrator(ConfigParser& config, const emat4& P) {
     }
 }
 
-emat4 p;
+glm::mat4 p;
 
 PoseEstimator::PoseEstimator(const int width,
                              const int height,
                              Tensor<Template>& templates,
-                             const emat4& P) :
+                             const glm::mat4& P) :
     distanceTensor(width, height),
     estimator(getEstimator(config, templates)),
-    registrator(getRegistrator(config, P)) {
+    registrator(getRegistrator(config, GLM2E<real>(P))) {
     p = P;
 }
 
@@ -56,7 +56,7 @@ SixDOF PoseEstimator::getPose(const cv::Mat& frame) {
     str << candidates[0]->sixDOF;
     Logger::log("candidate: " + str.str());
     for (auto rasterPoint : candidates[0]->rasterPoints) {
-        rasterPoint.render(E2GLM(p)*sixDOF.getModelTransformMatrix());
+        rasterPoint.render(p*sixDOF.getModelTransformMatrix());
         image.at<cv::Vec3b>(cv::Point((int)(rasterPoint.uv.x * frame.cols),
             (int)(rasterPoint.uv.y * frame.rows))) = cv::Vec3b(0, 255, 0);
     }
