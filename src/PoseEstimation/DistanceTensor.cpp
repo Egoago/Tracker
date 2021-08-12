@@ -62,9 +62,9 @@ bool DistanceTensor::checkIndices(const std::vector<real>& indices) const {
 #endif // !_DEBUG
     if (indices[0] < 0 || indices[0] >= width ||
         indices[1] < 0 || indices[1] >= height ||
-        indices[2] < 0 || indices[2] >= q) {
+        indices[2] < 0 || indices[2] > q) {
         Logger::warning("Distance tensor out of bounds");
-        return maxCost;
+        return false;
     }
     return true;
 }
@@ -104,6 +104,14 @@ void DistanceTensor::setFrame(const cv::Mat& nextFrame) {
         cvtColor(nextFrame, frame, COLOR_BGR2GRAY);
     }
     edgeDetector->detectEdges(frame, edges);
+    //TODO remove logging
+    std::vector<cv::Mat> copies{ frame,frame,frame };
+    cv::merge(copies, frame);
+    for (const auto& edge : edges) {
+        Point A((int)edge.a.x, (int)edge.a.y),
+            B((int)edge.b.x, (int)edge.b.y);
+        line(nextFrame, A, B, Scalar(255, 0, 0), 1, LINE_8);
+    }
 
     distanceTransformFromEdges(edges);
     
@@ -234,11 +242,13 @@ void DistanceTensor::gaussianBlur() {
 //TODO merge ddt, blur, der? HINT: Same for structure
 void DistanceTensor::calculateDerivatives() {
     Logger::logProcess(__FUNCTION__);   //TODO remove logging
+    Logger::logProcess("init");   //TODO remove logging
     const static uint pixelCount = width * height;
     static float* const distStart = &buffers.at({ front,0,0,0 });
     static float* const xDerStart = &buffers.at({ 2,0,0,0 });
     static float* const yDerStart = xDerStart + pixelCount*q;
     static float* const angleDerStart = yDerStart + pixelCount*q;
+    Logger::logProcess("init");   //TODO remove logging
 
     //x/y derivateives
     Logger::logProcess("x, y derivatives");   //TODO remove logging

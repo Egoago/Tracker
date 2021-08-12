@@ -27,14 +27,5 @@ void LSDDetector::detectEdges(const cv::Mat& img, std::vector<Edge<glm::vec2>>& 
                 lines[i * 7 + 3]);
         edges.push_back(Edge<vec2>(a, b));
     }
-    //TODO remove logging
-    Mat image(Size(doubleImg.cols, doubleImg.rows), CV_8U, Scalar(0));
-    for (const auto& edge : edges) {
-        Point A((int)edge.a.x, (int)edge.a.y),
-              B((int)edge.b.x, (int)edge.b.y);
-        line(image, A, B, Scalar(255), 1, LINE_8);
-    }
-    imshow("edges", image);
-    waitKey(1);
     Logger::logProcess(__FUNCTION__);
 }

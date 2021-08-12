@@ -63,6 +63,8 @@ namespace tr {
 			}
 			value += lambda(index) * (ResultType)weight;
 		}
+		if(isnan(value))
+			Logger::error("nan values");
 		return value;
 	}
 }

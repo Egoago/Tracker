@@ -28,6 +28,8 @@ Registrator* getRegistrator(ConfigParser& config, const emat4& P) {
     }
 }
 
+emat4 p;
+
 PoseEstimator::PoseEstimator(const int width,
                              const int height,
                              Tensor<Template>& templates,
@@ -35,26 +37,34 @@ PoseEstimator::PoseEstimator(const int width,
     distanceTensor(width, height),
     estimator(getEstimator(config, templates)),
     registrator(getRegistrator(config, P)) {
+    p = P;
 }
 
 SixDOF PoseEstimator::getPose(const cv::Mat& frame) {
     Logger::logProcess(__FUNCTION__);   //TODO remove logging
     distanceTensor.setFrame(frame);
     std::vector<Template*> candidates = estimator->estimate(distanceTensor);
-    int c=0;
-    //TODO remove logging
-    for (auto& candidate : candidates) {
-        cv::Mat image(frame.rows, frame.cols, CV_8U, cv::Scalar(0));
-        for (const auto& rasterPoint : candidate->rasterPoints) {
-            image.at<uchar>(cv::Point((int)(rasterPoint.uv.x * frame.cols),
-                                      (int)(rasterPoint.uv.y * frame.rows))) = 255;
-        }
-        cv::imshow("candidate", image);
-        cv::waitKey(1);
-        Logger::log(std::to_string(++c) + ". candidate. " + std::to_string(candidate->rasterPoints.size()) + " points.");
-        cv::waitKey(1000000000);
-    }
-    Logger::logProcess(__FUNCTION__);   //TODO remove logging
     //TODO parallel registration
-    return registrator->registrate(distanceTensor, candidates[0]);
+    SixDOF sixDOF = registrator->registrate(distanceTensor, candidates[0]);
+    //TODO remove logging
+    cv::Mat image = frame.clone();
+    for (const auto& rasterPoint : candidates[0]->rasterPoints) {
+        image.at<cv::Vec3b>(cv::Point((int)(rasterPoint.uv.x * frame.cols),
+            (int)(rasterPoint.uv.y * frame.rows))) = cv::Vec3b(0,0,255);
+    }
+    std::stringstream str;
+    str << candidates[0]->sixDOF;
+    Logger::log("candidate: " + str.str());
+    for (auto rasterPoint : candidates[0]->rasterPoints) {
+        rasterPoint.render(E2GLM(p)*sixDOF.getModelTransformMatrix());
+        image.at<cv::Vec3b>(cv::Point((int)(rasterPoint.uv.x * frame.cols),
+            (int)(rasterPoint.uv.y * frame.rows))) = cv::Vec3b(0, 255, 0);
+    }
+    str.flush();
+    str << sixDOF;
+    Logger::log("registrated: " + str.str());
+    cv::imshow("Output", image);
+    cv::waitKey(1);
+    Logger::logProcess(__FUNCTION__);   //TODO remove logging
+    return sixDOF;
 }
