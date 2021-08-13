@@ -12,4 +12,3 @@ namespace tr {
 		virtual void detectEdges(const cv::Mat& img, std::vector<Edge<glm::vec2>>& edges) const override;
 	};
 }
-

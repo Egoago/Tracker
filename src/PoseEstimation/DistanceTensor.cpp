@@ -27,17 +27,17 @@ EdgeDetector* getEdgeDetector(ConfigParser& config) {
     }
 }
 
-DistanceTensor::DistanceTensor(uint width, uint height) :
+DistanceTensor::DistanceTensor(const float aspect) :
+    height(uint(std::stoi(config.getEntry("resolution", "2048")))),
+    width(uint(height * aspect)),
     q(getQ(config)),
-    width(width),
-    height(height),
     edgeDetector(getEdgeDetector(config)),
-    maxCost(std::sqrt((real)width*width+height*height)) {
+    maxCost(sqrtf((float)width * width + height * height)) {
     Logger::logProcess(__FUNCTION__);   //TODO remove logging
     buffers.allocate({ 2, //2 swap buffers
                        q,
                        height,
-                       width});
+                       width}, maxCost);
     front = true;
     quantizedEdges = new std::vector<Edge<glm::vec2>>[q];
     Logger::logProcess(__FUNCTION__);   //TODO remove logging
@@ -139,36 +139,30 @@ void DistanceTensor::setFrame(const cv::Mat& nextFrame) {
     std::vector<cv::Mat> copies{ frame,frame,frame };
     cv::merge(copies, frame);
     for (const auto& edge : edges) {
-        Point A((int)edge.a.x, (int)edge.a.y),
-            B((int)edge.b.x, (int)edge.b.y);
+        Point A((int)edge.a.x * nextFrame.cols, (int)edge.a.y * nextFrame.rows),
+            B((int)edge.b.x * nextFrame.cols, (int)edge.b.y * nextFrame.rows);
         line(nextFrame, A, B, Scalar(255, 0, 0), 1, LINE_8);
     }
 
     distanceTransformFromEdges(edges);
-    
+    //Logger::drawFrame(height, width, &buffers.at({ front, 0, 0, 0 }), CV_32F, "trans");   //TODO remove logging
     directedDistanceTransform();
-
-    gaussianBlur();
-
-    //calculateDerivatives();
-    //TODO remove logging
-    //while(1)
-    for (uint i = 0; i < q; i++) {
-        cv::Mat tmp = Mat((int)height, (int)width, CV_8U, cv::Scalar(255));
-        for (Edge<glm::vec2>& edge : quantizedEdges[i]) {
-            const Point A((int)std::round(edge.a.x),
-                (int)std::round(edge.a.y)),
-                B((int)std::round(edge.b.x),
-                    (int)std::round(edge.b.y));
-            line(tmp, A, B, Scalar(0), 1, LINE_8);
-        }
-        cv::Mat wrapper((int)height, (int)width, realCV, &buffers.at({front, i, 0, 0}));
-        cv::imshow("detected lines", tmp);
-        cv::imshow("dist transform", wrapper);
-        cv::waitKey(10000000);
+    //Logger::drawFrame(height, width, &buffers.at({ front, 0, 0, 0 }), CV_32F, "dist");    //TODO remove logging
+    const uint blurCount = 2u;
+    for (uint i = 0; i < blurCount; i++) {
+        /*cv::Mat slice(height, q, CV_32F);
+        cv::namedWindow("blur", cv::WINDOW_NORMAL);
+        cv::resizeWindow("blur", cv::Size(slice.cols * 8, slice.rows / 4));
+        for (uint x = 0; x < q; x++)
+            for (uint y = 0; y < height; y++)
+                slice.at<float>(y, x) = buffers.at({ front, x, y, 0 });
+        cv::normalize(slice, slice, 0, 1, cv::NORM_MINMAX);*/
+        gaussianBlur();
+        /*cv::imshow("blur", slice);
+        cv::waitKey(1);*/
     }
+    //Logger::drawFrame(height, width, &buffers.at({ front, 0, 0, 0 }), CV_32F, "blur");    //TODO remove logging
 
-    //TODO reintroduce blurring
     Logger::logProcess(__FUNCTION__);   //TODO remove logging
 }
 

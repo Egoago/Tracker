@@ -14,11 +14,10 @@ namespace tr {
 	class DistanceTensor {
 	private:
 		static ConfigParser config;
-		const real maxCost;
 		const uint q;
 		std::unique_ptr<EdgeDetector> edgeDetector;
-
-		const uint width, height;
+		const uint height, width; //height has to be declared first!
+		const float maxCost; //height and weight has to be declared first!
 
 		//temp buffers
 		std::vector<Edge<glm::vec2>>* quantizedEdges;
@@ -31,7 +30,7 @@ namespace tr {
 		void gaussianBlur();
 		real interpolate(const std::initializer_list<real>& indices) const;
 	public:
-		DistanceTensor(uint width, uint height);
+		DistanceTensor(const float aspect = 1.0f);
 		~DistanceTensor() {
 			delete[] quantizedEdges;
 		};
