@@ -19,9 +19,9 @@ std::vector<Template*> tr::DirectEstimator::estimate(const DistanceTensor& dcd3t
         for (uint i = 0; i < pixelCount; i++) {
             const real indices[3] = {
                 real(temp->rasterPoints[i].indexData[0]),
-                real(temp->rasterPoints[i].indexData[0]),
-                real(temp->rasterPoints[i].indexData[0])};
-            const real value = dcd3t.Evaluate(indices);
+                real(temp->rasterPoints[i].indexData[1]),
+                real(temp->rasterPoints[i].indexData[2])};
+            const real value = dcd3t.evaluate(indices);
             distance += value* value;
         }
         distance /= (real)pixelCount;
@@ -49,7 +49,6 @@ std::vector<Template*> tr::DirectEstimator::estimate(const DistanceTensor& dcd3t
             candidates.pop_back();
         }
     }
-    Logger::log("Candidate losses");
     for (uint i = 0; i < candidateCount; i++)
         Logger::log(std::to_string(i + 1) + ". candidate: " + std::to_string(distances[i]));
     Logger::logProcess(__FUNCTION__);   //TODO remove logging

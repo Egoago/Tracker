@@ -2,16 +2,16 @@
 #include "../Misc/Links.hpp"
 #include "DirectEstimator.hpp"
 #include "CeresRegistrator.hpp"
+#include <opencv2/core/utils/logger.hpp>
 
-//TODO remove debug
-#include <opencv2/highgui.hpp>
+#include "../Misc/Log.hpp"  //TODO remove logging
 
 using namespace tr;
 
 ConfigParser PoseEstimator::config(POSE_CONFIG_FILE);
 
 Estimator* getEstimator(ConfigParser& config, Tensor<Template>& templates) {
-    const unsigned int candidateCount = std::stoi(config.getEntry("candidate count", "10"));
+    const unsigned int candidateCount = std::stoi(config.getEntry("candidate count", "5"));
     Estimator* estimator = nullptr;
     switch (strHash(config.getEntry("estimator", "direct").c_str())) {
         //TODO add more
@@ -28,43 +28,44 @@ Registrator* getRegistrator(ConfigParser& config, const emat4& P) {
     }
 }
 
-glm::mat4 p;
+glm::mat4 p; //TODO remove logging
 
-PoseEstimator::PoseEstimator(const int width,
-                             const int height,
-                             Tensor<Template>& templates,
-                             const glm::mat4& P) :
-    distanceTensor(width, height),
+PoseEstimator::PoseEstimator(Tensor<Template>& templates,
+                             const glm::mat4& P,
+                             const float aspect) :
+    distanceTensor(aspect),
     estimator(getEstimator(config, templates)),
     registrator(getRegistrator(config, GLM2E<real>(P))) {
-    p = P;
+    cv::utils::logging::setLogLevel(cv::utils::logging::LOG_LEVEL_WARNING);
+    p = P; //TODO remove logging
 }
 
 SixDOF PoseEstimator::getPose(const cv::Mat& frame) {
     Logger::logProcess(__FUNCTION__);   //TODO remove logging
+
     distanceTensor.setFrame(frame);
     std::vector<Template*> candidates = estimator->estimate(distanceTensor);
     //TODO parallel registration
     SixDOF sixDOF = registrator->registrate(distanceTensor, candidates[0]);
+
     //TODO remove logging
-    cv::Mat image = frame.clone();
-    for (const auto& rasterPoint : candidates[0]->rasterPoints) {
-        image.at<cv::Vec3b>(cv::Point((int)(rasterPoint.uv.x * frame.cols),
-            (int)(rasterPoint.uv.y * frame.rows))) = cv::Vec3b(0,0,255);
-    }
     std::stringstream str;
     str << candidates[0]->sixDOF;
     Logger::log("candidate: " + str.str());
-    for (auto rasterPoint : candidates[0]->rasterPoints) {
-        rasterPoint.render(p*sixDOF.getModelTransformMatrix());
-        image.at<cv::Vec3b>(cv::Point((int)(rasterPoint.uv.x * frame.cols),
-            (int)(rasterPoint.uv.y * frame.rows))) = cv::Vec3b(0, 255, 0);
-    }
     str.flush();
     str << sixDOF;
     Logger::log("registrated: " + str.str());
-    cv::imshow("Output", image);
-    cv::waitKey(1);
+    cv::Mat image = frame.clone();
+    for (auto rasterPoint : candidates[0]->rasterPoints) {
+        image.at<cv::Vec3b>(
+            cv::Point((int)(rasterPoint.uv.x * frame.cols),
+                      (int)(rasterPoint.uv.y * frame.rows))) = cv::Vec3b(0,0,255);
+        rasterPoint.render(p*sixDOF.getModelTransformMatrix());
+        image.at<cv::Vec3b>(
+            cv::Point((int)(rasterPoint.uv.x * frame.cols),
+                      (int)(rasterPoint.uv.y * frame.rows))) = cv::Vec3b(0, 255, 0);
+    }
+    Logger::drawFrame(&image, "registration");
     Logger::logProcess(__FUNCTION__);   //TODO remove logging
     return sixDOF;
 }

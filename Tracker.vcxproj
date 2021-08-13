@@ -211,7 +211,6 @@ del "$(SolutionDir)Config\*" /Q</Command>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Math\Edge.hpp" />
-    <ClInclude Include="src\Math\Interpolator.hpp" />
     <ClInclude Include="src\Math\RasterPoint.hpp" />
     <ClInclude Include="src\Math\Rotation.hpp" />
     <ClInclude Include="src\Math\SixDOF.hpp" />

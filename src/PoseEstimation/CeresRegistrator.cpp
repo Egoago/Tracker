@@ -18,15 +18,14 @@ public:
         const real indices[3] = {(real)parameters[0][0],   //u
                                  (real)parameters[0][1],   //v
                                  (real)parameters[0][2]};  //angle
-        if (!jacobians)
-            *residuals = double(distanceTensor.Evaluate(parameters[0]));
+        if (jacobians == nullptr)
+            *residuals = double(distanceTensor.evaluate(parameters[0]));
         else {
             real wrappedJacobians[3];
-            *residuals = double(distanceTensor.Evaluate(parameters[0], wrappedJacobians));
+            *residuals = double(distanceTensor.evaluate(parameters[0], wrappedJacobians));
             for (int i = 0u; i < 3u; i++)
                 jacobians[0][i] = double(wrappedJacobians[i]);
         }
-
         //Logger::logProcess(__FUNCTION__);   //TODO remove logging
         return true;
     }
@@ -97,7 +96,8 @@ SixDOF CeresRegistrator::registrate(const DistanceTensor& distanceTensor, const 
     // Run the solver!
     ceres::Solver::Options options;
     options.minimizer_progress_to_stdout = true;
-    options.check_gradients = true;
+    options.initial_trust_region_radius = 1e6;
+    //options.check_gradients = true;
     options.num_threads = 1;
     ceres::Solver::Summary summary;
     ceres::Solve(options, &problem, &summary);
@@ -105,7 +105,6 @@ SixDOF CeresRegistrator::registrate(const DistanceTensor& distanceTensor, const 
     SixDOF result;
     for (uint i = 0; i < 6; i++)
         result.data[i] = float(params[i]);
-    delete[] params;
 
     Logger::log(summary.FullReport());
     Logger::logProcess(__FUNCTION__);   //TODO remove logging

@@ -6,6 +6,7 @@
 
 namespace tr {
 	typedef unsigned int uint;
+	typedef unsigned long ulong;
 
 	//TODO float <-> double
 	typedef double real;

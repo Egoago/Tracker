@@ -16,13 +16,13 @@ glm::mat4 SixDOF::getModelTransformMatrix() const {
 }
 
 std::ostream& tr::operator<<(std::ostream& ost, const SixDOF& sDOF) {
-	ost << "pos: "
-		<< sDOF.position.x << ' '
-		<< sDOF.position.y << ' '
-		<< sDOF.position.z << ' '
-		<< "ori: "
-		<< sDOF.orientation.y << ' '
-		<< sDOF.orientation.p << ' '
+	ost << "pos:\t"
+		<< sDOF.position.x << '\t'
+		<< sDOF.position.y << '\t'
+		<< sDOF.position.z << '\t'
+		<< "ori:\t"
+		<< sDOF.orientation.y << '\t'
+		<< sDOF.orientation.p << '\t'
 		<< sDOF.orientation.r << std::endl;
 	return ost;
 }

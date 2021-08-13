@@ -23,20 +23,14 @@ namespace tr {
 		void calculateSize();
 	public:
 		//[Constructing]
-		Tensor() {}
-		Tensor(std::initializer_list<uint> shape) { allocate(shape); }
-		Tensor(const Tensor<CellType>& other) {
-			Logger::logProcess(__FUNCTION__);
-			*this = other;
-			Logger::logProcess(__FUNCTION__);
-		}
-		Tensor(std::initializer_list<uint> shape, const CellType& value) {
-			allocate(shape);
-			if (size > 0u)
-				std::fill_n(storage, size, value);
-		}
+		inline Tensor() {}
+		inline Tensor(std::initializer_list<uint> shape) { allocate(shape); }
+		inline Tensor(const Tensor<CellType>& other) { *this = other; }
+		inline Tensor(std::initializer_list<uint> shape, const CellType& value) { allocate(shape, value); }
 		void allocate(std::initializer_list<uint> shape);
+		void allocate(std::initializer_list<uint> shape, const CellType& value);
 		void allocate(const uint* shape, const uint dims);
+		void allocate(const uint* shape, const uint dims, const CellType& value);
 
 		Tensor<CellType>& operator=(const Tensor<CellType>& other) {
 			Logger::logProcess(__FUNCTION__);
@@ -66,7 +60,6 @@ namespace tr {
 		inline CellType* end() { return storage + size; }
 		inline const CellType* end() const { return storage + size; }
 		template <const unsigned int iDim, typename IndexType = float>
-		const CellType interpolate(std::initializer_list<IndexType> indices) const;
 
 		//[Serialization]
 		friend std::ostream& operator<<(std::ostream& out, Bits<Tensor<CellType>&> o) {
@@ -84,7 +77,7 @@ namespace tr {
 			return out;
 		}
 		//TODO type check
-		friend std::istream& operator>>(std::istream& ins, Bits<Tensor<CellType>&> o) {
+		inline friend std::istream& operator>>(std::istream& ins, Bits<Tensor<CellType>&> o) {
 			Logger::logProcess(__FUNCTION__);
 			o.t.deallocate();
 			uint dims = 0u;
@@ -101,7 +94,7 @@ namespace tr {
 			return ins;
 		}
 		//TODO remove log
-		friend std::ostream& operator<<(std::ostream& os, const Tensor<CellType>& tensor) {
+		inline friend std::ostream& operator<<(std::ostream& os, const Tensor<CellType>& tensor) {
 			Logger::logProcess(__FUNCTION__);
 			if (tensor.allocated) {
 				for (const CellType* i = tensor.begin(); i < tensor.end(); i++)
@@ -165,6 +158,12 @@ namespace tr {
 	}
 
 	template<class CellType>
+	inline void Tensor<CellType>::allocate(std::initializer_list<uint> shape, const CellType& value) {
+		allocate(shape);
+		if (size > 0u) std::fill_n(storage, size, value);
+	}
+
+	template<class CellType>
 	inline void Tensor<CellType>::allocate(const uint* shape, const uint dims) {
 		Logger::logProcess(__FUNCTION__);
 		if (allocated)
@@ -178,6 +177,12 @@ namespace tr {
 		calculateSize();
 		storage = new CellType[size];
 		Logger::logProcess(__FUNCTION__);
+	}
+
+	template<class CellType>
+	inline void Tensor<CellType>::allocate(const uint* shape, const uint dims, const CellType& value) {
+		allocate(shape, dims);
+		if (size > 0u) std::fill_n(storage, size, value);
 	}
 
 	template<class CellType>
@@ -254,42 +259,6 @@ namespace tr {
 			i++;
 		}
 		return storage[indexSum];
-	}
-
-	template<class CellType>
-	template<const unsigned int iDim, typename IndexType>
-	inline const CellType Tensor<CellType>::interpolate(std::initializer_list<IndexType> indices) const {
-#ifdef _DEBUG
-		if (iDim != indices.size())
-			error("wrong number of indices");
-#endif // _DEBUG
-		unsigned int maxEvaluations = 1u;
-		unsigned int interpolationOmitted = 0u;
-		unsigned int i = 0u;
-		IndexType low[iDim], high[iDim], t[iDim], _t[iDim];
-		for (const IndexType index : indices) {
-			maxEvaluations *= 2u;
-			low[i] = floor(index);
-			high[i] = ceil(index);
-			interpolationOmitted |= (low[i] == high[i]) << i;
-			t[i] = (double)index - (double)low[i];
-			_t[i] = 1.0 - t[i];
-			i++;
-		}
-		CellType value = CellType(0);
-		for (unsigned int i = 0; i < maxEvaluations; i++) {
-			if (i & interpolationOmitted) break;
-			IndexType weight = 1.0;
-			unsigned int indexSum = 0u;
-			for (unsigned int dim = 0; dim < iDim; dim++) {
-				const bool useHigher = i & (1u << dim);
-				weight *= (useHigher) ? t[dim] : _t[dim];
-				indexSum *= _shape[dim];
-				indexSum += (useHigher) ? high[dim] : low[dim];
-			}
-			value += storage[indexSum] * CellType(weight);
-		}
-		return value;
 	}
 }
 

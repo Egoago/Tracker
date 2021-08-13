@@ -21,7 +21,7 @@ namespace tr {
 
 		//temp buffers
 		std::vector<Edge<glm::vec2>>* quantizedEdges;
-		Tensor<real> buffers;
+		Tensor<float> buffers;
 
 		bool front;
 
@@ -29,16 +29,17 @@ namespace tr {
 		void distanceTransformFromEdges(const std::vector< Edge<glm::vec2>>& edges);
 		void gaussianBlur();
 		real interpolate(const std::initializer_list<real>& indices) const;
+		real round(const std::initializer_list<real>& indices) const;
+		real sample(const std::initializer_list<real>& indices) const;
 	public:
 		DistanceTensor(const float aspect = 1.0f);
 		~DistanceTensor() {
 			delete[] quantizedEdges;
 		};
 		void setFrame(const cv::Mat& nextFrame);
-		real Evaluate(const real coordinates[3], real partialDerivatives[3] = nullptr) const;
-		bool checkIndices(const uint indices[3]) const;
+		real evaluate(const real coordinates[3], real partialDerivatives[3] = nullptr) const;
 		real at(const uint indices[3]) const;
-		inline real operator()(const std::initializer_list<uint>& indices) const { return buffers.at(indices); }
+		inline real operator()(const std::initializer_list<uint>& indices) const { return real(buffers.at(indices)); }
 	};
 }
 

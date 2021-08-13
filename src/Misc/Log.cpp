@@ -3,8 +3,9 @@
 #include <unordered_set>
 #include <unordered_map>
 #include <chrono>
-//TODO only for windows
-#include <Windows.h>
+#include <Windows.h>	//TODO only for windows
+#include <opencv2/core/mat.hpp>
+#include <opencv2/highgui.hpp>
 
 using namespace std;
 using namespace tr;
@@ -97,6 +98,22 @@ void InternalLogger::warning(const string& message, bool repeat) {
 
 void Logger::error(const string& message) {
 	InternalLogger::error(message);
+}
+
+void tr::Logger::drawFrame(unsigned int width, unsigned int height, void* data, int OpenCVMatType, const char* windowName) {
+	const cv::Mat frame((int)height, (int)width, OpenCVMatType, data);
+	drawFrame(&frame, windowName);
+}
+
+void tr::Logger::drawFrame(const void* cvMat, const char* windowName) {
+	cv::Mat frame = ((cv::Mat*)cvMat)->clone();
+	if (frame.type() == CV_32F || frame.type() == CV_64F)
+		cv::normalize(frame, frame, 0, 1, cv::NORM_MINMAX);
+	cv::namedWindow(windowName, cv::WINDOW_NORMAL);
+	cv::resizeWindow(windowName, cv::Size(frame.cols/2, frame.rows/2));
+	cv::imshow(windowName, frame);
+	log(windowName + std::string(" drawn. Press any key to continue..."));
+	cv::waitKey(10000000);
 }
 
 void InternalLogger::error(const string& message) {

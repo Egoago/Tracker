@@ -12,6 +12,7 @@
 //TODO remove logging
 #include "../Misc/Log.hpp"
 #include <opencv2/highgui.hpp>
+#include <opencv2/core/utils/logger.hpp>
 
 //TODO break apart
 using namespace tr;
@@ -166,6 +167,7 @@ void analizeRasterization(const std::vector<tr::uint>& rasterCounts) {
 }
 
 void Model::generarteObject(const std::string& fileName) {
+	cv::utils::logging::setLogLevel(cv::utils::logging::LOG_LEVEL_WARNING);
 	//TODO proper resource destruction
 	Logger::logProcess(__FUNCTION__);	//TODO remove logging
 	//TODO add loading bar
