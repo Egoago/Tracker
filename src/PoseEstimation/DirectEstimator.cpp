@@ -22,7 +22,7 @@ std::vector<Template*> tr::DirectEstimator::estimate(const DistanceTensor& dcd3t
                 real(temp->rasterPoints[i].indexData[1]),
                 real(temp->rasterPoints[i].indexData[2])};
             const real value = dcd3t.evaluate(indices);
-            distance += value* value;
+            distance += value * value;
         }
         distance /= (real)pixelCount;
         if (pixelCount <= 20)

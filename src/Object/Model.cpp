@@ -122,7 +122,7 @@ void Model::rasterizeCandidates(Template* temp, const glm::mat4& mvp) {
 
 	const uint bufferSize = (uint)candidates.size();
 	const static int rasterCount = std::stoi(config.getEntry("rasterization count", "100"));
-	const static float rasterOffset = stof(config.getEntry("rasterization offset", "0.0015"));
+	const static float rasterOffset = stof(config.getEntry("rasterization offset", "0.005"));
 	float rasterProb = (float)rasterCount / (float)bufferSize;
 	if (rasterProb > 1.0f) rasterProb = 1.0f;
 	static std::mt19937 gen(std::random_device{}());

@@ -97,9 +97,9 @@ tr::real DistanceTensor::sample(const std::initializer_list<real>& indices) cons
 }
 
 tr::real tr::DistanceTensor::at(const uint indices[3]) const {
-#ifndef DEBUG
+#ifndef _DEBUG
     Logger::warning("Remove DistanceTensor at from release");
-#endif // !DEBUG
+#endif // !_DEBUG
     return real(buffers.at({ front,
                         indices[2] % q,
                         indices[1] % height,
@@ -110,19 +110,19 @@ tr::real DistanceTensor::evaluate(const real coordinates[3], real partialDerivat
     const real indices[3] = { coordinates[0] * (width - real(1)),  //u
                               coordinates[1] * (height - real(1)), //v
                               quantizedIndex(coordinates[2], q)};  //angle
-
+    //NOTE numeric differentiation is best executed with ceres
     if (partialDerivatives != nullptr) {
-        static const real numDiffStep = real(stod(config.getEntry("numeric diff step size", "1.1")));
+        static const real numDiffStep = real(stod(config.getEntry("numeric diff step size", "1e-5")));
         static const real invDiffStep = real(1) / (real(2) * numDiffStep);
         partialDerivatives[0] = invDiffStep *
-            sample({ indices[0] + numDiffStep, indices[1], indices[2] }) -
-            sample({ indices[0] - numDiffStep, indices[1], indices[2] });
+            (sample({ indices[0] + numDiffStep, indices[1], indices[2] }) -
+             sample({ indices[0] - numDiffStep, indices[1], indices[2] }));
         partialDerivatives[1] = invDiffStep *
-            sample({ indices[0], indices[1] + numDiffStep, indices[2] }) -
-            sample({ indices[0], indices[1] - numDiffStep, indices[2] });
+            (sample({ indices[0], indices[1] + numDiffStep, indices[2] }) -
+             sample({ indices[0], indices[1] - numDiffStep, indices[2] }));
         partialDerivatives[2] = invDiffStep *
-            sample({ indices[0], indices[1], indices[2] + numDiffStep }) -
-            sample({ indices[0], indices[1], indices[2] - numDiffStep });
+            (sample({ indices[0], indices[1], indices[2] + numDiffStep }) -
+             sample({ indices[0], indices[1], indices[2] - numDiffStep }));
     }
 
     return sample({ indices[0], indices[1], indices[2] });
@@ -138,18 +138,21 @@ void DistanceTensor::setFrame(const cv::Mat& nextFrame) {
     edgeDetector->detectEdges(frame, edges);
     //TODO remove logging
     std::vector<cv::Mat> copies{ frame,frame,frame };
-    cv::merge(copies, frame);
+    cv::merge(copies, nextFrame);
     for (const auto& edge : edges) {
-        Point A((int)edge.a.x * nextFrame.cols, (int)edge.a.y * nextFrame.rows),
-            B((int)edge.b.x * nextFrame.cols, (int)edge.b.y * nextFrame.rows);
-        line(nextFrame, A, B, Scalar(255, 0, 0), 1, LINE_8);
+        line(nextFrame,
+            Point((int)std::round(edge.a.x * nextFrame.cols),
+                  (int)std::round(edge.a.y * nextFrame.rows)),
+            Point((int)std::round(edge.b.x * nextFrame.cols),
+                  (int)std::round(edge.b.y * nextFrame.rows)),
+            Scalar(255, 0, 0), 1, LINE_8);
     }
 
     distanceTransformFromEdges(edges);
     //Logger::drawFrame(height, width, &buffers.at({ front, 0, 0, 0 }), CV_32F, "trans");   //TODO remove logging
     directedDistanceTransform();
     //Logger::drawFrame(height, width, &buffers.at({ front, 0, 0, 0 }), CV_32F, "dist");    //TODO remove logging
-    const uint blurCount = 2u;
+    const uint blurCount = 1u;
     for (uint i = 0; i < blurCount; i++) {
         /*cv::Mat slice(height, q, CV_32F);
         cv::namedWindow("blur", cv::WINDOW_NORMAL);

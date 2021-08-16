@@ -28,6 +28,14 @@ namespace tr {
 				gm[j][i] = gT(em(i, j));
 		return gm;
 	}
+	template<typename eT, uint m, uint n>
+	inline glm::mat<m, n, double> E2GLM(const Eigen::Matrix<eT, m, n>& em) {
+		glm::mat<m, n, double> gm;
+		for (uint i = 0; i < m; ++i)
+			for (uint j = 0; j < n; ++j)
+				gm[j][i] = double(em(i, j));
+		return gm;
+	}
 	template<typename gT, typename eT, uint m>
 	inline glm::vec<m, gT> E2GLM(const Eigen::Matrix<eT, m, 1>& em) {
 		glm::vec<m, gT> gm;

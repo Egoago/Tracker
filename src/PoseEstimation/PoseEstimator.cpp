@@ -51,10 +51,10 @@ SixDOF PoseEstimator::getPose(const cv::Mat& frame) {
     //TODO remove logging
     std::stringstream str;
     str << candidates[0]->sixDOF;
-    Logger::log("candidate: " + str.str());
-    str.flush();
+    Logger::log("candidate:\t" + str.str());
+    str.str("");
     str << sixDOF;
-    Logger::log("registrated: " + str.str());
+    Logger::log("registrated:\t" + str.str());
     cv::Mat image = frame.clone();
     for (auto rasterPoint : candidates[0]->rasterPoints) {
         image.at<cv::Vec3b>(
