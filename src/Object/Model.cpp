@@ -31,13 +31,13 @@ void getObjectName(std::string& fName, std::string& oName) {
 void Model::generate6DOFs() {
 	Logger::logProcess(__FUNCTION__);	//TODO remove logging
 	//TODO tune granularity
-	const static Range width(config.getEntries("width", { "-120.0", "120.0", "7" }));//7
-	const static Range height(config.getEntries("height", { "-120.0", "120.0", "7" }));//7
-	const static Range depth(config.getEntries("depth", { "-325.0", "-2000.0", "5" }));//5
+	const static Range width(config.getEntries<int>("width", { -120, 120, 7 }));//7
+	const static Range height(config.getEntries<int>("height", { 120, 120, 7 }));//7
+	const static Range depth(config.getEntries<int>("depth", { 325, 2000, 5 }));//5
 	//TODO uniform sphere distr <=> homogenous tensor layout????
-	const static Range roll(config.getEntries("roll", { "0", "360", "6" }));//6
-	const static Range yaw(config.getEntries("yaw", { "0", "360", "6" }));//6
-	const static Range pitch(config.getEntries("pitch", { "0", "180", "3" }));//3
+	const static Range roll(config.getEntries<int>("roll", { 0, 360, 6 }));//6
+	const static Range yaw(config.getEntries<int>("yaw", { 0, 360, 6 }));//6
+	const static Range pitch(config.getEntries<int>("pitch", { 0, 180, 3 }));//3
 	templates.allocate({
 		width.resolution,
 		height.resolution,
@@ -121,8 +121,8 @@ void Model::rasterizeCandidates(Template* temp, const glm::mat4& mvp) {
 	//Logger::logProcess(__FUNCTION__);	//TODO remove logging
 
 	const uint bufferSize = (uint)candidates.size();
-	const static int rasterCount = std::stoi(config.getEntry("rasterization count", "100"));
-	const static float rasterOffset = stof(config.getEntry("rasterization offset", "0.005"));
+	const static int rasterCount = config.getEntry("rasterization count", 100);
+	const static float rasterOffset = config.getEntry("rasterization offset", 0.005f);
 	float rasterProb = (float)rasterCount / (float)bufferSize;
 	if (rasterProb > 1.0f) rasterProb = 1.0f;
 	static std::mt19937 gen(std::random_device{}());

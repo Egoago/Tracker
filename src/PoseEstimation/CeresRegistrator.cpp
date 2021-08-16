@@ -56,19 +56,24 @@ struct RasterPointCost {
     const evec3 point, offsetPoint;
     const evec2 uv;
 
-    RasterPointCost(const emat4& P, const RasterPoint& rasterPoint, const DistanceTensor& distanceTensor) :
-        P(P),
-        point(GLM2E<real>(rasterPoint.pos)),
-        offsetPoint(GLM2E<real>(rasterPoint.offsetPos)),
-        uv(GLM2E<real>(rasterPoint.uv)) {
+    RasterPointCost(const emat4& P,
+                    const RasterPoint& rasterPoint,
+                    const DistanceTensor& distanceTensor) :
+                    P(P),
+                    point(GLM2E<real>(rasterPoint.pos)),
+                    offsetPoint(GLM2E<real>(rasterPoint.offsetPos)),
+                    uv(GLM2E<real>(rasterPoint.uv)) {
         distanceTensorWrapper.reset(new ceres::CostFunctionToFunctor<1, 3>(
-            new ceres::NumericDiffCostFunction<NumDistanceTensorWrapper,ceres::CENTRAL,1,3>(
-                new NumDistanceTensorWrapper(distanceTensor))));
+            new ceres::NumericDiffCostFunction<NumDistanceTensorWrapper
+            ,ceres::CENTRAL,1,3>(new NumDistanceTensorWrapper(distanceTensor))));
         //distanceTensorWrapper.reset(new ceres::CostFunctionToFunctor<1, 3>(new DistanceTensorWrapper(distanceTensor)));
     }
 
     template<typename T>
-    inline bool project(const T pos[3], const T ori[3], const evec3 p, T uv[2]) const {
+    inline bool project(const T pos[3],
+                        const T ori[3],
+                        const evec3 p,
+                        T uv[2]) const {
         //Logger::logProcess(__FUNCTION__);   //TODO remove logging
         const Eigen::Quaternion<T> q = RPYToQ(ori);
         const Eigen::Map<const Eigen::Matrix<T, 3, 1>> t(pos);
@@ -112,7 +117,8 @@ tr::CeresRegistrator::CeresRegistrator(const emat4& P) : Registrator(P) {
     google::InitGoogleLogging("Tracker");
 }
 
-SixDOF CeresRegistrator::registrate(const DistanceTensor& distanceTensor, const Template* candidate) {
+SixDOF CeresRegistrator::registrate(const DistanceTensor& distanceTensor,
+                                    const Template* candidate) {
     Logger::logProcess(__FUNCTION__);   //TODO remove logging
     double params[6];
     for (uint i = 0; i < 6; i++)
@@ -122,7 +128,10 @@ SixDOF CeresRegistrator::registrate(const DistanceTensor& distanceTensor, const 
     for (const RasterPoint& rasterPoint : candidate->rasterPoints) {
         auto rast = new RasterPointCost(P, rasterPoint, distanceTensor);
         CostFunction* cost_function = new AutoDiffCostFunction<RasterPointCost, 1, 3, 3>(rast);
-        problem.AddResidualBlock(cost_function, new HuberLoss(1.0), params, &params[3]);
+        problem.AddResidualBlock(cost_function,
+                                 new HuberLoss(10.0),
+                                 params,
+                                 &params[3]);
     }
 
     // Run the solver!

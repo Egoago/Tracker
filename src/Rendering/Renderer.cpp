@@ -15,11 +15,11 @@ extern "C" {
 ConfigParser Renderer::config(REND_CONFIG_FILE);
 
 void Renderer::readConfig() {
-    std::vector<std::string> str = config.getEntries("frame resolution", { "1024", "1024" });
-    resolution = glm::uvec2(std::stoi(str[0]), std::stoi(str[1]));
-    nearP = std::stof(config.getEntry("near clipping pane", "200.0"));
-    farP = std::stof(config.getEntry("far clipping pane", "4500.0"));
-    fov = glm::radians(std::stof(config.getEntry("fov", "45.0")));
+    const auto res = config.getEntries<int>("frame resolution", { 1024, 1024 });
+    resolution = glm::uvec2(res[0], res[1]);
+    nearP = config.getEntry("near clipping pane", 200.0f);
+    farP = config.getEntry("far clipping pane", 4500.0f);
+    fov = glm::radians(config.getEntry("fov", 45.0f));
     aspect = (float)resolution.x / resolution.y;
 }
 
@@ -114,8 +114,8 @@ void Renderer::setGeometry(const Geometry& geometry)
 
     //generating outliner edges
     std::vector<glm::vec3> lowEdges, highEdges, lowDirections, highDirections;
-    const float lowThreshold = std::stof(config.getEntry("low threshold", "1e-3"));
-    const float highThreshold = std::stof(config.getEntry("high threshold", "30.0"));
+    const float lowThreshold = config.getEntry("low threshold", 1e-3f);
+    const float highThreshold = config.getEntry("high threshold", 30.0f);
     for (uint i = 0; i < geometry.getEdgeCount(); i++) {
         float curvature = geometry.getCurvatures()[i];
         if (curvature > glm::radians(lowThreshold)) {

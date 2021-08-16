@@ -8,10 +8,10 @@ namespace tr {
 		float begin, end, step, dist;
 		uint resolution;
 
-		Range(std::vector<std::string> values) :
-			begin(std::stof(values[0])),
-			end(std::stof(values[1])),
-			resolution(std::stoi(values[2])) {
+		Range(std::vector<int> values) :
+			begin(float(values[0])),
+			end(float(values[1])),
+			resolution(values[2]) {
 			step = (end - begin) / resolution;
 			dist = abs(end - begin);
 		};

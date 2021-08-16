@@ -11,9 +11,9 @@ using namespace tr;
 ConfigParser PoseEstimator::config(POSE_CONFIG_FILE);
 
 Estimator* getEstimator(ConfigParser& config, Tensor<Template>& templates) {
-    const unsigned int candidateCount = std::stoi(config.getEntry("candidate count", "5"));
+    const unsigned int candidateCount = config.getEntry("candidate count", 5);
     Estimator* estimator = nullptr;
-    switch (strHash(config.getEntry("estimator", "direct").c_str())) {
+    switch (strHash(config.getEntry<std::string>("estimator", "direct").c_str())) {
         //TODO add more
     case strHash("direct"): return new DirectEstimator(candidateCount, templates);
     default: return new DirectEstimator(candidateCount, templates);
@@ -22,7 +22,7 @@ Estimator* getEstimator(ConfigParser& config, Tensor<Template>& templates) {
 
 Registrator* getRegistrator(ConfigParser& config, const emat4& P) {
     Estimator* estimator = nullptr;
-    switch (strHash(config.getEntry("registrator", "ceres").c_str())) {
+    switch (strHash(config.getEntry<std::string>("registrator", "ceres").c_str())) {
     case strHash("ceres"): return new CeresRegistrator(P);
     default: return new CeresRegistrator(P);
     }
@@ -65,7 +65,7 @@ SixDOF PoseEstimator::getPose(const cv::Mat& frame) {
             cv::Point((int)(rasterPoint.uv.x * frame.cols),
                       (int)(rasterPoint.uv.y * frame.rows))) = cv::Vec3b(0, 255, 0);
     }
-    Logger::drawFrame(&image, "registration");
+    Logger::drawFrame(&image, "registration", false);
     Logger::logProcess(__FUNCTION__);   //TODO remove logging
     return sixDOF;
 }

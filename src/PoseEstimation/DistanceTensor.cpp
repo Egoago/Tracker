@@ -14,12 +14,8 @@ using namespace tr;
 
 ConfigParser DistanceTensor::config(DCDT3_CONFIG_FILE);
 
-uint getQ(ConfigParser& config) {
-    return std::stoi(config.getEntry("orientation quantization", "60"));
-}
-
 EdgeDetector* getEdgeDetector(ConfigParser& config) {
-    switch (strHash(config.getEntry("edge detector", "lsd").c_str())) {
+    switch (strHash(config.getEntry<std::string>("edge detector", "lsd").c_str())) {
     case strHash("canny"): return new CannyDetector();
     case strHash("lsd"):
     default: return new LSDDetector();
@@ -27,9 +23,9 @@ EdgeDetector* getEdgeDetector(ConfigParser& config) {
 }
 
 DistanceTensor::DistanceTensor(const float aspect) :
-    height(uint(std::stoi(config.getEntry("resolution", "2048")))),
+    height(uint(config.getEntry("resolution", 2048))),
     width(uint(height * aspect)),
-    q(getQ(config)),
+    q(config.getEntry("orientation quantization", 60)),
     edgeDetector(getEdgeDetector(config)),
     maxCost(sqrtf((float)width * width + height * height)) {
     Logger::logProcess(__FUNCTION__);   //TODO remove logging
@@ -92,7 +88,7 @@ tr::real DistanceTensor::interpolate(const std::initializer_list<real>& indices)
 }
 
 tr::real DistanceTensor::sample(const std::initializer_list<real>& indices) const {
-    const static bool useInterpolation = (config.getEntry("use interpolation", "true").compare("true") == 0);
+    const static bool useInterpolation = config.getEntry("use interpolation", true);
     return (useInterpolation) ? interpolate(indices) : round(indices);
 }
 
@@ -112,7 +108,7 @@ tr::real DistanceTensor::evaluate(const real coordinates[3], real partialDerivat
                               quantizedIndex(coordinates[2], q)};  //angle
     //NOTE numeric differentiation is best executed with ceres
     if (partialDerivatives != nullptr) {
-        static const real numDiffStep = real(stod(config.getEntry("numeric diff step size", "1e-5")));
+        static const real numDiffStep = real(config.getEntry("numeric diff step size", 1e-5));
         static const real invDiffStep = real(1) / (real(2) * numDiffStep);
         partialDerivatives[0] = invDiffStep *
             (sample({ indices[0] + numDiffStep, indices[1], indices[2] }) -
@@ -196,7 +192,7 @@ void tr::DistanceTensor::distanceTransformFromEdges(const std::vector<Edge<glm::
 
 void DistanceTensor::directedDistanceTransform() {
     Logger::logProcess(__FUNCTION__);   //TODO remove logging
-    const static float lambda = stof(config.getEntry("lambda", "100.0"));
+    const static float lambda = config.getEntry("lambda", 100.0f);
     const static float dirCost = lambda * glm::pi<float>()/q;
     const static ulong pixelCount = width * height;
     //TODO parallelization

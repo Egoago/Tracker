@@ -12,6 +12,6 @@ namespace tr {
 		static void warning(const std::string& message, bool repeat = false);
 		static void error(const std::string& message);
 		static void drawFrame(unsigned int width, unsigned int height, void* data, int OpenCVMatType = 5, const char* windowName = "frame");
-		static void drawFrame(const void* cvMat, const char* windowName = "frame");
+		static void drawFrame(const void* cvMat, const char* windowName = "frame", const float scale = 0.5f);
 	};
 }

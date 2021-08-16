@@ -21,48 +21,24 @@ vector<string> split(string str, string delimiter) {
 }
 
 ConfigParser::ConfigParser(const char* fileName) : fileName(fileName)
-{
-    load();
-}
+{ load(); }
 
-string ConfigParser::getEntry(const string& entryName) {
-    return (*this)[entryName][0];
-}
+void tr::ConfigParser::entry2Data(const std::string& entryName, std::string& data)
+{ data = entryName; }
 
-string ConfigParser::getEntry(const string& entryName, const string& defaultValue)
-{
-    if (configuration.count(entryName) == 0) {
-        configuration[entryName] = vector<string>{ defaultValue };
-        save();
-    }
-    return getEntry(entryName);
-}
+void tr::ConfigParser::entry2Data(const std::string& entryName, bool& data)
+{ data = entryName.compare("true") == 0; }
 
-void ConfigParser::setEntry(const string& entryName, const string& value)
-{
-    (*this)[entryName] = vector<string>{ value };
-    save();
-}
+void tr::ConfigParser::entry2Data(const std::string& entryName, int& data)
+{ data = stoi(entryName); }
 
-vector<string>& ConfigParser::getEntries(const string& entryName)
-{
-    return (*this)[entryName];
-}
+void tr::ConfigParser::entry2Data(const std::string& entryName, float& data)
+{ data = stof(entryName); }
 
-vector<string>& ConfigParser::getEntries(const string& entryName, const vector<string> defaultValues)
-{
-    if (configuration.count(entryName) == 0)
-        configuration[entryName] = defaultValues;
-    return getEntries(entryName);
-}
+void tr::ConfigParser::entry2Data(const std::string& entryName, double& data)
+{ data = stod(entryName); }
 
-vector<string>& ConfigParser::operator[](const string& entryName)
-{
-    return configuration[entryName];
-}
-
-void ConfigParser::load()
-{
+void ConfigParser::load() {
     ifstream file(CONFIG_FOLDER + string(fileName));
     string line;
     while (getline(file, line)) {
@@ -75,8 +51,7 @@ void ConfigParser::load()
     file.close();
 }
 
-void ConfigParser::save()
-{
+void ConfigParser::save() {
     ofstream file(CONFIG_FOLDER + string(fileName));
     for (auto const& entry : configuration) {
         bool first = true;
@@ -93,6 +68,4 @@ void ConfigParser::save()
 }
 
 ConfigParser::~ConfigParser()
-{
-    save();
-}
+{ save(); }

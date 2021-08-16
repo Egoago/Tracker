@@ -105,12 +105,12 @@ void tr::Logger::drawFrame(unsigned int width, unsigned int height, void* data, 
 	drawFrame(&frame, windowName);
 }
 
-void tr::Logger::drawFrame(const void* cvMat, const char* windowName) {
+void tr::Logger::drawFrame(const void* cvMat, const char* windowName, const float scale) {
 	cv::Mat frame = ((cv::Mat*)cvMat)->clone();
 	if (frame.type() == CV_32F || frame.type() == CV_64F)
 		cv::normalize(frame, frame, 0, 1, cv::NORM_MINMAX);
 	cv::namedWindow(windowName, cv::WINDOW_NORMAL);
-	cv::resizeWindow(windowName, cv::Size(frame.cols/2, frame.rows/2));
+	cv::resizeWindow(windowName, cv::Size((int)(frame.cols * scale), (int)(frame.rows* scale)));
 	cv::imshow(windowName, frame);
 	log(windowName + std::string(" drawn. Press any key to continue..."));
 	cv::waitKey(10000000);
