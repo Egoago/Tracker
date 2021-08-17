@@ -187,10 +187,10 @@
     <ClInclude Include="src\Misc\Range.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Math\Rotation.hpp">
+    <ClInclude Include="src\Math\RasterPoint.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Math\RasterPoint.hpp">
+    <ClInclude Include="src\Math\EigenTransform.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

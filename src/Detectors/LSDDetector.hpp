@@ -9,6 +9,6 @@ namespace tr {
 
 		LSDDetector(float scale = 0.8f) :scale(scale) {}
 
-		virtual void detectEdges(const cv::Mat& img, std::vector<Edge<glm::vec2>>& edges) const override;
+		virtual void detectEdges(const cv::Mat& img, std::vector<Edge<vec2f>>& edges) const override;
 	};
 }

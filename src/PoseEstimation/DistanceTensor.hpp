@@ -1,5 +1,4 @@
 #pragma once
-#include <glm/vec2.hpp>
 #include <vector>
 #include <initializer_list>
 #include <memory>
@@ -20,26 +19,26 @@ namespace tr {
 		const float maxCost; //height and weight has to be declared first!
 
 		//temp buffers
-		std::vector<Edge<glm::vec2>>* quantizedEdges;
+		std::vector<Edge<vec2f>>* quantizedEdges;
 		Tensor<float> buffers;
 
 		bool front;
 
 		void directedDistanceTransform();
-		void distanceTransformFromEdges(const std::vector< Edge<glm::vec2>>& edges);
+		void distanceTransformFromEdges(const std::vector< Edge<vec2f>>& edges);
 		void gaussianBlur();
-		real interpolate(const std::initializer_list<real>& indices) const;
-		real round(const std::initializer_list<real>& indices) const;
-		real sample(const std::initializer_list<real>& indices) const;
+		double interpolate(const std::initializer_list<double>& indices) const;
+		double round(const std::initializer_list<double>& indices) const;
+		double sample(const std::initializer_list<double>& indices) const;
 	public:
 		DistanceTensor(const float aspect = 1.0f);
 		~DistanceTensor() {
 			delete[] quantizedEdges;
 		};
 		void setFrame(const cv::Mat& nextFrame);
-		real evaluate(const real coordinates[3], real partialDerivatives[3] = nullptr) const;
-		real at(const uint indices[3]) const;
-		inline real operator()(const std::initializer_list<uint>& indices) const { return real(buffers.at(indices)); }
+		double evaluate(const double coordinates[3], double partialDerivatives[3] = nullptr) const;
+		double at(const uint indices[3]) const;
+		inline double operator()(const std::initializer_list<uint>& indices) const { return double(buffers.at(indices)); }
 	};
 }
 

@@ -113,7 +113,7 @@ void tr::Logger::drawFrame(const void* cvMat, const char* windowName, const floa
 	cv::resizeWindow(windowName, cv::Size((int)(frame.cols * scale), (int)(frame.rows* scale)));
 	cv::imshow(windowName, frame);
 	log(windowName + std::string(" drawn. Press any key to continue..."));
-	cv::waitKey(10000000);
+	cv::waitKey(1);
 }
 
 void InternalLogger::error(const string& message) {

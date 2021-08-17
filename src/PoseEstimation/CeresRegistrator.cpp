@@ -3,12 +3,7 @@
 //TODO remove glog
 #include <glog/logging.h>
 #include "../Misc/log.hpp"
-
-//TODO remove
 #include "../Misc/Base.hpp"
-#include <glm/ext/matrix_transform.hpp>
-#include <glm/vec3.hpp>
-#include <glm/mat4x4.hpp>
 
 using namespace tr;
 using namespace ceres;
@@ -18,10 +13,7 @@ class NumDistanceTensorWrapper {
 public:
     NumDistanceTensorWrapper(const DistanceTensor& distanceTensor) : distanceTensor(distanceTensor) {}
     bool operator()(const double* parameters, double* value) const {
-        const real indices[3] = {(real)parameters[0],   //u
-                                 (real)parameters[1],   //v
-                                 (real)parameters[2] };  //angle
-        *value = double(distanceTensor.evaluate(indices));
+        *value = double(distanceTensor.evaluate(parameters));
         return true;
     }
 };
@@ -34,17 +26,12 @@ public:
         double* residuals,
         double** jacobians) const {
         //Logger::logProcess(__FUNCTION__);   //TODO remove logging
-        const real indices[3] = {(real)parameters[0][0],   //u
-                                 (real)parameters[0][1],   //v
-                                 (real)parameters[0][2]};  //angle
+        const double indices[3] = {parameters[0][0],   //u
+                                   parameters[0][1],   //v
+                                   parameters[0][2]};  //angle
         if (jacobians == nullptr)
-            *residuals = double(distanceTensor.evaluate(indices));
-        else {
-            real wrappedJacobians[3];
-            *residuals = double(distanceTensor.evaluate(indices, wrappedJacobians));
-            for (int i = 0u; i < 3u; i++)
-                jacobians[0][i] = double(wrappedJacobians[i]);
-        }
+             *residuals = distanceTensor.evaluate(indices);
+        else *residuals = distanceTensor.evaluate(indices, jacobians[0]);
         //Logger::logProcess(__FUNCTION__);   //TODO remove logging
         return true;
     }
@@ -52,17 +39,17 @@ public:
 
 struct RasterPointCost {
     std::unique_ptr<CostFunctionToFunctor<1, 3> > distanceTensorWrapper;
-    const emat4 P;
-    const evec3 point, offsetPoint;
-    const evec2 uv;
+    const mat4d P;
+    const vec3d point, offsetPoint;
+    const vec2d uv;
 
-    RasterPointCost(const emat4& P,
+    RasterPointCost(const mat4d& P,
                     const RasterPoint& rasterPoint,
                     const DistanceTensor& distanceTensor) :
                     P(P),
-                    point(GLM2E<real>(rasterPoint.pos)),
-                    offsetPoint(GLM2E<real>(rasterPoint.offsetPos)),
-                    uv(GLM2E<real>(rasterPoint.uv)) {
+                    point(rasterPoint.pos.cast<double>()),
+                    offsetPoint(rasterPoint.offsetPos.cast<double>()),
+                    uv(rasterPoint.uv.cast<double>()) {
         distanceTensorWrapper.reset(new ceres::CostFunctionToFunctor<1, 3>(
             new ceres::NumericDiffCostFunction<NumDistanceTensorWrapper
             ,ceres::CENTRAL,1,3>(new NumDistanceTensorWrapper(distanceTensor))));
@@ -72,7 +59,7 @@ struct RasterPointCost {
     template<typename T>
     inline bool project(const T pos[3],
                         const T ori[3],
-                        const evec3 p,
+                        const vec3d p,
                         T uv[2]) const {
         //Logger::logProcess(__FUNCTION__);   //TODO remove logging
         const Eigen::Quaternion<T> q = RPYToQ(ori);
@@ -113,7 +100,7 @@ struct RasterPointCost {
     }
 };
 
-tr::CeresRegistrator::CeresRegistrator(const emat4& P) : Registrator(P) {
+tr::CeresRegistrator::CeresRegistrator(const mat4d& P) : Registrator(P) {
     google::InitGoogleLogging("Tracker");
 }
 
@@ -129,7 +116,7 @@ SixDOF CeresRegistrator::registrate(const DistanceTensor& distanceTensor,
         auto rast = new RasterPointCost(P, rasterPoint, distanceTensor);
         CostFunction* cost_function = new AutoDiffCostFunction<RasterPointCost, 1, 3, 3>(rast);
         problem.AddResidualBlock(cost_function,
-                                 new HuberLoss(10.0),
+                                 new HuberLoss(1.0),
                                  params,
                                  &params[3]);
     }
@@ -137,7 +124,8 @@ SixDOF CeresRegistrator::registrate(const DistanceTensor& distanceTensor,
     // Run the solver!
     ceres::Solver::Options options;
     options.minimizer_progress_to_stdout = true;
-    //options.initial_trust_region_radius = 1e2;
+    options.initial_trust_region_radius = 300;
+    options.max_num_iterations = 100;
     //options.check_gradients = true;
     options.num_threads = 1;
     ceres::Solver::Summary summary;

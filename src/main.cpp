@@ -1,8 +1,8 @@
 #include "Misc/Links.hpp"
 #include "PoseEstimation/PoseEstimator.hpp"
 #include "Object/Model.hpp"
-//TODO remove logging
 #include <opencv2/highgui.hpp>
+//TODO remove logging
 #include "Misc/Log.hpp"
 
 int main(int argc, char** argv) {

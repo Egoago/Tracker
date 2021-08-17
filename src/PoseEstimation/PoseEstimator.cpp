@@ -20,22 +20,22 @@ Estimator* getEstimator(ConfigParser& config, Tensor<Template>& templates) {
     }
 }
 
-Registrator* getRegistrator(ConfigParser& config, const emat4& P) {
+Registrator* getRegistrator(ConfigParser& config, const mat4f& P) {
     Estimator* estimator = nullptr;
     switch (strHash(config.getEntry<std::string>("registrator", "ceres").c_str())) {
-    case strHash("ceres"): return new CeresRegistrator(P);
-    default: return new CeresRegistrator(P);
+    case strHash("ceres"): return new CeresRegistrator(P.cast<double>());
+    default: return new CeresRegistrator(P.cast<double>());
     }
 }
 
-glm::mat4 p; //TODO remove logging
+mat4f p; //TODO remove logging
 
 PoseEstimator::PoseEstimator(Tensor<Template>& templates,
-                             const glm::mat4& P,
+                             const mat4f& P,
                              const float aspect) :
     distanceTensor(aspect),
     estimator(getEstimator(config, templates)),
-    registrator(getRegistrator(config, GLM2E<real>(P))) {
+    registrator(getRegistrator(config, P)) {
     cv::utils::logging::setLogLevel(cv::utils::logging::LOG_LEVEL_WARNING);
     p = P; //TODO remove logging
 }
@@ -56,16 +56,16 @@ SixDOF PoseEstimator::getPose(const cv::Mat& frame) {
     str << sixDOF;
     Logger::log("registrated:\t" + str.str());
     cv::Mat image = frame.clone();
-    for (auto rasterPoint : candidates[0]->rasterPoints) {
+    for (auto& rasterPoint : candidates[0]->rasterPoints) {
         image.at<cv::Vec3b>(
-            cv::Point((int)(rasterPoint.uv.x * frame.cols),
-                      (int)(rasterPoint.uv.y * frame.rows))) = cv::Vec3b(0,0,255);
+            cv::Point((int)(rasterPoint.uv.x() * frame.cols),
+                      (int)(rasterPoint.uv.y() * frame.rows))) = cv::Vec3b(0,0,255);
         rasterPoint.render(p*sixDOF.getModelTransformMatrix());
         image.at<cv::Vec3b>(
-            cv::Point((int)(rasterPoint.uv.x * frame.cols),
-                      (int)(rasterPoint.uv.y * frame.rows))) = cv::Vec3b(0, 255, 0);
+            cv::Point((int)(rasterPoint.uv.x() * frame.cols),
+                      (int)(rasterPoint.uv.y() * frame.rows))) = cv::Vec3b(0, 255, 0);
     }
-    Logger::drawFrame(&image, "registration", false);
+    Logger::drawFrame(&image, "registration", 0.5f);
     Logger::logProcess(__FUNCTION__);   //TODO remove logging
     return sixDOF;
 }

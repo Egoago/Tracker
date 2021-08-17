@@ -5,7 +5,7 @@ using namespace tr;
 std::vector<Template*> tr::DirectEstimator::estimate(const DistanceTensor& dcd3t) {
     Logger::logProcess(__FUNCTION__);   //TODO remove logging
     std::vector<Template*> candidates;
-    real* distances = new real[candidateCount] {0.0f};
+    double* distances = new double[candidateCount] {0.0f};
     uint c = 0;
     for (Template* temp = templates.begin(); temp < templates.end(); temp++, c++) {
         const uint pixelCount = (uint)temp->rasterPoints.size();
@@ -14,17 +14,17 @@ std::vector<Template*> tr::DirectEstimator::estimate(const DistanceTensor& dcd3t
             continue;
         }
         //TODO implement non naive way/paralellization/OpenMP
-        real distance = 0.0f;
+        double distance = 0.0f;
         //TODO generalize with custom loss functions as layer
         for (uint i = 0; i < pixelCount; i++) {
-            const real indices[3] = {
-                real(temp->rasterPoints[i].indexData[0]),
-                real(temp->rasterPoints[i].indexData[1]),
-                real(temp->rasterPoints[i].indexData[2])};
-            const real value = dcd3t.evaluate(indices);
+            const double indices[3] = {
+                double(temp->rasterPoints[i].indexData[0]),
+                double(temp->rasterPoints[i].indexData[1]),
+                double(temp->rasterPoints[i].indexData[2])};
+            const double value = dcd3t.evaluate(indices);
             distance += value * value;
         }
-        distance /= (real)pixelCount;
+        distance /= (double)pixelCount;
         if (pixelCount <= 20)
             distance = 1000000000000.0f;
         else if (pixelCount < 80)

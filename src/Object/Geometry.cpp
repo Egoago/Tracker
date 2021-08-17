@@ -1,16 +1,9 @@
 #include "Geometry.hpp"
-#include <glm/geometric.hpp>
-#include <glm/gtx/vector_angle.hpp>
 #include "../Misc/Log.hpp"
 #include <string>
 
 using namespace std;
 using namespace tr;
-
-bool operator==(const glm::vec3& a, const glm::vec3& b) {
-    constexpr const float epsilon = 1e-13f;
-    return glm::distance(a, b) < epsilon;
-}
 
 template <class T>
 uint find(const T* array, const T& value, const uint size) {
@@ -26,7 +19,7 @@ void Geometry::detectEdgePairs() {
     //like leave out edges on same triangle
     //or match triangles
 
-    auto tempNormals = make_unique<glm::vec3[]>(getIndexCount() / 2);
+    auto tempNormals = make_unique<vec3f[]>(getIndexCount() / 2);
     edgeVertices.resize(getIndexCount());
     edgeCurvatures.resize(getIndexCount() / 2);
 
@@ -34,9 +27,9 @@ void Geometry::detectEdgePairs() {
     uint singleCount = 0;
     for (uint i = 0; i < getFaceCount(); i++) {
         for (uint k = 0; k < 3; k++) {
-            const glm::vec3 a = vertices.at(indices.at(3 * i + k));
-            const glm::vec3 b = vertices.at(indices.at(3 * i + (1 + k) % 3));
-            const glm::vec3 normal = normals.at(indices.at(3 * i + k));
+            const vec3f a = vertices.at(indices.at(3 * i + k));
+            const vec3f b = vertices.at(indices.at(3 * i + (1 + k) % 3));
+            const vec3f normal = normals.at(indices.at(3 * i + k));
             //find matching edge
             uint pos = pairCount;
             while (pos < singleCount + pairCount) {
@@ -52,7 +45,7 @@ void Geometry::detectEdgePairs() {
                 singleCount++;
             }
             else {
-                edgeCurvatures.at(pairCount) = glm::angle(normal, tempNormals[pos]);
+                edgeCurvatures.at(pairCount) = angle(normal, tempNormals[pos]);
                 if (pos != pairCount) {
                     edgeVertices.at(pos * 2) = edgeVertices.at(pairCount * 2);
                     edgeVertices.at(pos * 2 + 1) = edgeVertices.at(pairCount * 2 + 1);

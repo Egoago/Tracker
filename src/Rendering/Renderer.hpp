@@ -1,5 +1,4 @@
 #pragma once
-#include <glm/mat4x4.hpp>
 #include <opencv2/core/mat.hpp>
 #include <vector>
 #include <memory>
@@ -21,12 +20,12 @@ namespace tr {
 		int glutWindow;
 
 		//TODO simplify to one matrix
-		glm::mat4 ProjMtx, ViewModelMtx;
+		mat4f ProjMtx, ViewModelMtx;
 
 		void updatePipelines();
 		void readConfig();
 		float nearP, farP, fov, aspect;
-		glm::uvec2 resolution;
+		uvec2 resolution;
 		void setGeometry(const Geometry& geometry);
 	public:
 
@@ -41,11 +40,11 @@ namespace tr {
 		Renderer(const Geometry& geometry);
 		~Renderer();
 		void setProj(float fov, float nearP, float farP, float aspect);
-		void setVM(const glm::mat4& MV);
-		inline glm::mat4 getPVM() const { return ProjMtx * ViewModelMtx; }
-		inline glm::mat4 getVM() const { return ViewModelMtx; }
-		inline glm::mat4 getP() const { return ProjMtx; }
-		inline glm::uvec2 getResolution() { return resolution; }
+		void setVM(const mat4f& MV);
+		inline mat4f getPVM() const { return ProjMtx * ViewModelMtx; }
+		inline mat4f getVM() const { return ViewModelMtx; }
+		inline mat4f getP() const { return ProjMtx; }
+		inline uvec2 getResolution() { return resolution; }
 		void render();
 		std::vector<cv::Mat*>getTextures();
 	};

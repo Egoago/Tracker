@@ -1,9 +1,8 @@
 #include <GL/glew.h>
 #include <GL/freeglut.h>
 #include "Renderer.hpp"
-#include <glm/ext/matrix_transform.hpp>
-#include <glm/ext/matrix_clip_space.hpp>
 #include "../Misc/Links.hpp"
+#include "../Math/EigenTransform.hpp"
 
 using namespace tr;
 
@@ -16,11 +15,11 @@ ConfigParser Renderer::config(REND_CONFIG_FILE);
 
 void Renderer::readConfig() {
     const auto res = config.getEntries<int>("frame resolution", { 1024, 1024 });
-    resolution = glm::uvec2(res[0], res[1]);
+    resolution = uvec2(res[0], res[1]);
     nearP = config.getEntry("near clipping pane", 200.0f);
     farP = config.getEntry("far clipping pane", 4500.0f);
-    fov = glm::radians(config.getEntry("fov", 45.0f));
-    aspect = (float)resolution.x / resolution.y;
+    fov = radian(config.getEntry("fov", 45.0f));
+    aspect = (float)resolution.x() / resolution.y();
 }
 
 Renderer::Renderer(const Geometry& geometry) {
@@ -45,7 +44,7 @@ Renderer::Renderer(const Geometry& geometry) {
     glEnable(GL_DEPTH_TEST);
     glGenRenderbuffers(1, &depthBuffer);
     glBindRenderbuffer(GL_RENDERBUFFER, depthBuffer);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, resolution.x, resolution.y);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, resolution.x(), resolution.y());
     glDepthFunc(GL_LEQUAL);
     //set up pipelines
     pipelines.reserve(3);
@@ -113,23 +112,23 @@ void Renderer::setGeometry(const Geometry& geometry)
     pipelines.at(0)->setGeometry(VAO, geometry.getIndexCount());
 
     //generating outliner edges
-    std::vector<glm::vec3> lowEdges, highEdges, lowDirections, highDirections;
-    const float lowThreshold = config.getEntry("low threshold", 1e-3f);
-    const float highThreshold = config.getEntry("high threshold", 30.0f);
+    std::vector<vec3f> lowEdges, highEdges, lowDirections, highDirections;
+    const float lowThreshold = radian(config.getEntry("low threshold", 1e-3f));
+    const float highThreshold = radian(config.getEntry("high threshold", 30.0f));
     for (uint i = 0; i < geometry.getEdgeCount(); i++) {
         float curvature = geometry.getCurvatures()[i];
-        if (curvature > glm::radians(lowThreshold)) {
-            glm::vec3 a = geometry.getEdges()[2 * i];
-            glm::vec3 b = geometry.getEdges()[2 * i + 1];
+        if (curvature > lowThreshold) {
+            vec3f a = geometry.getEdges()[2 * i];
+            vec3f b = geometry.getEdges()[2 * i + 1];
             lowEdges.push_back(a);
             lowEdges.push_back(b);
-            glm::vec3 dir = -glm::normalize(a - b);
+            vec3f dir = -(a - b).matrix().normalized();
             //opposite directions are the same
-            if (glm::dot(glm::normalize(glm::vec3(0.9f, 0.65f, 0.56f)), dir) < 0.0f)
+            if (vec3f(0.9f, 0.65f, 0.56f).matrix().normalized().dot(dir.matrix()) < 0.0f)
                 dir = -dir;
             lowDirections.push_back(dir);
             lowDirections.push_back(dir);
-            if (curvature > glm::radians(highThreshold)) {
+            if (curvature > highThreshold) {
                 highEdges.push_back(a);
                 highEdges.push_back(b);
                 highDirections.push_back(dir);
@@ -145,14 +144,14 @@ void Renderer::setGeometry(const Geometry& geometry)
     //vertices
     glGenBuffers(1, &buffer);
     glBindBuffer(GL_ARRAY_BUFFER, buffer);
-    glBufferData(GL_ARRAY_BUFFER, highEdges.size() * sizeof(glm::vec3), highEdges.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, highEdges.size() * sizeof(vec3f), highEdges.data(), GL_STATIC_DRAW);
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
     //directions
     glGenBuffers(1, &buffer);
     glBindBuffer(GL_ARRAY_BUFFER, buffer);
-    glBufferData(GL_ARRAY_BUFFER, highDirections.size() * sizeof(glm::vec3), highDirections.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, highDirections.size() * sizeof(vec3f), highDirections.data(), GL_STATIC_DRAW);
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
@@ -166,14 +165,14 @@ void Renderer::setGeometry(const Geometry& geometry)
     //vertices
     glGenBuffers(1, &buffer);
     glBindBuffer(GL_ARRAY_BUFFER, buffer);
-    glBufferData(GL_ARRAY_BUFFER, lowEdges.size() * sizeof(glm::vec3), lowEdges.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, lowEdges.size() * sizeof(vec3f), lowEdges.data(), GL_STATIC_DRAW);
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
     //directions
     glGenBuffers(1, &buffer);
     glBindBuffer(GL_ARRAY_BUFFER, buffer);
-    glBufferData(GL_ARRAY_BUFFER, lowDirections.size() * sizeof(glm::vec3), lowDirections.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, lowDirections.size() * sizeof(vec3f), lowDirections.data(), GL_STATIC_DRAW);
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
@@ -186,8 +185,8 @@ void Renderer::updatePipelines()
     for (auto& pipeline : pipelines) {
         std::shared_ptr<Shader> shader = pipeline->getShader();
         shader->enable();
-        shader->registerFloat4x4("P", &ProjMtx[0][0]);
-        shader->registerFloat4x4("VM", &ViewModelMtx[0][0]);
+        shader->registerFloat4x4("P", ProjMtx.data());
+        shader->registerFloat4x4("VM", ViewModelMtx.data());
         shader->registerFloat("near", nearP);
         shader->registerFloat("far", farP);
     }
@@ -197,11 +196,11 @@ void Renderer::setProj(float fov, float nearP, float farP, float aspect)
 {
     this->nearP = nearP;
     this->farP = farP;
-	ProjMtx = glm::perspective(fov, aspect, nearP, farP);
+    ProjMtx = tr::perspective(fov, aspect, nearP, farP);
     updatePipelines();
 }
 
-void Renderer::setVM(const glm::mat4& MV) {
+void Renderer::setVM(const mat4f& MV) {
     ViewModelMtx = MV;
     updatePipelines();
 }
@@ -211,7 +210,7 @@ void Renderer::render() {
     //x2~3 model load speedup
     //see notes for details
     //Logger::logProcess(__FUNCTION__);	//TODO remove logging
-    glViewport(0, 0, resolution.x, resolution.y);
+    glViewport(0, 0, resolution.x(), resolution.y());
     for (auto& pipeline : pipelines)
         pipeline->render();
     glFlush();

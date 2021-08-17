@@ -1,7 +1,6 @@
 #include "DistanceTensor.hpp"
 #include <opencv2/imgproc.hpp>
 #include <opencv2/core/mat.hpp>
-#include <glm/ext/scalar_constants.hpp>
 #include "../Misc/Links.hpp"
 #include "../Misc/Log.hpp"
 #include "../Detectors/LSDDetector.hpp"
@@ -34,48 +33,48 @@ DistanceTensor::DistanceTensor(const float aspect) :
                        height,
                        width}, maxCost);
     front = true;
-    quantizedEdges = new std::vector<Edge<glm::vec2>>[q];
+    quantizedEdges = new std::vector<Edge<vec2f>>[q];
     Logger::logProcess(__FUNCTION__);   //TODO remove logging
 }
 
 //TODO constexpr after log remove
-inline tr::real quantizedIndex(const tr::real angle, const uint q) {
-    static const constexpr tr::real pi = glm::pi<tr::real>();
+inline double quantizedIndex(const double angle, const uint q) {
+    static const constexpr double pi = double(EIGEN_PI);
 #ifndef _DEBUG
     tr::Logger::warning("Remove boundary check from release");
 #endif // !_DEBUG
     if (angle > pi || angle < 0.0f)
         tr::Logger::warning("angle out of bounds");
-    return angle * (tr::real)q / pi;
+    return angle * (double)q / pi;
 }
 
-tr::real DistanceTensor::round(const std::initializer_list<real>& indices) const {
+double DistanceTensor::round(const std::initializer_list<double>& indices) const {
     uint roundedIndices[3] = { 0u };
     uint i = 0;
-    for (const real index : indices) {
+    for (const double index : indices) {
         roundedIndices[i] = uint(std::round(index));
         i++;
     }
     return at(roundedIndices);
 }
 
-tr::real DistanceTensor::interpolate(const std::initializer_list<real>& indices) const {
+double DistanceTensor::interpolate(const std::initializer_list<double>& indices) const {
     uint interpolationOmitted = 0u;
     uint i = 0u;
     uint low[3]{0};
-    real t[3]{0}, _t[3]{0};
-    for (const real index : indices) {
+    double t[3]{0}, _t[3]{0};
+    for (const double index : indices) {
         low[i] = uint(floor(index));
         interpolationOmitted |= (low[i] == uint(ceil(index))) << i;
         t[i] = index - low[i];
-        _t[i] = real(1) - t[i];
+        _t[i] = 1.0 - t[i];
         i++;
     }
-    real value = real(0);
+    double value = 0.0;
     uint interpolatedIndices[3] = { 0u };
     for (uint i = 0u; i < 8u; i++) {
         if (i & interpolationOmitted) break;
-        real weight = real(1);
+        double weight = 1.0;
         for (uint dim = 0u; dim < 3u; dim++) {
             const bool useHigher = i & (1u << dim);
             weight *= (useHigher) ? t[dim] : _t[dim];
@@ -87,29 +86,29 @@ tr::real DistanceTensor::interpolate(const std::initializer_list<real>& indices)
     return value;
 }
 
-tr::real DistanceTensor::sample(const std::initializer_list<real>& indices) const {
+double DistanceTensor::sample(const std::initializer_list<double>& indices) const {
     const static bool useInterpolation = config.getEntry("use interpolation", true);
     return (useInterpolation) ? interpolate(indices) : round(indices);
 }
 
-tr::real tr::DistanceTensor::at(const uint indices[3]) const {
+double tr::DistanceTensor::at(const uint indices[3]) const {
 #ifndef _DEBUG
     Logger::warning("Remove DistanceTensor at from release");
 #endif // !_DEBUG
-    return real(buffers.at({ front,
+    return double(buffers.at({ front,
                         indices[2] % q,
                         indices[1] % height,
                         indices[0] % width}));
 }
 
-tr::real DistanceTensor::evaluate(const real coordinates[3], real partialDerivatives[3]) const {
-    const real indices[3] = { coordinates[0] * (width - real(1)),  //u
-                              coordinates[1] * (height - real(1)), //v
+double DistanceTensor::evaluate(const double coordinates[3], double partialDerivatives[3]) const {
+    const double indices[3] = { coordinates[0] * (width - double(1)),  //u
+                              coordinates[1] * (height - double(1)), //v
                               quantizedIndex(coordinates[2], q)};  //angle
     //NOTE numeric differentiation is best executed with ceres
     if (partialDerivatives != nullptr) {
-        static const real numDiffStep = real(config.getEntry("numeric diff step size", 1e-5));
-        static const real invDiffStep = real(1) / (real(2) * numDiffStep);
+        static const double numDiffStep = double(config.getEntry("numeric diff step size", 1e-5));
+        static const double invDiffStep = double(1) / (double(2) * numDiffStep);
         partialDerivatives[0] = invDiffStep *
             (sample({ indices[0] + numDiffStep, indices[1], indices[2] }) -
              sample({ indices[0] - numDiffStep, indices[1], indices[2] }));
@@ -126,7 +125,7 @@ tr::real DistanceTensor::evaluate(const real coordinates[3], real partialDerivat
 
 void DistanceTensor::setFrame(const cv::Mat& nextFrame) {
     Logger::logProcess(__FUNCTION__);   //TODO remove logging
-    vector<Edge<glm::vec2>> edges;
+    vector<Edge<vec2f>> edges;
     Mat frame = nextFrame;
     if (nextFrame.type() != CV_8U) {
         cvtColor(nextFrame, frame, COLOR_BGR2GRAY);
@@ -137,10 +136,10 @@ void DistanceTensor::setFrame(const cv::Mat& nextFrame) {
     cv::merge(copies, nextFrame);
     for (const auto& edge : edges) {
         line(nextFrame,
-            Point((int)std::round(edge.a.x * nextFrame.cols),
-                  (int)std::round(edge.a.y * nextFrame.rows)),
-            Point((int)std::round(edge.b.x * nextFrame.cols),
-                  (int)std::round(edge.b.y * nextFrame.rows)),
+            Point((int)std::round(edge.a.x() * nextFrame.cols),
+                  (int)std::round(edge.a.y() * nextFrame.rows)),
+            Point((int)std::round(edge.b.x() * nextFrame.cols),
+                  (int)std::round(edge.b.y() * nextFrame.rows)),
             Scalar(255, 0, 0), 1, LINE_8);
     }
 
@@ -148,7 +147,7 @@ void DistanceTensor::setFrame(const cv::Mat& nextFrame) {
     //Logger::drawFrame(height, width, &buffers.at({ front, 0, 0, 0 }), CV_32F, "trans");   //TODO remove logging
     directedDistanceTransform();
     //Logger::drawFrame(height, width, &buffers.at({ front, 0, 0, 0 }), CV_32F, "dist");    //TODO remove logging
-    const uint blurCount = 1u;
+    const static uint blurCount = uint(config.getEntry("blurring steps", 1));
     for (uint i = 0; i < blurCount; i++) {
         /*cv::Mat slice(height, q, CV_32F);
         cv::namedWindow("blur", cv::WINDOW_NORMAL);
@@ -166,21 +165,21 @@ void DistanceTensor::setFrame(const cv::Mat& nextFrame) {
     Logger::logProcess(__FUNCTION__);   //TODO remove logging
 }
 
-void tr::DistanceTensor::distanceTransformFromEdges(const std::vector<Edge<glm::vec2>>& edges) {
+void tr::DistanceTensor::distanceTransformFromEdges(const std::vector<Edge<vec2f>>& edges) {
     Logger::logProcess(__FUNCTION__);   //TODO remove logging
     for (uint i = 0; i < q; i++)
         quantizedEdges[i].clear();
-    for (const Edge<glm::vec2>& edge : edges)
+    for (const Edge<vec2f>& edge : edges)
         quantizedEdges[(uint)quantizedIndex(edge.orientation(), q)].push_back(edge);
     cv::Mat tmp = Mat((int)height, (int)width, CV_8U);
     for (uint i = 0; i < q; i++) {
         tmp = Scalar::all(255);
-        for (Edge<glm::vec2>& edge : quantizedEdges[i])
+        for (Edge<vec2f>& edge : quantizedEdges[i])
             line(tmp,
-                Point((int)std::round(edge.a.x * width),
-                      (int)std::round(edge.a.y * height)),
-                Point((int)std::round(edge.b.x * width),
-                      (int)std::round(edge.b.y * height)),
+                Point((int)std::round(edge.a.x() * width),
+                      (int)std::round(edge.a.y() * height)),
+                Point((int)std::round(edge.b.x() * width),
+                      (int)std::round(edge.b.y() * height)),
                 Scalar(0), 1, LINE_8);
         //Logger::drawFrame(&tmp, "edge");    //TODO remove logging
         cv::Mat storage(height, width, CV_32F, &buffers.at({ front, i, 0, 0 }));
@@ -193,7 +192,7 @@ void tr::DistanceTensor::distanceTransformFromEdges(const std::vector<Edge<glm::
 void DistanceTensor::directedDistanceTransform() {
     Logger::logProcess(__FUNCTION__);   //TODO remove logging
     const static float lambda = config.getEntry("lambda", 100.0f);
-    const static float dirCost = lambda * glm::pi<float>()/q;
+    const static float dirCost = lambda * float(EIGEN_PI)/q;
     const static ulong pixelCount = width * height;
     //TODO parallelization
     //TODO buffer swap

@@ -1,22 +1,20 @@
 #pragma once
-#include <glm/ext/vector_float3.hpp>
-#include <glm/ext/vector_float2.hpp>
-#include <glm/ext/matrix_float4x4.hpp>
+#include "../Misc/Base.hpp"
 
 namespace tr {
 	struct RasterPoint {
-		glm::vec3 offsetPos, pos;
+		vec3f offsetPos, pos;
 		union {
 			struct {
-				glm::vec2 uv;
+				vec2f uv;
 				float angle;
 			};
 			const float indexData[3];
 		};
 
-		RasterPoint();
-		RasterPoint(const glm::vec3 p, const glm::vec3 op);
-		bool render(const glm::mat4& mvp);
+		RasterPoint(const RasterPoint& other);
+		RasterPoint(const vec3f p = vec3f::Zero(), const vec3f op = vec3f::Zero());
+		bool render(const mat4f& mvp);
 	};
 }
 

@@ -80,7 +80,7 @@
     <LinkIncremental>true</LinkIncremental>
     <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>Build\$(Platform)\$(Configuration)\</IntDir>
-    <IncludePath>$(SolutionDir)Common\Serializer\Include;$(SolutionDir)Common\ceres\Include;$(SolutionDir)Common\Eigen\Include;$(SolutionDir)Common\glm;$(SolutionDir)Common\assimp\Include;$(SolutionDir)Common\uEye\Include;$(SolutionDir)Common\freeglut\Include;$(SolutionDir)Common\glew-2.1.0\Include;$(SolutionDir)Common\Opencv\Include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)Common\Serializer\Include;$(SolutionDir)Common\ceres\Include;$(SolutionDir)Common\Eigen\Include;$(SolutionDir)Common\assimp\Include;$(SolutionDir)Common\uEye\Include;$(SolutionDir)Common\freeglut\Include;$(SolutionDir)Common\glew-2.1.0\Include;$(SolutionDir)Common\Opencv\Include;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)Common\ceres\Lib\Debug;$(SolutionDir)Common\uEye\Lib;$(SolutionDir)Common\freeglut\Lib;$(SolutionDir)Common\assimp\Lib;$(SolutionDir)Common\glew-2.1.0\Lib\Release\x64;$(SolutionDir)Common\OpenCV\Lib;$(LibraryPath)</LibraryPath>
     <SourcePath>$(SourcePath)</SourcePath>
     <CustomBuildBeforeTargets>Build</CustomBuildBeforeTargets>
@@ -89,7 +89,7 @@
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>Build\$(Platform)\$(Configuration)\</IntDir>
-    <IncludePath>$(SolutionDir)Common\Serializer\Include;$(SolutionDir)Common\Eigen\Include;$(SolutionDir)Common\ceres\Include;$(SolutionDir)Common\glm;$(SolutionDir)Common\glew-2.1.0\Include;$(SolutionDir)Common\assimp\Include;$(SolutionDir)Common\uEye\Include;$(SolutionDir)Common\freeglut\Include;$(SolutionDir)Common\Opencv\Include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)Common\Serializer\Include;$(SolutionDir)Common\Eigen\Include;$(SolutionDir)Common\ceres\Include;$(SolutionDir)Common\glew-2.1.0\Include;$(SolutionDir)Common\assimp\Include;$(SolutionDir)Common\uEye\Include;$(SolutionDir)Common\freeglut\Include;$(SolutionDir)Common\Opencv\Include;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)Common\ceres\Lib\Release;$(SolutionDir)Common\uEye\Lib;$(SolutionDir)Common\freeglut\Lib;$(SolutionDir)Common\assimp\Lib;$(SolutionDir)Common\glew-2.1.0\Lib\Release\x64;$(SolutionDir)Common\OpenCV\Lib;$(LibraryPath)</LibraryPath>
     <SourcePath>$(SourcePath)</SourcePath>
     <CustomBuildBeforeTargets>Build</CustomBuildBeforeTargets>
@@ -211,8 +211,8 @@ del "$(SolutionDir)Config\*" /Q</Command>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Math\Edge.hpp" />
+    <ClInclude Include="src\Math\EigenTransform.hpp" />
     <ClInclude Include="src\Math\RasterPoint.hpp" />
-    <ClInclude Include="src\Math\Rotation.hpp" />
     <ClInclude Include="src\Math\SixDOF.hpp" />
     <ClInclude Include="src\Camera\Camera.hpp" />
     <ClInclude Include="src\Camera\OpenCVCamera.hpp" />

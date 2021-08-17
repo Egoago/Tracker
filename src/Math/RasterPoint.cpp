@@ -1,35 +1,40 @@
 #include "RasterPoint.hpp"
-#include <glm/ext/vector_float4.hpp>
-#include "Rotation.hpp"
+#include <Eigen/Geometry>
+#include "../Misc/Log.hpp"
 
 using namespace tr;
 
-bool renderPoint(const glm::vec3 p, const glm::mat4& mvp, glm::vec2& uv) {
-	glm::vec4 pPos = mvp * glm::vec4(p, 1.0f);	//model -> NDC
-	pPos /= pPos.w;								//Perspective divide
+bool renderPoint(const vec3f p, const mat4f& mvp, vec2f& uv) {
+	Eigen::Vector4f point = p.matrix().homogeneous();
+	vec4f pPos = mvp * point;	//model -> NDC
+	pPos /= pPos.w();								//Perspective divide
 	pPos = (pPos + 1.0f) / 2.0f;				//NDC -> screen
-	if (pPos.x < 0.0f || pPos.x >= 1.0f ||		//clip
-		pPos.y < 0.0f || pPos.y >= 1.0f) {
+	uv = pPos.head(2);
+	if ((uv <  vec2f::Zero()).any() ||
+		(uv >= vec2f::Ones()).any()) {
 		return false;
 	}
-	uv.x = pPos.x;
-	uv.y = pPos.y;
 	return true;
 }
 
-RasterPoint::RasterPoint() : 
-	RasterPoint(glm::vec3(0), glm::vec3(0)) {}
+RasterPoint::RasterPoint(const RasterPoint& other) {
+	Logger::error("raster point copy");
+	pos = other.pos;
+	offsetPos = other.offsetPos;
+	uv = other.uv;
+	angle = other.angle;
+}
 
 #pragma warning(suppress : 26495)
-RasterPoint::RasterPoint(const glm::vec3 pos, const glm::vec3 offsetPos) :
+RasterPoint::RasterPoint(const vec3f pos, const vec3f offsetPos) :
 	pos(pos), offsetPos(offsetPos), uv(0), angle(0) {
 }
 
-bool tr::RasterPoint::render(const glm::mat4& mvp) {
-	glm::vec2 x, ox;
+bool tr::RasterPoint::render(const mat4f& mvp) {
+	vec2f x, ox;
 	if (!renderPoint(pos, mvp, x)) return false;
 	if (!renderPoint(offsetPos, mvp, ox)) return false;
-	const float _angle = getOrientation(x - ox);
+	const float _angle = orientation((x - ox).eval());
 	if (isnan(_angle)) return false;
 	uv = x;
 	angle = _angle;

@@ -5,7 +5,7 @@
 using namespace cv;
 using namespace tr;
 
-void CannyDetector::detectEdges(const cv::Mat& img, std::vector<Edge<glm::vec2>>& edges) const {
+void CannyDetector::detectEdges(const cv::Mat& img, std::vector<Edge<vec2f>>& edges) const {
     //TODO make canny configurable
     blur(img, img, Size(3, 3));
     blur(img, img, Size(3, 3));

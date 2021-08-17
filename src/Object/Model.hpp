@@ -3,7 +3,6 @@
 #include <string>
 #include <iostream>
 #include <opencv2/core/mat.hpp>
-#include <glm/ext/matrix_float4x4.hpp>
 #include "../Misc/ConfigParser.hpp"
 #include "../Misc/Base.hpp"
 #include "../Math/Template.hpp"
@@ -14,12 +13,12 @@ namespace tr {
 		static ConfigParser config;
 		std::string objectName;
 		Tensor<Template> templates;
-		glm::mat4 P;
+		mat4f P;
 
 		//Convenience declarations
 		struct Candidate {
-			glm::vec3 pos, dir;
-			Candidate(glm::vec3 pos, glm::vec3 dir) : pos(pos), dir(dir) {}
+			vec3f pos, dir;
+			Candidate(vec3f pos, vec3f dir) : pos(pos), dir(dir) {}
 			Candidate(cv::Point3f pos, cv::Point3f dir) :
 				pos(pos.x, pos.y, pos.z),
 				dir(dir.x, dir.y, dir.z) {}
@@ -33,7 +32,7 @@ namespace tr {
 		void generate6DOFs();
 		bool load();
 		void extractCandidates();
-		void rasterizeCandidates(Template* temp, const glm::mat4& mvp);
+		void rasterizeCandidates(Template* temp, const mat4f& mvp);
 	public:
 		Model(std::string name);
 		~Model() {}
@@ -42,7 +41,7 @@ namespace tr {
 
 		void setName(const char* str) { objectName = str; }
 
-		inline glm::mat4 getP() { return P; }
+		inline mat4f getP() { return P; }
 
 		Tensor<Template>& getTemplates() { return templates; }
 

@@ -1,6 +1,6 @@
 #pragma once
 #include <opencv2/core/mat.hpp>
-#include <glm/ext/vector_uint2.hpp>
+#include "../Misc/Base.hpp"
 
 namespace tr
 {
@@ -9,7 +9,7 @@ namespace tr
 		unsigned int glBuffer;
 
 	public:
-		TextureMap(int cvType, glm::uvec2 resolution);
+		TextureMap(int cvType, uvec2 resolution);
 		~TextureMap();
 		cv::Mat* copyToCPU();
 		unsigned int bind(unsigned int index);

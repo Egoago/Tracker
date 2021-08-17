@@ -1,28 +1,32 @@
 #pragma once
-#include <glm/vec3.hpp>
-#include <glm/mat4x4.hpp>
 #include <iostream>
+#include "../Misc/Base.hpp"
 
 namespace tr {
 	struct SixDOF {
 		union {
 			struct {
 				union {
-					glm::vec3 position;
+					vec3f position;
 					float posData[3];
 				};
 				union {
-					glm::vec3 orientation;
+					vec3f orientation;
 					float orData[3];
 				};
 			};
 			float data[6];
 		};
 
-		SixDOF(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f),
-			glm::vec3 orientation = glm::vec3(0.0f, 0.0f, 0.0f));
+		SixDOF(vec3f position = vec3f(0.0f, 0.0f, 0.0f),
+			vec3f orientation = vec3f(0.0f, 0.0f, 0.0f));
 
-		glm::mat4 getModelTransformMatrix() const;
+		SixDOF(const SixDOF& other) {
+			position = other.position;
+			orientation = other.orientation;
+		}
+
+		mat4f getModelTransformMatrix() const;
 
 		friend std::ostream& operator<<(std::ostream& ost, const SixDOF& sDOF);
 	};

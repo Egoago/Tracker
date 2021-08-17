@@ -5,20 +5,20 @@
 
 using namespace tr;
 
-TextureMap::TextureMap(int cvType, glm::uvec2 resolution) :
+TextureMap::TextureMap(int cvType, uvec2 resolution) :
 	cvType(cvType),
-	cv::Mat(cv::Size(resolution.x, resolution.y), cvType) {
+	cv::Mat(cv::Size(resolution.x(), resolution.y()), cvType) {
 	glGenTextures(1, &glBuffer);
 	glBindTexture(GL_TEXTURE_2D, glBuffer);
 	switch (cvType) {
 	case CV_32FC3:
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, resolution.x, resolution.y, 0, GL_RGB, GL_FLOAT, 0);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, resolution.x(), resolution.y(), 0, GL_RGB, GL_FLOAT, 0);
 		break;
 	case CV_8U:
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, resolution.x, resolution.y, 0, GL_RED, GL_UNSIGNED_BYTE, 0);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, resolution.x(), resolution.y(), 0, GL_RED, GL_UNSIGNED_BYTE, 0);
 		break;
 	case CV_32F:
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, resolution.x, resolution.y, 0, GL_RED, GL_FLOAT, 0);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, resolution.x(), resolution.y(), 0, GL_RED, GL_FLOAT, 0);
 		break;
 	default: {
 			Logger::error("not supported texture type: " + std::to_string(cvType));

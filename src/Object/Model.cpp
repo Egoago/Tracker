@@ -53,12 +53,12 @@ void Model::generate6DOFs() {
 	for (uint z = 0; z < depth.resolution; z++)
 	{
 		SixDOF& sixDOF = templates.at({x,y,z,ya,p,r}).sixDOF;
-		sixDOF.position.x = width[x] / depth.begin * depth[z];
-		sixDOF.position.y = height[y] / depth.begin * depth[z];
-		sixDOF.position.z = depth[z];
-		sixDOF.orientation.y = yaw[ya];
-		sixDOF.orientation.p = pitch[p];
-		sixDOF.orientation.r = roll[r];
+		sixDOF.position.x() = width[x] / depth.begin * depth[z];
+		sixDOF.position.y() = height[y] / depth.begin * depth[z];
+		sixDOF.position.z() = depth[z];
+		sixDOF.orientation.x() = yaw[ya];
+		sixDOF.orientation.y() = pitch[p];
+		sixDOF.orientation.z() = roll[r];
 	}
 	Logger::logProcess(__FUNCTION__);	//TODO remove logging
 }
@@ -117,7 +117,7 @@ void Model::extractCandidates() {
 	//Logger::logProcess(__FUNCTION__);	//TODO remove logging
 }
 
-void Model::rasterizeCandidates(Template* temp, const glm::mat4& mvp) {
+void Model::rasterizeCandidates(Template* temp, const mat4f& mvp) {
 	//Logger::logProcess(__FUNCTION__);	//TODO remove logging
 
 	const uint bufferSize = (uint)candidates.size();
@@ -140,8 +140,8 @@ void Model::rasterizeCandidates(Template* temp, const glm::mat4& mvp) {
 	//TODO parallelization-compact
 	for(uint i = 0; i < bufferSize; i++)
 		if (mask[i]) {
-			const glm::vec3 p = candidates[i].pos;
-			const glm::vec3 op = p + (candidates[i].dir * rasterOffset);
+			const vec3f p = candidates[i].pos;
+			const vec3f op = p + (candidates[i].dir * rasterOffset);
 			temp->rasterPoints.emplace_back(p, op);
 			if (!temp->rasterPoints.back().render(mvp)) {
 				//can be due to pixel out of bounds or nan angle.
@@ -193,10 +193,10 @@ void Model::generarteObject(const std::string& fileName) {
 		//cv::Mat canvas(cv::Size(800, 800), CV_8UC3);
 		//canvas = cv::Scalar::all(0);
 		//for (const auto& rasterPoint : i->rasterPoints) {
-		//	glm::vec2 uv1 = rasterPoint.getUV();
-		//	cv::Point p1((int)std::roundf(uv1.x * (canvas.cols - 1)),
-		//				 (int)std::roundf(uv1.y * (canvas.rows - 1)));
-		//	/*evec2 uv2;
+		//	vec2 uv1 = rasterPoint.getUV();
+		//	cv::Point p1((int)std::roundf(uv1.x() * (canvas.cols - 1)),
+		//				 (int)std::roundf(uv1.y() * (canvas.rows - 1)));
+		//	/*vec2d uv2;
 		//	reg.project(i->sixDOF.data, &rasterPoint.pos[0], uv2.data());
 		//	cv::Point p2((int)std::roundf(uv2.x() * (canvas.cols - 1)),
 		//				 (int)std::roundf(uv2.y() * (canvas.rows - 1)));*/

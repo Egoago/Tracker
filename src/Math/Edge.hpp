@@ -1,9 +1,8 @@
 #pragma once
-#include <glm/vec3.hpp>
-#include "Rotation.hpp"
+#include "../Misc/Base.hpp"
 
 namespace tr {
-	template <class PointType = glm::vec3>
+	template <class PointType = vec3f>
 	struct Edge {
 		PointType a, b;
 
@@ -17,14 +16,11 @@ namespace tr {
 		}
 
 		inline float orientation() const {
-			return getOrientation(a - b);
+			return tr::orientation(a,b);
 		}
 
 		inline bool operator==(const Edge& other) {
-			const float epsilon = 1e-13f;
-			return
-				glm::distance(a, other.a) < epsilon &&
-				glm::distance(b, other.b) < epsilon;
+			return a == other.a && b == other.b;
 		}
 	};
 }

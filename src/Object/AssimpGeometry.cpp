@@ -2,8 +2,7 @@
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
-#include <iostream>
-#include <glm/geometric.hpp>
+#include <string>
 #include "../Misc/Links.hpp"
 #include "../Misc/Log.hpp"
 
@@ -36,10 +35,10 @@ AssimpGeometry::AssimpGeometry(const std::string& fileName) {
 		vertices.emplace_back(mesh->mVertices[i].x,
 							  mesh->mVertices[i].y,
 							  mesh->mVertices[i].z);
-		glm::vec3 normal(mesh->mNormals[i].x,
-						 mesh->mNormals[i].y,
-						 mesh->mNormals[i].z);
-		normals.emplace_back(glm::normalize(normal));
+		vec3f normal(mesh->mNormals[i].x,
+					 mesh->mNormals[i].y,
+					 mesh->mNormals[i].z);
+		normals.emplace_back(normal.matrix().normalized());
 	}
 
 	for (unsigned int i = 0; i < mesh->mNumFaces; ++i) {
