@@ -210,6 +210,7 @@ del "$(SolutionDir)Config\*" /Q</Command>
     <ClCompile Include="src\Math\Template.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Detectors\MultiFlashDetector.hpp" />
     <ClInclude Include="src\Math\Edge.hpp" />
     <ClInclude Include="src\Math\EigenTransform.hpp" />
     <ClInclude Include="src\Math\RasterPoint.hpp" />

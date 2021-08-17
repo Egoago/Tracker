@@ -4,9 +4,11 @@
 #include <opencv2/highgui.hpp>
 //TODO remove logging
 #include "Misc/Log.hpp"
+#include "Detectors/MultiFlashDetector.hpp"
 
 int main(int argc, char** argv) {
     tr::Logger::logProcess(__FUNCTION__);   //TODO remove logging
+    tr::MultiFlashDetector<500,500,8> mfc;
     cv::Mat frame = cv::imread(tr::TEST_FRAME_CUBE);
     tr::Model model("cube");
     tr::PoseEstimator poseEstimator(model.getTemplates(), model.getP(), (float)frame.cols/frame.rows);
