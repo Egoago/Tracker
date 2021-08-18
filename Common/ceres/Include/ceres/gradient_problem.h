@@ -105,8 +105,12 @@ class CERES_EXPORT GradientProblem {
   bool Plus(const double* x, const double* delta, double* x_plus_delta) const;
 
  private:
+
+#pragma warning(suppress : 4251)
   internal::scoped_ptr<FirstOrderFunction> function_;
+#pragma warning(suppress : 4251)
   internal::scoped_ptr<LocalParameterization> parameterization_;
+#pragma warning(suppress : 4251)
   internal::scoped_array<double> scratch_;
 };
 

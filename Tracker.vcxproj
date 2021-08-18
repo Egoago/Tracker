@@ -185,6 +185,7 @@ del "$(SolutionDir)Config\*" /Q</Command>
     </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\Detectors\MultiFlashDetector.cpp" />
     <ClCompile Include="src\Math\RasterPoint.cpp" />
     <ClCompile Include="src\Math\SixDOF.cpp" />
     <ClCompile Include="src\PoseEstimation\CeresRegistrator.cpp" />

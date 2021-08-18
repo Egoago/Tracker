@@ -4,6 +4,7 @@
 
 namespace tr {
 	typedef unsigned int uint;
+	typedef unsigned char uchar;
 	typedef unsigned long ulong;
 
 	typedef Eigen::Matrix<float, 4, 4> mat4f;

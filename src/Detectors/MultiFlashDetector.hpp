@@ -1,27 +1,22 @@
 #pragma once
 #include "../Misc/Base.hpp"
+#include <vector>
+#include <opencv2/core/mat.hpp>
 
 namespace tr {
-	template <uint Width, uint Height, uint FlashCount>
 	class MultiFlashDetector {
-		typedef Eigen::Array<uchar, Height, Width> BinaryMat;
-	public:
-		cv::Mat getDepthMap(const BinaryMat* flashImages[FlashCount+1]) const;
-	};
+		const uint flashCount;
 
-	template<uint Width, uint Height, uint FlashCount>
-	inline cv::Mat MultiFlashDetector<Width, Height, FlashCount>::getDepthMap(const BinaryMat* flashImages[FlashCount + 1]) const {
-		const BinaryMat* ambientImage = flashImages[FlashCount];
-		BinaryMat I[FlashCount];
-		for (uint k = 0; k < FlashCount; k++)
-			I[k] = *flashImages[k] - *ambientImage;
-		BinaryMat Imax;
-		for (uint k = 0; k < FlashCount; k++)
-			Imax.max(I[k]);
-		BinaryMat R[FlashCount];
-		for (uint k = 0; k < FlashCount; k++)
-			R[k] = I[k] / Imax;
-		return cv::Mat();
-	}
+		template <typename T>
+		using DinArr = Eigen::Array<T, -1, -1, Eigen::RowMajor>;
+		typedef DinArr<float> FloatMat;
+
+		FloatMat *R, *I;
+		FloatMat ambient, Imax;
+	public:
+		MultiFlashDetector(const uint flashCount);
+		~MultiFlashDetector();
+		cv::Mat getDepthMap(const std::vector<cv::Mat>& flashImages);
+	};	
 }
 
