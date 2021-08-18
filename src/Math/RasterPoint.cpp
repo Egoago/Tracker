@@ -18,7 +18,7 @@ bool renderPoint(const vec3f p, const mat4f& mvp, vec2f& uv) {
 }
 
 RasterPoint::RasterPoint(const RasterPoint& other) {
-	Logger::error("raster point copy");
+	Logger::warning("raster point copy");
 	pos = other.pos;
 	offsetPos = other.offsetPos;
 	uv = other.uv;
@@ -35,7 +35,12 @@ bool tr::RasterPoint::render(const mat4f& mvp) {
 	if (!renderPoint(pos, mvp, x)) return false;
 	if (!renderPoint(offsetPos, mvp, ox)) return false;
 	const float _angle = orientation((x - ox).eval());
-	if (isnan(_angle)) return false;
+	if (isnan(_angle)) {
+		//can be due to pixel out of bounds or nan angle.
+		//it happens quite rarely but needs to be handled.
+		Logger::warning("Unsuccessfull raster point render");
+		return false;
+	}
 	uv = x;
 	angle = _angle;
 	return true;

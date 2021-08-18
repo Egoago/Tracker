@@ -123,4 +123,5 @@ void InternalLogger::error(const string& message) {
 	os << "[ERROR] ";
 	os << message << endl;
 	SetConsoleTextAttribute(hConsole, defaultColor);
+	exit(1);
 }

@@ -17,14 +17,6 @@ namespace tr {
 	typedef Eigen::Array<float, 4, 1> vec4f;
 	typedef Eigen::Array<double, 4, 1> vec4d;
 
-	//TODO use quat vs euler
-	template<typename T>
-	inline Eigen::Quaternion<T> RPYToQ(const T rotation[3]) {
-		return Eigen::AngleAxis<T>(rotation[2], Eigen::Matrix<T, 3, 1>::UnitX())
-			 * Eigen::AngleAxis<T>(rotation[1], Eigen::Matrix<T, 3, 1>::UnitY())
-			 * Eigen::AngleAxis<T>(rotation[0], Eigen::Matrix<T, 3, 1>::UnitZ());
-	}
-
 	inline uint64_t constexpr mix(char m, uint64_t s) {
 		return ((s << 7) + ~(s >> 3)) + ~m;
 	}

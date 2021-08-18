@@ -1,15 +1,12 @@
 #pragma once
 #include <initializer_list>
 #include <serializer.h>
-//TODO remove log
 #include "../Misc/Log.hpp"
-#include "../Misc/Base.hpp"
 
 namespace tr {
 	template <class CellType>
 	class Tensor {
-		typedef uint uint;
-
+		typedef unsigned int uint;
 		uint* _shape = nullptr;
 		uint _dims = 0u;
 		CellType* storage = nullptr;
@@ -22,7 +19,8 @@ namespace tr {
 
 		void calculateSize();
 	public:
-		//[Constructing]
+		//====== [Constructing] ======
+
 		inline Tensor() {}
 		inline Tensor(std::initializer_list<uint> shape) { allocate(shape); }
 		inline Tensor(const Tensor<CellType>& other) { *this = other; }
@@ -31,6 +29,8 @@ namespace tr {
 		void allocate(std::initializer_list<uint> shape, const CellType& value);
 		void allocate(const uint* shape, const uint dims);
 		void allocate(const uint* shape, const uint dims, const CellType& value);
+
+		//====== [Assignment] ======
 
 		Tensor<CellType>& operator=(const Tensor<CellType>& other) {
 			Logger::logProcess(__FUNCTION__);
@@ -47,7 +47,7 @@ namespace tr {
 		inline const uint* getShape() const { return _shape; }
 		inline uint getSize() const { return size; }
 
-		//[Element accessing]
+		//====== [Element accessing] ======
 
 		//Access element with range check, slower
 		CellType& at(std::initializer_list<uint> indices);
@@ -59,9 +59,9 @@ namespace tr {
 		inline const CellType* begin() const { return storage; }
 		inline CellType* end() { return storage + size; }
 		inline const CellType* end() const { return storage + size; }
-		template <const unsigned int iDim, typename IndexType = float>
 
-		//[Serialization]
+		//=====	[Serialization] ======
+
 		friend std::ostream& operator<<(std::ostream& out, Bits<Tensor<CellType>&> o) {
 			Logger::logProcess(__FUNCTION__);
 			const uint dims = o.t.getDims();
@@ -113,9 +113,9 @@ namespace tr {
 		else {
 			size = 1u;
 			if (_shape == nullptr)
-				error("shape deleted");;
-			for (uint i = 0u; i < _dims; i++)
-				size = size * _shape[i];
+				error("shape deleted");
+			else for (uint i = 0u; i < _dims; i++)
+					size = size * _shape[i];
 		}
 	}
 

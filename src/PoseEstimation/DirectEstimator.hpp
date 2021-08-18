@@ -5,9 +5,9 @@
 namespace tr {
 	class DirectEstimator : public Estimator {
 	public:
-		DirectEstimator(const uint candidateCount, Tensor<Template>& templates) :
+		DirectEstimator(const uint candidateCount, const Tensor<Template>& templates) :
 			Estimator(candidateCount, templates) {}
-		virtual std::vector<Template*> estimate(const DistanceTensor& dcd3t) override;
+		virtual const std::vector<const Template*> estimate(const DistanceTensor& dcd3t) override;
 	};
 }
 

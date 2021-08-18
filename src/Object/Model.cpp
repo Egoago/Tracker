@@ -3,7 +3,7 @@
 #include <random>
 #include <numeric>
 #include <opencv2/imgproc.hpp>
-#include "AssimpGeometry.hpp"
+#include "AssimpLoader.hpp"
 #include "../Rendering/Renderer.hpp"
 #include "../Misc/Links.hpp"
 #include "../Misc/Range.hpp"
@@ -19,17 +19,16 @@ using namespace tr;
 
 ConfigParser Model::config(OBJ_CONFIG_FILE);
 
-void getObjectName(std::string& fName, std::string& oName) {
-	size_t dot = fName.find('.');
-	if (dot == std::string::npos) {
-		oName = fName;
-		fName += ".STL";
-	}
-	else oName = fName.substr(0, dot);
-}
+struct Candidate {
+	vec3f pos, dir;
+	Candidate(vec3f pos, vec3f dir) : pos(pos), dir(dir) {}
+	Candidate(cv::Point3f pos, cv::Point3f dir) :
+		pos(pos.x, pos.y, pos.z),
+		dir(dir.x, dir.y, dir.z) {}
+};
 
-void Model::generate6DOFs() {
-	Logger::logProcess(__FUNCTION__);	//TODO remove logging
+void generate6DOFs(ConfigParser& config, Tensor<Template>& templates) {
+	Logger::logProcess(__FUNCTION__);
 	//TODO tune granularity
 	const static Range width(config.getEntries<int>("width", { -120, 120, 7 }));//7
 	const static Range height(config.getEntries<int>("height", { 120, 120, 7 }));//7
@@ -60,11 +59,11 @@ void Model::generate6DOFs() {
 		sixDOF.orientation.y() = pitch[p];
 		sixDOF.orientation.z() = roll[r];
 	}
-	Logger::logProcess(__FUNCTION__);	//TODO remove logging
+	Logger::logProcess(__FUNCTION__);
 }
 
 void floatToBinary(const cv::Mat& floatMap, cv::Mat& binary) {
-	//Logger::logProcess(__FUNCTION__);	//TODO remove logging
+	//Logger::logProcess(__FUNCTION__);
 	cv::absdiff(floatMap, cv::Scalar::all(0), binary);
 	switch (binary.channels()) {
 		case 3: cv::transform(binary, binary, cv::Matx13f(1.0, 1.0, 1.0)); break;
@@ -73,20 +72,20 @@ void floatToBinary(const cv::Mat& floatMap, cv::Mat& binary) {
 	}
 	cv::threshold(binary, binary, 1e-10, 255, cv::THRESH_BINARY);
 	binary.convertTo(binary, CV_8U);
-	//Logger::logProcess(__FUNCTION__);	//TODO remove logging
+	//Logger::logProcess(__FUNCTION__);
 }
 
 void getContour(const cv::Mat& maskMap, cv::Mat& contourMap) {
-	//Logger::logProcess(__FUNCTION__);	//TODO remove logging
+	//Logger::logProcess(__FUNCTION__);
 	std::vector<std::vector<cv::Point>> contours;
 	cv::findContours(maskMap, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_NONE);
 	cv::drawContours(contourMap, contours, 0, cv::Scalar(255, 255, 255));
-	//Logger::logProcess(__FUNCTION__);	//TODO remove logging
+	//Logger::logProcess(__FUNCTION__);
 }
 
-void Model::extractCandidates() {
-	//Logger::logProcess(__FUNCTION__);	//TODO remove logging
-	candidates.clear();
+const std::vector<Candidate> extractCandidates(const std::vector<cv::Mat*>& textureMaps) {
+	//Logger::logProcess(__FUNCTION__);
+	std::vector<Candidate> candidates;
 	cv::Mat maskMap;
 	floatToBinary(*textureMaps[Renderer::HDIR], maskMap);
 	getContour(*textureMaps[Renderer::MESH], maskMap);
@@ -114,11 +113,15 @@ void Model::extractCandidates() {
 				mtx.unlock();
 			}
 		});
-	//Logger::logProcess(__FUNCTION__);	//TODO remove logging
+	//Logger::logProcess(__FUNCTION__);
+	return candidates;
 }
 
-void Model::rasterizeCandidates(Template* temp, const mat4f& mvp) {
-	//Logger::logProcess(__FUNCTION__);	//TODO remove logging
+void rasterizeCandidates(const std::vector<Candidate>& candidates,
+						Template* temp,
+						ConfigParser& config,
+						const mat4f& PVM) {
+	//Logger::logProcess(__FUNCTION__);
 
 	const uint bufferSize = (uint)candidates.size();
 	const static int rasterCount = config.getEntry("rasterization count", 100);
@@ -143,14 +146,10 @@ void Model::rasterizeCandidates(Template* temp, const mat4f& mvp) {
 			const vec3f p = candidates[i].pos;
 			const vec3f op = p + (candidates[i].dir * rasterOffset);
 			temp->rasterPoints.emplace_back(p, op);
-			if (!temp->rasterPoints.back().render(mvp)) {
-				//can be due to pixel out of bounds or nan angle.
-				//it happens quite rarely but needs to be handled.
-				Logger::warning("Unsuccessfull raster point render");
+			if (!temp->rasterPoints.back().render(PVM))
 				temp->rasterPoints.pop_back();
-			}
 		}
-	//Logger::logProcess(__FUNCTION__);	//TODO remove logging
+	//Logger::logProcess(__FUNCTION__);
 }
 
 //TODO remove logging
@@ -166,29 +165,29 @@ void analizeRasterization(const std::vector<tr::uint>& rasterCounts) {
 							+ " stdev " + std::to_string(stdev));
 }
 
-void Model::generarteObject(const std::string& fileName) {
+void generarteObject(const Geometry& geo, Tensor<Template>& templates, ConfigParser& config, const mat4f& P) {
 	cv::utils::logging::setLogLevel(cv::utils::logging::LOG_LEVEL_WARNING);
 	//TODO proper resource destruction
-	Logger::logProcess(__FUNCTION__);	//TODO remove logging
+	Logger::logProcess(__FUNCTION__);
 	//TODO add loading bar
-	Geometry geo = AssimpGeometry(fileName);
+	
 	Renderer renderer(geo);
-	textureMaps = renderer.getTextures();
-	P = renderer.getP();
+	renderer.setProj(P);
+	std::vector<cv::Mat*> textureMaps = renderer.getTextures(); //TODO smart pointer
 
-	generate6DOFs();
+	generate6DOFs(config, templates);
 	
 	int c = 1;
 	std::vector<tr::uint> rasterCounts;
-	for (Template* i = templates.begin(); i < (templates.begin() + templates.getSize()); i++) {
+	for (Template* temp = templates.begin(); temp < (templates.begin() + templates.getSize()); temp++) {
 		//TODO use CUDA with OpenGL directly on GPU
 		// instead moving textures to CPU and using OpenCV
 		// OpenMP??
 
-		renderer.setVM(i->sixDOF.getModelTransformMatrix());
+		renderer.setVM(temp->sixDOF.getModelTransformMatrix());
 		renderer.render();
-		extractCandidates();
-		rasterizeCandidates(i, renderer.getPVM());
+		const std::vector<Candidate> candidates = extractCandidates(textureMaps);
+		rasterizeCandidates(candidates, temp, config, renderer.getPVM());
 		//TODO remove logging
 		//cv::Mat canvas(cv::Size(800, 800), CV_8UC3);
 		//canvas = cv::Scalar::all(0);
@@ -208,52 +207,60 @@ void Model::generarteObject(const std::string& fileName) {
 		//cv::imshow("rasterized", canvas);
 		//cv::waitKey(10000000);
 		//TODO remove monitoring
-		rasterCounts.push_back((tr::uint)i->rasterPoints.size());
+		rasterCounts.push_back((tr::uint)temp->rasterPoints.size());
 		Logger::log("Rendered " + std::to_string(c++)
 			+ "\t frames out of "+ std::to_string(templates.getSize())
 			+ " \r", true);
 	}
 	analizeRasterization(rasterCounts);
 	Logger::log("\n");
-	Logger::logProcess(__FUNCTION__);	//TODO remove logging
+	Logger::logProcess(__FUNCTION__);
 }
 
-Model::Model(std::string fileName) {
-	getObjectName(fileName, objectName);
-	
-	if (!load()) {
-		generarteObject(fileName);
-		save();
-	}
+std::string getObjectName(const std::string& fName) {
+	size_t dot = fName.find('.');
+	return (dot == std::string::npos) ? fName : fName.substr(0, dot);
 }
 
 std::string getSavePath(const std::string& objectName) {
 	return LOADED_OBJECTS_FOLDER + objectName + LOADED_OBJECT_FILENAME_EXTENSION;
 }
 
-void Model::save(std::string fileName) {
-	Logger::logProcess(__FUNCTION__);	//TODO remove logging
-	if (fileName.empty())
-		fileName = getSavePath(objectName);
+Model::Model(const std::string& fileName) : Model(fileName, Renderer::getDefaultP()) {}
+Model::Model(const std::string& fileName, const mat4f& P) {
+	std:: string objectName = getObjectName(fileName);
+	std:: string filePath = getSavePath(objectName);
+	if (!load(filePath)) {
+		Geometry geo;
+		AssimpLoader::load(objectName, geo);
+		edgeVertices = geo.edgeVertices;
+		generarteObject(geo, templates, config, P);
+		save(filePath);
+	}
+}
+
+void Model::save(const std::string& fileName) {
+	Logger::logProcess(__FUNCTION__);
 	std::ofstream out(fileName, std::ios::out | std::ios::binary);
-	out << bits(objectName)
+	out //<< bits(edgeVertices)	//TODO save edge vertices
 		<< bits(P)
 		<< bits(templates);
 	out.close();
-	Logger::logProcess(__FUNCTION__);	//TODO remove logging
+	Logger::logProcess(__FUNCTION__);
 }
 
-bool Model::load() {
-	Logger::logProcess(__FUNCTION__);	//TODO remove logging
-	std::ifstream in(getSavePath(objectName), std::ios::in | std::ios::binary);
+bool Model::load(const std::string& filename) {
+	Logger::logProcess(__FUNCTION__);
+	std::ifstream in(filename, std::ios::in | std::ios::binary);
 	if (!in.is_open()) {
-		Logger::warning(objectName + " save file not found");
+		Logger::warning(filename + " save file not found");
 		return false;
 	}
-	in	>> bits(objectName)
+	std::string dummy;
+	in	>>bits(dummy)//>> bits(edgeVertices)
 		>> bits(P)
 		>> bits(templates);
 	in.close();
-	Logger::logProcess(__FUNCTION__);	//TODO remove logging
+	Logger::logProcess(__FUNCTION__);
 	return true;
 }

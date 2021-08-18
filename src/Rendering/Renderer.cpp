@@ -13,13 +13,23 @@ extern "C" {
 
 ConfigParser Renderer::config(REND_CONFIG_FILE);
 
+mat4f tr::Renderer::getDefaultP() {
+    const static auto res = config.getEntries<int>("frame resolution", { 1024, 1024 });
+    const static float nearP = config.getEntry("near clipping pane", 200.0f);
+    const static float farP = config.getEntry("far clipping pane", 4500.0f);
+    const static float fov = radian(config.getEntry("fov", 45.0f));
+    const static float aspect = (float)res[0] / res[1];
+    return tr::perspective(fov, aspect, nearP, farP);
+}
+
 void Renderer::readConfig() {
     const auto res = config.getEntries<int>("frame resolution", { 1024, 1024 });
     resolution = uvec2(res[0], res[1]);
     nearP = config.getEntry("near clipping pane", 200.0f);
     farP = config.getEntry("far clipping pane", 4500.0f);
-    fov = radian(config.getEntry("fov", 45.0f));
-    aspect = (float)resolution.x() / resolution.y();
+    const float fov = radian(config.getEntry("fov", 45.0f));
+    const float aspect = (float)res[0] / res[1];
+    ProjMtx = tr::perspective(fov, aspect, nearP, farP);
 }
 
 Renderer::Renderer(const Geometry& geometry) {
@@ -70,7 +80,6 @@ Renderer::Renderer(const Geometry& geometry) {
                                     depthBuffer,
                                     false));
     setGeometry(geometry);
-    setProj(fov, nearP, farP, aspect);
 }
 
 Renderer::~Renderer()
@@ -98,7 +107,7 @@ void Renderer::setGeometry(const Geometry& geometry)
     //vertices
     glGenBuffers(1, &buffer);
     glBindBuffer(GL_ARRAY_BUFFER, buffer);
-    glBufferData(GL_ARRAY_BUFFER, geometry.getVertexCount() * geometry.getVertexSize(), geometry.getVertices(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, geometry.vertices.size() * sizeof(vec3f), geometry.vertices.data(), GL_STATIC_DRAW);
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
@@ -106,36 +115,10 @@ void Renderer::setGeometry(const Geometry& geometry)
     GLuint indexBuffer;
     glGenBuffers(1, &indexBuffer);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, geometry.getIndexCount() * geometry.getIndexSize(), geometry.getIndices(), GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, geometry.indices.size() * sizeof(uint), geometry.indices.data(), GL_STATIC_DRAW);
     
     //register
-    pipelines.at(0)->setGeometry(VAO, geometry.getIndexCount());
-
-    //generating outliner edges
-    std::vector<vec3f> lowEdges, highEdges, lowDirections, highDirections;
-    const float lowThreshold = radian(config.getEntry("low threshold", 1e-3f));
-    const float highThreshold = radian(config.getEntry("high threshold", 30.0f));
-    for (uint i = 0; i < geometry.getEdgeCount(); i++) {
-        float curvature = geometry.getCurvatures()[i];
-        if (curvature > lowThreshold) {
-            vec3f a = geometry.getEdges()[2 * i];
-            vec3f b = geometry.getEdges()[2 * i + 1];
-            lowEdges.push_back(a);
-            lowEdges.push_back(b);
-            vec3f dir = -(a - b).matrix().normalized();
-            //opposite directions are the same
-            if (vec3f(0.9f, 0.65f, 0.56f).matrix().normalized().dot(dir.matrix()) < 0.0f)
-                dir = -dir;
-            lowDirections.push_back(dir);
-            lowDirections.push_back(dir);
-            if (curvature > highThreshold) {
-                highEdges.push_back(a);
-                highEdges.push_back(b);
-                highDirections.push_back(dir);
-                highDirections.push_back(dir);
-            }
-        }
-    }
+    pipelines.at(0)->setGeometry(VAO, (uint)geometry.indices.size());
 
     //====== High tresh buffers =======
     glGenVertexArrays(1, &VAO);
@@ -180,8 +163,7 @@ void Renderer::setGeometry(const Geometry& geometry)
     pipelines.at(2)->setGeometry(VAO, (uint)lowEdges.size());
 }
 
-void Renderer::updatePipelines()
-{
+void Renderer::updatePipelines() {
     for (auto& pipeline : pipelines) {
         std::shared_ptr<Shader> shader = pipeline->getShader();
         shader->enable();
@@ -192,11 +174,14 @@ void Renderer::updatePipelines()
     }
 }
 
-void Renderer::setProj(float fov, float nearP, float farP, float aspect)
-{
+void Renderer::setProj(float fov, float nearP, float farP, float aspect) {
     this->nearP = nearP;
     this->farP = farP;
-    ProjMtx = tr::perspective(fov, aspect, nearP, farP);
+    setProj(tr::perspective(fov, aspect, nearP, farP));
+}
+
+void tr::Renderer::setProj(const mat4f& P) {
+    ProjMtx = P;
     updatePipelines();
 }
 
@@ -209,21 +194,21 @@ void Renderer::render() {
     //TODO use PBOs for downloading and double buffering
     //x2~3 model load speedup
     //see notes for details
-    //Logger::logProcess(__FUNCTION__);	//TODO remove logging
+    //Logger::logProcess(__FUNCTION__);
     glViewport(0, 0, resolution.x(), resolution.y());
     for (auto& pipeline : pipelines)
         pipeline->render();
     glFlush();
     getTextures();
-    //Logger::logProcess(__FUNCTION__);	//TODO remove logging
+    //Logger::logProcess(__FUNCTION__);
 }
 
 std::vector<cv::Mat*> tr::Renderer::getTextures() {
-    //Logger::logProcess(__FUNCTION__);	//TODO remove logging
+    //Logger::logProcess(__FUNCTION__);
     std::vector<cv::Mat*> outTextures;
     for (auto& textureMap : textureMaps)
         outTextures.push_back(textureMap->copyToCPU());
-    //Logger::logProcess(__FUNCTION__);	//TODO remove logging
+    //Logger::logProcess(__FUNCTION__);
     return outTextures;
 }
 

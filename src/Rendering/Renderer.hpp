@@ -24,10 +24,11 @@ namespace tr {
 
 		void updatePipelines();
 		void readConfig();
-		float nearP, farP, fov, aspect;
+		float nearP, farP;
 		uvec2 resolution;
 		void setGeometry(const Geometry& geometry);
 	public:
+		static mat4f getDefaultP();
 
 		enum TextureMapIndex {
 			MESH = 0,
@@ -40,10 +41,10 @@ namespace tr {
 		Renderer(const Geometry& geometry);
 		~Renderer();
 		void setProj(float fov, float nearP, float farP, float aspect);
+		void setProj(const mat4f& P);
 		void setVM(const mat4f& MV);
 		inline mat4f getPVM() const { return ProjMtx * ViewModelMtx; }
 		inline mat4f getVM() const { return ViewModelMtx; }
-		inline mat4f getP() const { return ProjMtx; }
 		inline uvec2 getResolution() { return resolution; }
 		void render();
 		std::vector<cv::Mat*>getTextures();

@@ -9,11 +9,11 @@ namespace tr {
 	class Estimator {
 	protected:
 		const uint candidateCount;
-		Tensor<Template>& templates;
+		const Tensor<Template>& templates;
 	public:
-		Estimator(const uint candidateCount, Tensor<Template>& templates) :
+		Estimator(const uint candidateCount, const Tensor<Template>& templates) :
 			candidateCount(candidateCount), templates(templates) {}
 		//TODO outCandidates Template pointer/ref
-		virtual std::vector<Template*> estimate(const DistanceTensor& distanceTensor) = 0;
+		virtual const std::vector<const Template*> estimate(const DistanceTensor& distanceTensor) = 0;
 	};
 }

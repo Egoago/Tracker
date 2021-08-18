@@ -2,12 +2,12 @@
 
 using namespace tr;
 
-std::vector<Template*> tr::DirectEstimator::estimate(const DistanceTensor& dcd3t) {
+const std::vector<const Template*> tr::DirectEstimator::estimate(const DistanceTensor& dcd3t) {
     Logger::logProcess(__FUNCTION__);   //TODO remove logging
-    std::vector<Template*> candidates;
+    std::vector<const Template*> candidates;
     double* distances = new double[candidateCount] {0.0f};
     uint c = 0;
-    for (Template* temp = templates.begin(); temp < templates.end(); temp++, c++) {
+    for (const Template* temp = templates.begin(); temp < templates.end(); temp++, c++) {
         const uint pixelCount = (uint)temp->rasterPoints.size();
         if (pixelCount < 20) {
             //Logger::warning(std::to_string(c++) + ":\tpixels " + std::to_string(pixelCount));

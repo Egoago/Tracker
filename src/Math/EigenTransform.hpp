@@ -3,6 +3,14 @@
 #include <Eigen/Geometry>
 
 namespace tr {
+	//TODO use quat vs euler
+	template<typename T>
+	inline Eigen::Quaternion<T> RPYToQ(const T rotation[3]) {
+		return Eigen::AngleAxis<T>(rotation[2], Eigen::Matrix<T, 3, 1>::UnitX())
+			* Eigen::AngleAxis<T>(rotation[1], Eigen::Matrix<T, 3, 1>::UnitY())
+			* Eigen::AngleAxis<T>(rotation[0], Eigen::Matrix<T, 3, 1>::UnitZ());
+	}
+
 	template<typename Scalar>
 	Eigen::Matrix<Scalar, 4, 4> perspective(const Scalar fovy, const Scalar aspect, const Scalar zNear, const Scalar zFar) {
 		Eigen::Transform<Scalar, 3, Eigen::Projective> tr;
@@ -65,6 +73,24 @@ namespace tr {
 	template<typename Scalar>
 	Eigen::Matrix<Scalar, 4, 4> rotate(const Eigen::Array<Scalar, 3, 1>& rpy) {
 		return rotate(rpy[0], rpy[2], rpy[1]);
+	}
+
+	template<typename T, typename PType>
+	inline bool project(const T pos[3], const T ori[3], const Eigen::Array<PType,3,1> p, T uv[2], const Eigen::Matrix<PType, 4, 4>& P) {
+		//Logger::logProcess(__FUNCTION__);   //TODO remove logging
+		const Eigen::Quaternion<T> q = RPYToQ(ori);
+		const Eigen::Map<const Eigen::Matrix<T, 3, 1>> t(pos);
+		const Eigen::Matrix<T, 3, 1> cam = q * p.cast<T>() + t;
+		const Eigen::Matrix<T, 3, 1> proj = (P.cast<T>() * cam.homogeneous()).hnormalized();
+		const T zero(0), one(1), two(2);
+		for (uint i = 0; i < 2; i++)
+			uv[i] = (proj[i] + one) / two;
+		if (uv[0] < zero || uv[0] > one  //clip
+			|| uv[1] < zero || uv[1] > one)
+			//|| uv[2] < zero || uv[2] > one)
+			return false;
+		return true;
+		//Logger::logProcess(__FUNCTION__);   //TODO remove logging
 	}
 }
 

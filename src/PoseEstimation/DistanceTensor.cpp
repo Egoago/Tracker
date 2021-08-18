@@ -22,7 +22,7 @@ EdgeDetector* getEdgeDetector(ConfigParser& config) {
 }
 
 DistanceTensor::DistanceTensor(const float aspect) :
-    height(uint(config.getEntry("resolution", 2048))),
+    height(uint(config.getEntry("resolution", 1024))),
     width(uint(height * aspect)),
     q(config.getEntry("orientation quantization", 60)),
     edgeDetector(getEdgeDetector(config)),
@@ -191,7 +191,7 @@ void tr::DistanceTensor::distanceTransformFromEdges(const std::vector<Edge<vec2f
 
 void DistanceTensor::directedDistanceTransform() {
     Logger::logProcess(__FUNCTION__);   //TODO remove logging
-    const static float lambda = config.getEntry("lambda", 100.0f);
+    const static float lambda = config.getEntry("lambda", 50.0f);
     const static float dirCost = lambda * float(EIGEN_PI)/q;
     const static ulong pixelCount = width * height;
     //TODO parallelization
@@ -247,17 +247,17 @@ void DistanceTensor::gaussianBlur() {
     float* const frontStart = &buffers.at({ front, 0, 0, 0 });
     float* const backStart = &buffers.at({ !front, 0, 0, 0 });
     //TODO parallelization
-    for (uint pixelIndex = 0; pixelIndex < pixelCount; pixelIndex++) {
-            for (uint dir = 0; dir < q; dir++) {
-                const uint prev = (dir == 0) ? q-1 : dir - 1;
-                const uint next = (dir == q-1) ? 0 : dir + 1;
-                //TODO localization
-                *(backStart + (dir * pixelCount + pixelIndex)) =
-                    0.25f * (*(frontStart + (prev * pixelCount + pixelIndex))) +
-                    0.5f  * (*(frontStart + (dir  * pixelCount + pixelIndex))) +
-                    0.25f * (*(frontStart + (next * pixelCount + pixelIndex)));
-            }
+    for (uint dir = 0; dir < q; dir++) {
+        const uint prev = (dir == 0) ? q-1 : dir - 1;
+        const uint next = (dir == q-1) ? 0 : dir + 1;
+        for (uint pixelIndex = 0; pixelIndex < pixelCount; pixelIndex++) {
+            //TODO localization
+            *(backStart + (dir * pixelCount + pixelIndex)) =
+                0.25f * (*(frontStart + (prev * pixelCount + pixelIndex))) +
+                0.5f  * (*(frontStart + (dir  * pixelCount + pixelIndex))) +
+                0.25f * (*(frontStart + (next * pixelCount + pixelIndex)));
         }
+    }
     front = !front; //swap buffers
     Logger::logProcess(__FUNCTION__);   //TODO remove logging
 }

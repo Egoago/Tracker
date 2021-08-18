@@ -41,7 +41,7 @@
     <ClCompile Include="src\Camera\OpenCVCamera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Object\AssimpGeometry.cpp">
+    <ClCompile Include="src\Object\AssimpLoader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Rendering\Shader.cpp">
@@ -118,7 +118,7 @@
     <ClInclude Include="src\Object\Geometry.hpp">
       <Filter>Header Files\Object</Filter>
     </ClInclude>
-    <ClInclude Include="src\Object\AssimpGeometry.hpp">
+    <ClInclude Include="src\Object\AssimpLoader.hpp">
       <Filter>Header Files\Object</Filter>
     </ClInclude>
     <ClInclude Include="src\Rendering\Shader.hpp">

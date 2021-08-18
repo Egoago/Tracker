@@ -52,7 +52,7 @@ void ConfigParser::load() {
 }
 
 void ConfigParser::save() {
-    ofstream file(CONFIG_FOLDER + string(fileName));
+    ofstream file(CONFIG_FOLDER + string(fileName) + string(CONFIG_EXTENSION));
     for (auto const& entry : configuration) {
         bool first = true;
         file << entry.first << delimiter;

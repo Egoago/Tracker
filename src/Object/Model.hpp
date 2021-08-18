@@ -11,41 +11,23 @@
 namespace tr {
 	class Model {
 		static ConfigParser config;
-		std::string objectName;
 		Tensor<Template> templates;
+		std::vector<vec3f> edgeVertices;
 		mat4f P;
 
-		//Convenience declarations
-		struct Candidate {
-			vec3f pos, dir;
-			Candidate(vec3f pos, vec3f dir) : pos(pos), dir(dir) {}
-			Candidate(cv::Point3f pos, cv::Point3f dir) :
-				pos(pos.x, pos.y, pos.z),
-				dir(dir.x, dir.y, dir.z) {}
-		};
-
-		//Temp buffers
-		std::vector<Candidate> candidates;
-		std::vector<cv::Mat*> textureMaps; //TODO smart pointer
-
-		void generarteObject(const std::string& fileName);
-		void generate6DOFs();
-		bool load();
-		void extractCandidates();
-		void rasterizeCandidates(Template* temp, const mat4f& mvp);
+		bool load(const std::string& filename);
 	public:
-		Model(std::string name);
+		Model(const std::string& fileName);
+		Model(const std::string& fileName, const mat4f& P);
 		~Model() {}
 
-		void save(std::string fileName = "");
+		void save(const std::string& fileName = "");
 
-		void setName(const char* str) { objectName = str; }
+		inline mat4f getP() const { return P; }
+		inline const std::vector<vec3f>& getEdgeVertices() const { return edgeVertices; }
+		inline const Tensor<Template>& getTemplates() const { return templates; }
 
-		inline mat4f getP() { return P; }
-
-		Tensor<Template>& getTemplates() { return templates; }
-
-		friend std::ostream& operator<<(std::ostream& ost, const Model& model) {
+		inline friend std::ostream& operator<<(std::ostream& ost, const Model& model) {
 			ost << model.templates;
 			return ost;
 		}

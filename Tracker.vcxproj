@@ -199,7 +199,7 @@ del "$(SolutionDir)Config\*" /Q</Command>
     <ClCompile Include="src\Misc\ConfigParser.cpp" />
     <ClCompile Include="src\Misc\Links.hpp" />
     <ClCompile Include="src\Misc\Log.cpp" />
-    <ClCompile Include="src\Object\AssimpGeometry.cpp" />
+    <ClCompile Include="src\Object\AssimpLoader.cpp" />
     <ClCompile Include="src\Object\Geometry.cpp" />
     <ClCompile Include="src\Object\Model.cpp" />
     <ClCompile Include="src\PoseEstimation\PoseEstimator.cpp" />
@@ -232,7 +232,7 @@ del "$(SolutionDir)Config\*" /Q</Command>
     <ClInclude Include="src\Misc\Log.hpp" />
     <ClInclude Include="src\Misc\Base.hpp" />
     <ClInclude Include="src\Object\Geometry.hpp" />
-    <ClInclude Include="src\Object\AssimpGeometry.hpp" />
+    <ClInclude Include="src\Object\AssimpLoader.hpp" />
     <ClInclude Include="src\Object\Model.hpp" />
     <ClInclude Include="src\PoseEstimation\DirectEstimator.hpp" />
     <ClInclude Include="src\PoseEstimation\Estimator.hpp" />

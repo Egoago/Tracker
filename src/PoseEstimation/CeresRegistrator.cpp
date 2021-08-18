@@ -4,6 +4,7 @@
 #include <glog/logging.h>
 #include "../Misc/log.hpp"
 #include "../Misc/Base.hpp"
+#include "../Math/EigenTransform.hpp"
 
 using namespace tr;
 using namespace ceres;
@@ -56,35 +57,14 @@ struct RasterPointCost {
         //distanceTensorWrapper.reset(new ceres::CostFunctionToFunctor<1, 3>(new DistanceTensorWrapper(distanceTensor)));
     }
 
-    template<typename T>
-    inline bool project(const T pos[3],
-                        const T ori[3],
-                        const vec3d p,
-                        T uv[2]) const {
-        //Logger::logProcess(__FUNCTION__);   //TODO remove logging
-        const Eigen::Quaternion<T> q = RPYToQ(ori);
-        const Eigen::Map<const Eigen::Matrix<T, 3, 1>> t(pos);
-        const Eigen::Matrix<T, 3, 1> cam = q * p.cast<T>() + t;
-        const Eigen::Matrix<T, 3, 1> proj = (P.cast<T>() * cam.homogeneous()).hnormalized();
-        const T zero(0), one(1), two(2);
-        for (uint i = 0; i < 2; i++)
-            uv[i] = (proj[i] + one) / two;
-        if (   uv[0] < zero || uv[0] > one  //clip
-            || uv[1] < zero || uv[1] > one)
-            //|| uv[2] < zero || uv[2] > one)
-            return false;
-        return true;
-        //Logger::logProcess(__FUNCTION__);   //TODO remove logging
-    }
-
     template <typename T>
     bool operator()(const T pos[3], const T ori[3], T residuals[1]) const {
         //Logger::logProcess(__FUNCTION__);   //TODO remove logging
         T indices[3]; //(x, y), angle
         T ouv[2];   //offset (x, y)
         const T one(1), zero(0);
-        if (project(pos, ori, point, indices) &&
-            project(pos, ori, offsetPoint, ouv)) {
+        if (project(pos, ori, point, indices, P) &&
+            project(pos, ori, offsetPoint, ouv, P)) {
             const T dir[2] = { indices[0] - ouv[0], indices[1] - ouv[1] };
             if (dir[0] != zero) {
                 indices[2] = ceres::atan(dir[1] / dir[0]);
