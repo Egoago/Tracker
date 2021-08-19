@@ -4,13 +4,14 @@
 
 namespace tr {
 	struct Geometry {
+		//Raw
 		std::vector<uint> indices;
 		std::vector<vec3f> vertices;
 		std::vector<vec3f> normals;
-		std::vector<vec3f> lowEdgeVertices;
-		std::vector<vec3f> highEdgeVertices;
-		std::vector<float> lowEdgeCurvatures;
-		std::vector<float> highEdgeCurvatures;
+		//Computed
+		std::vector<vec3f> edges;	//vec3f a1,dir1,b1,dir1,a2,dir2,b2,dir2... interleaved
+		std::vector<uint> highEdgeIndices;
+		std::vector<uint> lowEdgeIndices;
 
 		void generate();
 	};

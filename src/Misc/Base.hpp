@@ -48,17 +48,20 @@ namespace tr {
 
 	template <typename Type, int Size>
 	inline bool operator==(const Eigen::Array<Type, Size, 1>& a, const Eigen::Array<Type, Size, 1>& b) {
-		constexpr const float epsilon = 1e-13f;
-		return distance(a, b) < epsilon;
+		constexpr const Type epsilon = Type(1e-7);
+		for (uint i = 0; i < Size; i++)
+			if (abs(a[i] - b[i]) > epsilon) return false;
+		return true;
 	}
 	
-	template <typename Type, int Size>
-	inline Type angle(const Eigen::Array<Type, Size, 1> a, const Eigen::Array<Type, Size, 1> b) {
+	template <typename Type>
+	inline Type angle(const Eigen::Array<Type, 3, 1> a, const Eigen::Array<Type, 3, 1> b) {
 		return angle(a.matrix().eval(), b.matrix().eval());
 	}
-	template <typename Type, int Size>
-	inline Type angle(const Eigen::Matrix<Type, Size, 1> a, const Eigen::Matrix<Type, Size, 1> b) {
-		return std::atan2(a.cross(b).norm(), a.dot(b));
+	template <typename Type>
+	inline Type angle(const Eigen::Matrix<Type, 3, 1> a, const Eigen::Matrix<Type, 3, 1> b) {
+		Type angle = std::atan(a.cross(b).norm()/ a.dot(b));
+		return (angle < Type(0)) ? angle + Type(EIGEN_PI) : angle;
 	}
 
 	template <typename Type>

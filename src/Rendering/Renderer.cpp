@@ -13,6 +13,7 @@ extern "C" {
 
 ConfigParser Renderer::config(REND_CONFIG_FILE);
 
+//TODO fuse two functions
 mat4f tr::Renderer::getDefaultP() {
     const static auto res = config.getEntries<int>("frame resolution", { 1024, 1024 });
     const static float nearP = config.getEntry("near clipping pane", 200.0f);
@@ -22,14 +23,15 @@ mat4f tr::Renderer::getDefaultP() {
     return tr::perspective(fov, aspect, nearP, farP);
 }
 
+//TODO fuse two functions
 void Renderer::readConfig() {
     const auto res = config.getEntries<int>("frame resolution", { 1024, 1024 });
     resolution = uvec2(res[0], res[1]);
-    nearP = config.getEntry("near clipping pane", 200.0f);
-    farP = config.getEntry("far clipping pane", 4500.0f);
+    const float nearP = config.getEntry("near clipping pane", 200.0f);
+    const float farP = config.getEntry("far clipping pane", 4500.0f);
     const float fov = radian(config.getEntry("fov", 45.0f));
     const float aspect = (float)res[0] / res[1];
-    ProjMtx = tr::perspective(fov, aspect, nearP, farP);
+    setProj(fov, nearP, farP, aspect);
 }
 
 Renderer::Renderer(const Geometry& geometry) {
@@ -70,7 +72,7 @@ Renderer::Renderer(const Geometry& geometry) {
                                     GL_LINES,
                                     GL_COLOR_BUFFER_BIT,
                                     depthBuffer,
-                                    false));
+                                    true));
     //Low thresh
     
     pipelines.emplace_back(new Pipeline("edge",
@@ -78,7 +80,7 @@ Renderer::Renderer(const Geometry& geometry) {
                                     GL_LINES,
                                     GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT,
                                     depthBuffer,
-                                    false));
+                                    true));
     setGeometry(geometry);
 }
 
@@ -87,80 +89,79 @@ Renderer::~Renderer()
     //TODO proper resource management
     glDeleteRenderbuffers(1, &depthBuffer);
     glutDestroyWindow(glutWindow);
-
 }
 
-void Renderer::setGeometry(const Geometry& geometry)
-{
+template<typename Type>
+GLuint upladDataToGPU(const std::vector<Type>& data, int bufferType = GL_ARRAY_BUFFER) {
+    GLuint buffer;
+    glGenBuffers(1, &buffer);
+    glBindBuffer(bufferType, buffer);
+    glBufferData(bufferType, data.size() * sizeof(Type), data.data(), GL_STATIC_DRAW);
+    return buffer;
+}
+
+void Renderer::setGeometry(const Geometry& geometry) {
     if (pipelines.size() < 3) {
         std::cerr << "Have to creae at least 3 pipelines before registering geometry" << std::endl;
         exit(1);
     }
     GLuint VAO;
-    GLuint buffer;
-    //TODO create gpu copy function
 
-    //====== Mesh buffers =======
+    //====== Mesh =======
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
 
     //vertices
-    glGenBuffers(1, &buffer);
-    glBindBuffer(GL_ARRAY_BUFFER, buffer);
-    glBufferData(GL_ARRAY_BUFFER, geometry.vertices.size() * sizeof(vec3f), geometry.vertices.data(), GL_STATIC_DRAW);
+    upladDataToGPU(geometry.vertices, GL_ARRAY_BUFFER);
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
     //triangle vertex indices
-    GLuint indexBuffer;
-    glGenBuffers(1, &indexBuffer);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, geometry.indices.size() * sizeof(uint), geometry.indices.data(), GL_STATIC_DRAW);
-    
+    upladDataToGPU(geometry.indices, GL_ELEMENT_ARRAY_BUFFER);
+
     //register
     pipelines.at(0)->setGeometry(VAO, (uint)geometry.indices.size());
 
-    //====== High tresh buffers =======
+    //====== Edge buffer ========
+    GLuint edgeBuffer = upladDataToGPU(geometry.edges, GL_ARRAY_BUFFER);
+
+    //====== High tresh =======
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, edgeBuffer);
 
     //vertices
-    glGenBuffers(1, &buffer);
-    glBindBuffer(GL_ARRAY_BUFFER, buffer);
-    glBufferData(GL_ARRAY_BUFFER, highEdges.size() * sizeof(vec3f), highEdges.data(), GL_STATIC_DRAW);
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vec3f) * 2, 0);
 
     //directions
-    glGenBuffers(1, &buffer);
-    glBindBuffer(GL_ARRAY_BUFFER, buffer);
-    glBufferData(GL_ARRAY_BUFFER, highDirections.size() * sizeof(vec3f), highDirections.data(), GL_STATIC_DRAW);
     glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(vec3f) * 2, reinterpret_cast<void*>(sizeof(vec3f)));
+
+    //indices
+    upladDataToGPU(geometry.highEdgeIndices, GL_ELEMENT_ARRAY_BUFFER);
 
     //register
-    pipelines.at(1)->setGeometry(VAO, (uint)highEdges.size());
+    pipelines.at(1)->setGeometry(VAO, (uint)geometry.highEdgeIndices.size());
 
-    //====== Low Thresh buffers =======
+    //====== Low Thresh =======
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, edgeBuffer);
 
     //vertices
-    glGenBuffers(1, &buffer);
-    glBindBuffer(GL_ARRAY_BUFFER, buffer);
-    glBufferData(GL_ARRAY_BUFFER, lowEdges.size() * sizeof(vec3f), lowEdges.data(), GL_STATIC_DRAW);
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vec3f) * 2, 0);
 
     //directions
-    glGenBuffers(1, &buffer);
-    glBindBuffer(GL_ARRAY_BUFFER, buffer);
-    glBufferData(GL_ARRAY_BUFFER, lowDirections.size() * sizeof(vec3f), lowDirections.data(), GL_STATIC_DRAW);
     glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(vec3f) * 2, reinterpret_cast<void*>(sizeof(vec3f)));
+
+    //indices
+    upladDataToGPU(geometry.lowEdgeIndices, GL_ELEMENT_ARRAY_BUFFER);
 
     //register
-    pipelines.at(2)->setGeometry(VAO, (uint)lowEdges.size());
+    pipelines.at(2)->setGeometry(VAO, (uint)geometry.lowEdgeIndices.size());
 }
 
 void Renderer::updatePipelines() {

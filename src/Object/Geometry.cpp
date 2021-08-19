@@ -3,6 +3,7 @@
 #include <string>
 #include "../Misc/ConfigParser.hpp"
 #include "../Misc/Links.hpp"
+#include "../Math/Edge.hpp"
 
 using namespace std;
 using namespace tr;
@@ -24,74 +25,68 @@ void Geometry::generate() {
     //like leave out edges on same triangle
     //or match triangles
     const uint indexCount = (uint)indices.size();
-    auto tempNormals = make_unique<vec3f[]>(indexCount / 2u);
-    std::vector<vec3f> buffer(indexCount);
-    lowEdgeVertices.reserve(indexCount / 2u);
-    highEdgeVertices.reserve(indexCount / 2u);
-    lowEdgeCurvatures.reserve(indexCount / 2u);
-    highEdgeCurvatures.reserve(indexCount / 2u);
+    std::vector<vec3f> tempNormals;
+    std::vector<Edge<>> tempEdges;
+    tempNormals.reserve(indexCount / 2u);
+    tempEdges.reserve(indexCount / 2u);
+    edges.reserve(indexCount / 2u * 4u);
+    highEdgeIndices.reserve(indexCount / 2u);
+    lowEdgeIndices.reserve(indexCount / 2u);
 
-    uint pairCount = 0;
-    uint singleCount = 0;
-    uint pos = 0u;
-    for (uint i = 0; i < indexCount/3u; i++) {
-        for (uint k = 0; k < 3; k++) {
-            const vec3f a = vertices.at(indices.at(3 * i + k));
-            const vec3f b = vertices.at(indices.at(3 * i + (1 + k) % 3));
-            const vec3f normal = normals.at(indices.at(3 * i + k));
+    uint vertexCount = 0u;
+    const float highThreshold = radian(config.getEntry("high threshold", 30.0f));
+    const float lowThreshold = radian(config.getEntry("low threshold", 1e-3f));
+    for (uint i = 0u; i < indexCount/3u; i++) { //for every triangle in a strip
+        for (uint k = 0u; k < 3u; k++) {        //for every vertex in that triangle
+            const Edge<> edge(vertices[indices[3u * i + k]],
+                              vertices[indices[3u * i + (1u + k) % 3u]]);
+            const vec3f normal = normals[indices[3u * i + k]];
             //find matching edge
-            for (pos = 0u; pos < singleCount; pos++)
-                if (buffer.at(pos * 2) == a && buffer.at(pos * 2 + 1) == b ||
-                    buffer.at(pos * 2) == b && buffer.at(pos * 2 + 1) == a)
-                    break;
-            if (pos == singleCount) {
-                buffer.at(pos * 2) = a;
-                buffer.at(pos * 2 + 1) = b;
-                tempNormals[pos] = normal;
-                singleCount++;
+            auto it = std::find(tempEdges.begin(), tempEdges.end(), edge);
+            if(it == tempEdges.end()) {
+#ifdef _DEBUG
+                if (tempEdges.size() == indexCount / 2u)
+                    Logger::error("missed edge");
+#endif // !_DEBUG
+                tempEdges.emplace_back(edge);
+                tempNormals.emplace_back(normal);
             }
             else {
-                float curvature = angle(normal, tempNormals[pos]);
-                if (pos != pairCount) {
-                    buffer.at(pos * 2) = buffer.at(pairCount * 2);
-                    buffer.at(pos * 2 + 1) = buffer.at(pairCount * 2 + 1);
-                    buffer.at(pairCount * 2) = a;
-                    buffer.at(pairCount * 2 + 1) = b;
-                    tempNormals[pos] = tempNormals[pairCount];
+                const int index = (int)(it - tempEdges.begin());
+                float curvature = angle(normal, tempNormals[index]);
+                if (it != tempEdges.end()-1) {
+                    tempEdges[index] = tempEdges.back();
+                    tempNormals[index] = tempNormals.back();
                 }
-                singleCount--;
-                pairCount++;
+                tempEdges.pop_back();
+                tempNormals.pop_back();
+                if (curvature > lowThreshold) {
+                    const vec3f dir = edge.direction();
+                    edges.emplace_back(edge.a);
+                    edges.emplace_back(dir);
+                    edges.emplace_back(edge.b);
+                    edges.emplace_back(dir);
+                    if (curvature > highThreshold) {
+                        highEdgeIndices.emplace_back(vertexCount++);
+                        highEdgeIndices.emplace_back(vertexCount++);
+                    }
+                    else {
+                        lowEdgeIndices.emplace_back(vertexCount++);
+                        lowEdgeIndices.emplace_back(vertexCount++);
+                    }
+                }
             }
         }
     }
-    //generating outliner edges
-    std::vector<vec3f> lowEdges, highEdges, lowDirections, highDirections;
-    const float lowThreshold = radian(config.getEntry("low threshold", 1e-3f));
-    const float highThreshold = radian(config.getEntry("high threshold", 30.0f));
-    for (uint i = 0; i < pairCount; i++) {
-        float curvature = geometry.edgeCurvatures[i];
-        if (curvature > lowThreshold) {
-            vec3f a = geometry.edgeVertices[2 * i];
-            vec3f b = geometry.edgeVertices[2 * i + 1];
-            lowEdges.push_back(a);
-            lowEdges.push_back(b);
-            vec3f dir = -(a - b).matrix().normalized();
-            //opposite directions are the same
-            if (vec3f(0.9f, 0.65f, 0.56f).matrix().normalized().dot(dir.matrix()) < 0.0f)
-                dir = -dir;
-            lowDirections.push_back(dir);
-            lowDirections.push_back(dir);
-            if (curvature > highThreshold) {
-                highEdges.push_back(a);
-                highEdges.push_back(b);
-                highDirections.push_back(dir);
-                highDirections.push_back(dir);
-            }
-        }
-    }
+    edges.shrink_to_fit();
+    highEdgeIndices.shrink_to_fit();
+    lowEdgeIndices.shrink_to_fit();
 
-    Logger::log("edges: " + std::to_string(indexCount));
-    Logger::log("pairs: " + std::to_string(pairCount));
-    Logger::log("missed: " + std::to_string(singleCount));
+    Logger::log("vertices: " + std::to_string(vertices.size()));
+    Logger::log("edges: " + std::to_string(edges.size()/4));
+    Logger::log("high indices: " + std::to_string(highEdgeIndices.size()));
+    Logger::log("low indices: " + std::to_string(lowEdgeIndices.size()));
+    Logger::log("mesh indices: " + std::to_string(indices.size()));
+    Logger::log("missed: " + std::to_string(tempEdges.size()));
     tr::Logger::logProcess(__FUNCTION__);   //TODO remove logging
 }

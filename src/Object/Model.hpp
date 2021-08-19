@@ -12,7 +12,6 @@ namespace tr {
 	class Model {
 		static ConfigParser config;
 		Tensor<Template> templates;
-		std::vector<vec3f> edgeVertices;
 		mat4f P;
 
 		bool load(const std::string& filename);
@@ -24,7 +23,6 @@ namespace tr {
 		void save(const std::string& fileName = "");
 
 		inline mat4f getP() const { return P; }
-		inline const std::vector<vec3f>& getEdgeVertices() const { return edgeVertices; }
 		inline const Tensor<Template>& getTemplates() const { return templates; }
 
 		inline friend std::ostream& operator<<(std::ostream& ost, const Model& model) {

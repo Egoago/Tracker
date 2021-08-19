@@ -15,12 +15,11 @@ int main(int argc, char** argv) {
     const tr::SixDOF pose = poseEstimator.getPose(frame);
     tr::Geometry geo;
     tr::AssimpLoader::load("cube", geo);
-    const std::vector<tr::vec3f>& edgeVertices = geo.edgeVertices;
     const tr::mat4f P = model.getP();
-    for (int i = 0; i < edgeVertices.size(); i += 2) {
+    for (uint index : geo.highEdgeIndices) {
         tr::vec2f aUV, bUV;
-        tr::project(pose.posData, pose.orData, edgeVertices[i], aUV.data(), P);
-        tr::project(pose.posData, pose.orData, edgeVertices[i+1], bUV.data(), P);
+        tr::project(pose.posData, pose.orData, geo.edges[index * 3], aUV.data(), P);
+        tr::project(pose.posData, pose.orData, geo.edges[index * 3 + 1], bUV.data(), P);
         cv::line(frame,
             cv::Point((int)(aUV[0] * frame.cols), (int)(aUV[1] * frame.rows)),
             cv::Point((int)(bUV[0] * frame.cols), (int)(bUV[1] * frame.rows)),

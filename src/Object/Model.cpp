@@ -186,26 +186,29 @@ void generarteObject(const Geometry& geo, Tensor<Template>& templates, ConfigPar
 
 		renderer.setVM(temp->sixDOF.getModelTransformMatrix());
 		renderer.render();
+		Logger::drawFrame(textureMaps[Renderer::MESH], "mesh");
+		Logger::drawFrame(textureMaps[Renderer::HPOS], "hpos");
+		Logger::drawFrame(textureMaps[Renderer::HDIR], "hgir");
 		const std::vector<Candidate> candidates = extractCandidates(textureMaps);
 		rasterizeCandidates(candidates, temp, config, renderer.getPVM());
 		//TODO remove logging
-		//cv::Mat canvas(cv::Size(800, 800), CV_8UC3);
-		//canvas = cv::Scalar::all(0);
-		//for (const auto& rasterPoint : i->rasterPoints) {
-		//	vec2 uv1 = rasterPoint.getUV();
-		//	cv::Point p1((int)std::roundf(uv1.x() * (canvas.cols - 1)),
-		//				 (int)std::roundf(uv1.y() * (canvas.rows - 1)));
-		//	/*vec2d uv2;
-		//	reg.project(i->sixDOF.data, &rasterPoint.pos[0], uv2.data());
-		//	cv::Point p2((int)std::roundf(uv2.x() * (canvas.cols - 1)),
-		//				 (int)std::roundf(uv2.y() * (canvas.rows - 1)));*/
-		//	//line(canvas, p1, p2, cv::Scalar(255, 0, 0));
-		//	circle(canvas, p1, 1, cv::Scalar(0, 255, 0), -1);
-		//	//circle(canvas, p2, 1, cv::Scalar(0, 0, 255), -1);
-		//	//Logger::log(std::to_string(uv1.x-uv2.x()) + " " + std::to_string(uv1.y - uv2.y()));
-		//}
-		//cv::imshow("rasterized", canvas);
-		//cv::waitKey(10000000);
+		cv::Mat canvas(cv::Size(800, 800), CV_8UC3);
+		canvas = cv::Scalar::all(0);
+		for (const auto& rasterPoint : temp->rasterPoints) {
+			vec2f uv1 = rasterPoint.uv;
+			cv::Point p1((int)std::roundf(uv1.x() * (canvas.cols - 1)),
+						 (int)std::roundf(uv1.y() * (canvas.rows - 1)));
+			/*vec2d uv2;
+			reg.project(i->sixDOF.data, &rasterPoint.pos[0], uv2.data());
+			cv::Point p2((int)std::roundf(uv2.x() * (canvas.cols - 1)),
+						 (int)std::roundf(uv2.y() * (canvas.rows - 1)));*/
+			//line(canvas, p1, p2, cv::Scalar(255, 0, 0));
+			circle(canvas, p1, 1, cv::Scalar(0, 255, 0), -1);
+			//circle(canvas, p2, 1, cv::Scalar(0, 0, 255), -1);
+			//Logger::log(std::to_string(uv1.x-uv2.x()) + " " + std::to_string(uv1.y - uv2.y()));
+		}
+		Logger::drawFrame(&canvas, "rasterized");
+		cv::waitKey(1000000);
 		//TODO remove monitoring
 		rasterCounts.push_back((tr::uint)temp->rasterPoints.size());
 		Logger::log("Rendered " + std::to_string(c++)
@@ -233,7 +236,6 @@ Model::Model(const std::string& fileName, const mat4f& P) {
 	if (!load(filePath)) {
 		Geometry geo;
 		AssimpLoader::load(objectName, geo);
-		edgeVertices = geo.edgeVertices;
 		generarteObject(geo, templates, config, P);
 		save(filePath);
 	}
@@ -242,8 +244,7 @@ Model::Model(const std::string& fileName, const mat4f& P) {
 void Model::save(const std::string& fileName) {
 	Logger::logProcess(__FUNCTION__);
 	std::ofstream out(fileName, std::ios::out | std::ios::binary);
-	out //<< bits(edgeVertices)	//TODO save edge vertices
-		<< bits(P)
+	out << bits(P)
 		<< bits(templates);
 	out.close();
 	Logger::logProcess(__FUNCTION__);
@@ -256,9 +257,7 @@ bool Model::load(const std::string& filename) {
 		Logger::warning(filename + " save file not found");
 		return false;
 	}
-	std::string dummy;
-	in	>>bits(dummy)//>> bits(edgeVertices)
-		>> bits(P)
+	in	>> bits(P)
 		>> bits(templates);
 	in.close();
 	Logger::logProcess(__FUNCTION__);
