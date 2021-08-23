@@ -104,7 +104,7 @@ SixDOF CeresRegistrator::registrate(const DistanceTensor& distanceTensor,
     // Run the solver!
     ceres::Solver::Options options;
     options.minimizer_progress_to_stdout = true;
-    options.initial_trust_region_radius = 300;
+    //options.initial_trust_region_radius = 300;
     options.max_num_iterations = 100;
     //options.check_gradients = true;
     options.num_threads = 1;

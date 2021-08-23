@@ -6,6 +6,7 @@
 
 #include "../Misc/Log.hpp"  //TODO remove logging
 #include <opencv2/imgproc.hpp>
+#include <opencv2/highgui.hpp>
 
 using namespace tr;
 
@@ -46,6 +47,17 @@ SixDOF PoseEstimator::getPose(const cv::Mat& frame) {
 
     distanceTensor.setFrame(frame);
     const std::vector<const Template*> candidates = estimator->estimate(distanceTensor);
+    for (auto& candidate : candidates) {
+        cv::Mat canvas = frame.clone();
+        for (auto& rasterPoint : candidate->rasterPoints) {
+            cv::circle(canvas,
+                       cv::Point((int)(rasterPoint.uv.x() * frame.cols),
+                                 (int)(rasterPoint.uv.y() * frame.rows)),
+                       1, cv::Scalar(0, 0, 255), -1);
+        }
+        Logger::drawFrame(&canvas, "candidate");
+        cv::waitKey(10000000);
+    }
     //TODO parallel registration
     SixDOF sixDOF = registrator->registrate(distanceTensor, candidates[0]);
 
@@ -56,7 +68,7 @@ SixDOF PoseEstimator::getPose(const cv::Mat& frame) {
     str.str("");
     str << sixDOF;
     Logger::log("registrated:\t" + str.str());
-    /*for (auto rasterPoint : candidates[0]->rasterPoints) {
+    for (auto rasterPoint : candidates[0]->rasterPoints) {
         cv::circle(frame,
                    cv::Point((int)(rasterPoint.uv.x() * frame.cols),
                        (int)(rasterPoint.uv.y() * frame.rows)),
@@ -66,7 +78,7 @@ SixDOF PoseEstimator::getPose(const cv::Mat& frame) {
                    cv::Point((int)(rasterPoint.uv.x() * frame.cols),
                        (int)(rasterPoint.uv.y() * frame.rows)),
                    1, cv::Scalar(0, 255, 0), -1);
-    }*/
+    }
     Logger::logProcess(__FUNCTION__);   //TODO remove logging
     return sixDOF;
 }

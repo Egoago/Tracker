@@ -30,12 +30,12 @@ struct Candidate {
 void generate6DOFs(ConfigParser& config, Tensor<Template>& templates) {
 	Logger::logProcess(__FUNCTION__);
 	//TODO tune granularity
-	const static Range width(config.getEntries<int>("width", { -120, 120, 7 }));//7
-	const static Range height(config.getEntries<int>("height", { -120, 120, 7 }));//7
-	const static Range depth(config.getEntries<int>("depth", { -325, -2000, 5 }));//5
+	const static Range width(config.getEntries<int>("width", { -120, 120, 9 }));//7
+	const static Range height(config.getEntries<int>("height", { -120, 120, 9 }));//7
+	const static Range depth(config.getEntries<int>("depth", { -250, -600, 5 }));//5
 	//TODO uniform sphere distr <=> homogenous tensor layout????
-	const static Range roll(config.getEntries<int>("roll", { 0, 360, 6 }));//6
-	const static Range yaw(config.getEntries<int>("yaw", { 0, 360, 6 }));//6
+	const static Range roll(config.getEntries<int>("roll", { 0, 360, 7 }));//6
+	const static Range yaw(config.getEntries<int>("yaw", { 0, 360, 7 }));//6
 	const static Range pitch(config.getEntries<int>("pitch", { 0, 180, 3 }));//3
 	templates.allocate({
 		width.resolution,
@@ -55,9 +55,9 @@ void generate6DOFs(ConfigParser& config, Tensor<Template>& templates) {
 		sixDOF.position.x() = width[x] / depth.begin * depth[z];
 		sixDOF.position.y() = height[y] / depth.begin * depth[z];
 		sixDOF.position.z() = depth[z];
-		sixDOF.orientation.x() = yaw[ya];
-		sixDOF.orientation.y() = pitch[p];
-		sixDOF.orientation.z() = roll[r];
+		sixDOF.orientation.x() = radian(yaw[ya]);
+		sixDOF.orientation.y() = radian(pitch[p]);
+		sixDOF.orientation.z() = radian(roll[r]);
 	}
 	Logger::logProcess(__FUNCTION__);
 }
@@ -230,7 +230,7 @@ std::string getSavePath(const std::string& objectName) {
 }
 
 Model::Model(const std::string& fileName) : Model(fileName, Renderer::getDefaultP()) {}
-Model::Model(const std::string& fileName, const mat4f& P) {
+Model::Model(const std::string& fileName, const mat4f& P) : P(P) {
 	std:: string objectName = getObjectName(fileName);
 	std:: string filePath = getSavePath(objectName);
 	if (!load(filePath)) {

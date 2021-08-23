@@ -190,8 +190,8 @@ void tr::DistanceTensor::distanceTransformFromEdges(const std::vector<Edge<vec2f
 }
 
 void DistanceTensor::directedDistanceTransform() {
-    Logger::logProcess(__FUNCTION__);   //TODO remove logging
-    const static float lambda = config.getEntry("lambda", 50.0f);
+    Logger::logProcess(__FUNCTION__);   //TODO remove loggingy
+    const static float lambda = config.getEntry("lambda", 100.0f);
     const static float dirCost = lambda * float(EIGEN_PI)/q;
     const static ulong pixelCount = width * height;
     //TODO parallelization
