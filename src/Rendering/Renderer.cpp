@@ -46,6 +46,12 @@ Renderer::Renderer(const Geometry& geometry) {
     CameraCalibration camCal = readConfig();
     resolution = camCal.resolution;
 
+    //Shaders
+    Shader meshVert("mesh.vert");
+    Shader meshFrag("mesh.frag");
+    Shader edgeVert("edge.vert");
+    Shader edgeFrag("edge.frag");
+
     //Texture for contour mask
     textureMaps.reserve(5);
     textureMaps.emplace_back(new TextureMap(CV_8U, resolution));
@@ -61,23 +67,26 @@ Renderer::Renderer(const Geometry& geometry) {
     glDepthFunc(GL_LEQUAL);
     //set up pipelines
     pipelines.reserve(3);
-    pipelines.emplace_back(new Pipeline("mesh",
+    pipelines.emplace_back(new Pipeline(
                                     { textureMaps[MESH] },
+                                    { &meshVert, &meshFrag },
                                     GL_TRIANGLES,
                                     GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT,
                                     depthBuffer,
                                     true));
     //High thresh
-    pipelines.emplace_back(new Pipeline("edge",
+    pipelines.emplace_back(new Pipeline(
                                     {textureMaps[HPOS], textureMaps[HDIR]},
+                                    { &edgeVert, &edgeFrag },
                                     GL_LINES,
                                     GL_COLOR_BUFFER_BIT,
                                     depthBuffer,
                                     true));
     //Low thresh
     
-    pipelines.emplace_back(new Pipeline("edge",
+    pipelines.emplace_back(new Pipeline(
                                     {textureMaps[LPOS], textureMaps[LDIR]},
+                                    { &edgeVert, &edgeFrag },
                                     GL_LINES,
                                     GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT,
                                     depthBuffer,
@@ -171,12 +180,10 @@ void Renderer::setGeometry(const Geometry& geometry) {
 
 void Renderer::updatePipelines() {
     for (auto& pipeline : pipelines) {
-        std::shared_ptr<Shader> shader = pipeline->getShader();
-        shader->enable();
-        shader->registerFloat4x4("P", ProjMtx.data());
-        shader->registerFloat4x4("VM", ViewModelMtx.data());
-        shader->registerFloat("near", nearP);
-        shader->registerFloat("far", farP);
+        pipeline->uniform("P", ProjMtx);
+        pipeline->uniform("VM", ViewModelMtx);
+        pipeline->uniform("near", nearP);
+        pipeline->uniform("far", farP);
     }
 }
 

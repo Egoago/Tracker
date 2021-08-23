@@ -8,6 +8,8 @@ namespace tr {
 	static const char* CONFIG_EXTENSION = ".conf";
 	static const char* LOADED_OBJECTS_FOLDER = "Resources/Models/Loaded/";
 	static const char* LOADED_OBJECT_FILENAME_EXTENSION = ".dat";
+	static const char* VERTEX_SHADER_EXTENSION = ".vert";
+	static const char* FRAGMENT_SHADER_EXTENSION = ".frag";
 	static const char* OBJ_CONFIG_FILE = "objf";
 	static const char* REND_CONFIG_FILE = "rend";
 	static const char* GEO_CONFIG_FILE = "geo";

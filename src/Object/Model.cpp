@@ -30,8 +30,8 @@ struct Candidate {
 void generate6DOFs(ConfigParser& config, Tensor<Template>& templates) {
 	Logger::logProcess(__FUNCTION__);
 	//TODO tune granularity
-	const static Range width(config.getEntries<int>("width", { -120, 120, 9 }));//7
-	const static Range height(config.getEntries<int>("height", { -120, 120, 9 }));//7
+	const static Range width(config.getEntries<int>("width", { -100, 100, 9 }));//7
+	const static Range height(config.getEntries<int>("height", { -100, 100, 9 }));//7
 	const static Range depth(config.getEntries<int>("depth", { -250, -600, 5 }));//5
 	//TODO uniform sphere distr <=> homogenous tensor layout????
 	const static Range roll(config.getEntries<int>("roll", { 0, 360, 7 }));//6
@@ -189,8 +189,8 @@ void generarteObject(const Geometry& geo, Tensor<Template>& templates, ConfigPar
 		const std::vector<Candidate> candidates = extractCandidates(textureMaps);
 		rasterizeCandidates(candidates, temp, config, renderer.getPVM());
 		//TODO remove logging
-		//Logger::drawFrame(textureMaps[Renderer::MESH], "mesh");
-		//Logger::drawFrame(textureMaps[Renderer::HPOS], "hpos");
+		Logger::drawFrame(textureMaps[Renderer::MESH], "mesh");
+		Logger::drawFrame(textureMaps[Renderer::HPOS], "hpos");
 		//Logger::drawFrame(textureMaps[Renderer::HDIR], "hgir");
 		//cv::Mat canvas(cv::Size(800, 800), CV_8UC3);
 		//canvas = cv::Scalar::all(0);
