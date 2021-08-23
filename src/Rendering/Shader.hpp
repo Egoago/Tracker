@@ -18,7 +18,7 @@ namespace tr
 		~Shader();
 		bool enable();
 		bool disable();
-		void registerFloat4x4(const char* name, float mtx[]);
+		void registerFloat4x4(const char* name, const float mtx[]);
 		void registerFloat4(const char* name, float f1, float f2, float f3, float f4);
 		void registerFloat(const char* name, float value);
 	};

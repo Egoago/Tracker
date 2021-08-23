@@ -15,23 +15,23 @@ ConfigParser Renderer::config(REND_CONFIG_FILE);
 
 //TODO fuse two functions
 mat4f tr::Renderer::getDefaultP() {
-    const static auto res = config.getEntries<int>("frame resolution", { 1024, 1024 });
-    const static float nearP = config.getEntry("near clipping pane", 200.0f);
-    const static float farP = config.getEntry("far clipping pane", 4500.0f);
-    const static float fov = radian(config.getEntry("fov", 45.0f));
-    const static float aspect = (float)res[0] / res[1];
-    return tr::perspective(fov, aspect, nearP, farP);
+    CameraCalibration camCal = readConfig();
+    return tr::perspective(camCal.FOV,
+                           camCal.aspect,
+                           camCal.nearPlane,
+                           camCal.farPlane);
 }
 
 //TODO fuse two functions
-void Renderer::readConfig() {
-    const auto res = config.getEntries<int>("frame resolution", { 1024, 1024 });
-    resolution = uvec2(res[0], res[1]);
-    const float nearP = config.getEntry("near clipping pane", 200.0f);
-    const float farP = config.getEntry("far clipping pane", 4500.0f);
-    const float fov = radian(config.getEntry("fov", 45.0f));
-    const float aspect = (float)res[0] / res[1];
-    setProj(fov, nearP, farP, aspect);
+Renderer::CameraCalibration Renderer::readConfig() {
+    CameraCalibration camCal;
+    auto res = config.getEntries<uint>("resolution", { 1024,1024 });
+    camCal.resolution = uvec2(res[0], res[1]);
+    camCal.nearPlane = config.getEntry("near clipping pane", 200.0f);
+    camCal.farPlane = config.getEntry("far clipping pane", 4500.0f);
+    camCal.FOV = radian(config.getEntry("fov", 45.0f));
+    camCal.aspect = (float)res[0] / res[1];
+    return camCal;
 }
 
 Renderer::Renderer(const Geometry& geometry) {
@@ -42,8 +42,9 @@ Renderer::Renderer(const Geometry& geometry) {
      * main loop not being called*/
     glutWindow = glutCreateWindow("OpenGL");
     glewInit();
-    
-    readConfig();
+
+    CameraCalibration camCal = readConfig();
+    resolution = camCal.resolution;
 
     //Texture for contour mask
     textureMaps.reserve(5);
@@ -82,6 +83,10 @@ Renderer::Renderer(const Geometry& geometry) {
                                     depthBuffer,
                                     true));
     setGeometry(geometry);
+    setProj(camCal.FOV,
+            camCal.aspect,
+            camCal.nearPlane,
+            camCal.farPlane);
 }
 
 Renderer::~Renderer()
@@ -92,7 +97,7 @@ Renderer::~Renderer()
 }
 
 template<typename Type>
-GLuint upladDataToGPU(const std::vector<Type>& data, int bufferType = GL_ARRAY_BUFFER) {
+GLuint uploadDataToGPU(const std::vector<Type>& data, int bufferType = GL_ARRAY_BUFFER) {
     GLuint buffer;
     glGenBuffers(1, &buffer);
     glBindBuffer(bufferType, buffer);
@@ -102,7 +107,7 @@ GLuint upladDataToGPU(const std::vector<Type>& data, int bufferType = GL_ARRAY_B
 
 void Renderer::setGeometry(const Geometry& geometry) {
     if (pipelines.size() < 3) {
-        std::cerr << "Have to creae at least 3 pipelines before registering geometry" << std::endl;
+        std::cerr << "Have to create at least 3 pipelines before registering geometry" << std::endl;
         exit(1);
     }
     GLuint VAO;
@@ -112,18 +117,18 @@ void Renderer::setGeometry(const Geometry& geometry) {
     glBindVertexArray(VAO);
 
     //vertices
-    upladDataToGPU(geometry.vertices, GL_ARRAY_BUFFER);
+    uploadDataToGPU(geometry.vertices, GL_ARRAY_BUFFER);
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
     //triangle vertex indices
-    upladDataToGPU(geometry.indices, GL_ELEMENT_ARRAY_BUFFER);
+    uploadDataToGPU(geometry.indices, GL_ELEMENT_ARRAY_BUFFER);
 
     //register
     pipelines.at(0)->setGeometry(VAO, (uint)geometry.indices.size());
 
     //====== Edge buffer ========
-    GLuint edgeBuffer = upladDataToGPU(geometry.edges, GL_ARRAY_BUFFER);
+    GLuint edgeBuffer = uploadDataToGPU(geometry.edges, GL_ARRAY_BUFFER);
 
     //====== High tresh =======
     glGenVertexArrays(1, &VAO);
@@ -139,7 +144,7 @@ void Renderer::setGeometry(const Geometry& geometry) {
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(vec3f) * 2, reinterpret_cast<void*>(sizeof(vec3f)));
 
     //indices
-    upladDataToGPU(geometry.highEdgeIndices, GL_ELEMENT_ARRAY_BUFFER);
+    uploadDataToGPU(geometry.highEdgeIndices, GL_ELEMENT_ARRAY_BUFFER);
 
     //register
     pipelines.at(1)->setGeometry(VAO, (uint)geometry.highEdgeIndices.size());
@@ -158,7 +163,7 @@ void Renderer::setGeometry(const Geometry& geometry) {
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(vec3f) * 2, reinterpret_cast<void*>(sizeof(vec3f)));
 
     //indices
-    upladDataToGPU(geometry.lowEdgeIndices, GL_ELEMENT_ARRAY_BUFFER);
+    uploadDataToGPU(geometry.lowEdgeIndices, GL_ELEMENT_ARRAY_BUFFER);
 
     //register
     pipelines.at(2)->setGeometry(VAO, (uint)geometry.lowEdgeIndices.size());
@@ -175,7 +180,7 @@ void Renderer::updatePipelines() {
     }
 }
 
-void Renderer::setProj(float fov, float nearP, float farP, float aspect) {
+void Renderer::setProj(float fov, float aspect, float nearP, float farP) {
     this->nearP = nearP;
     this->farP = farP;
     setProj(tr::perspective(fov, aspect, nearP, farP));

@@ -15,10 +15,9 @@ namespace tr {
 	Eigen::Matrix<Scalar, 4, 4> perspective(const Scalar fovy, const Scalar aspect, const Scalar zNear, const Scalar zFar) {
 		Eigen::Transform<Scalar, 3, Eigen::Projective> tr;
 		tr.matrix().setZero();
-		Scalar radf = Scalar(EIGEN_PI) * fovy / Scalar(180);
-		Scalar tan_half_fovy = std::tan(radf / Scalar(2));
-		tr(0, 0) = Scalar(1) / (aspect * tan_half_fovy);
-		tr(1, 1) = Scalar(1) / (tan_half_fovy);
+		const Scalar tanHalfFov = std::tan(fovy / Scalar(2));
+		tr(0, 0) = Scalar(1) / (aspect * tanHalfFov);
+		tr(1, 1) = Scalar(1) / (tanHalfFov);
 		tr(2, 2) = -(zFar + zNear) / (zFar - zNear);
 		tr(3, 2) = Scalar(-1);
 		tr(2, 3) = -(Scalar(2) * zFar * zNear) / (zFar - zNear);

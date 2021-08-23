@@ -31,8 +31,8 @@ void generate6DOFs(ConfigParser& config, Tensor<Template>& templates) {
 	Logger::logProcess(__FUNCTION__);
 	//TODO tune granularity
 	const static Range width(config.getEntries<int>("width", { -120, 120, 7 }));//7
-	const static Range height(config.getEntries<int>("height", { 120, 120, 7 }));//7
-	const static Range depth(config.getEntries<int>("depth", { 325, 2000, 5 }));//5
+	const static Range height(config.getEntries<int>("height", { -120, 120, 7 }));//7
+	const static Range depth(config.getEntries<int>("depth", { -325, -2000, 5 }));//5
 	//TODO uniform sphere distr <=> homogenous tensor layout????
 	const static Range roll(config.getEntries<int>("roll", { 0, 360, 6 }));//6
 	const static Range yaw(config.getEntries<int>("yaw", { 0, 360, 6 }));//6
@@ -186,29 +186,29 @@ void generarteObject(const Geometry& geo, Tensor<Template>& templates, ConfigPar
 
 		renderer.setVM(temp->sixDOF.getModelTransformMatrix());
 		renderer.render();
-		Logger::drawFrame(textureMaps[Renderer::MESH], "mesh");
-		Logger::drawFrame(textureMaps[Renderer::HPOS], "hpos");
-		Logger::drawFrame(textureMaps[Renderer::HDIR], "hgir");
 		const std::vector<Candidate> candidates = extractCandidates(textureMaps);
 		rasterizeCandidates(candidates, temp, config, renderer.getPVM());
 		//TODO remove logging
-		cv::Mat canvas(cv::Size(800, 800), CV_8UC3);
-		canvas = cv::Scalar::all(0);
-		for (const auto& rasterPoint : temp->rasterPoints) {
-			vec2f uv1 = rasterPoint.uv;
-			cv::Point p1((int)std::roundf(uv1.x() * (canvas.cols - 1)),
-						 (int)std::roundf(uv1.y() * (canvas.rows - 1)));
-			/*vec2d uv2;
-			reg.project(i->sixDOF.data, &rasterPoint.pos[0], uv2.data());
-			cv::Point p2((int)std::roundf(uv2.x() * (canvas.cols - 1)),
-						 (int)std::roundf(uv2.y() * (canvas.rows - 1)));*/
-			//line(canvas, p1, p2, cv::Scalar(255, 0, 0));
-			circle(canvas, p1, 1, cv::Scalar(0, 255, 0), -1);
-			//circle(canvas, p2, 1, cv::Scalar(0, 0, 255), -1);
-			//Logger::log(std::to_string(uv1.x-uv2.x()) + " " + std::to_string(uv1.y - uv2.y()));
-		}
-		Logger::drawFrame(&canvas, "rasterized");
-		cv::waitKey(1000000);
+		//Logger::drawFrame(textureMaps[Renderer::MESH], "mesh");
+		//Logger::drawFrame(textureMaps[Renderer::HPOS], "hpos");
+		//Logger::drawFrame(textureMaps[Renderer::HDIR], "hgir");
+		//cv::Mat canvas(cv::Size(800, 800), CV_8UC3);
+		//canvas = cv::Scalar::all(0);
+		//for (const auto& rasterPoint : temp->rasterPoints) {
+		//	vec2f uv1 = rasterPoint.uv;
+		//	cv::Point p1((int)std::roundf(uv1.x() * (canvas.cols - 1)),
+		//				 (int)std::roundf(uv1.y() * (canvas.rows - 1)));
+		//	/*vec2d uv2;
+		//	reg.project(i->sixDOF.data, &rasterPoint.pos[0], uv2.data());
+		//	cv::Point p2((int)std::roundf(uv2.x() * (canvas.cols - 1)),
+		//				 (int)std::roundf(uv2.y() * (canvas.rows - 1)));*/
+		//	//line(canvas, p1, p2, cv::Scalar(255, 0, 0));
+		//	circle(canvas, p1, 1, cv::Scalar(0, 255, 0), -1);
+		//	//circle(canvas, p2, 1, cv::Scalar(0, 0, 255), -1);
+		//	//Logger::log(std::to_string(uv1.x-uv2.x()) + " " + std::to_string(uv1.y - uv2.y()));
+		//}
+		//Logger::drawFrame(&canvas, "rasterized");
+		//cv::waitKey(10000000);
 		//TODO remove monitoring
 		rasterCounts.push_back((tr::uint)temp->rasterPoints.size());
 		Logger::log("Rendered " + std::to_string(c++)

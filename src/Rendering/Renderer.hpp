@@ -19,11 +19,16 @@ namespace tr {
 		unsigned int depthBuffer;
 		int glutWindow;
 
+		struct CameraCalibration {
+			float nearPlane, farPlane, FOV, aspect;
+			uvec2 resolution;
+		};
+
 		//TODO simplify to one matrix
-		mat4f ProjMtx, ViewModelMtx;
+		Eigen::Matrix<float, 4, 4> ProjMtx, ViewModelMtx;
 
 		void updatePipelines();
-		void readConfig();
+		static CameraCalibration readConfig();
 		float nearP, farP;
 		uvec2 resolution;
 		void setGeometry(const Geometry& geometry);
@@ -40,7 +45,7 @@ namespace tr {
 
 		Renderer(const Geometry& geometry);
 		~Renderer();
-		void setProj(float fov, float nearP, float farP, float aspect);
+		void setProj(float fov, float aspect, float nearP, float farP);
 		void setProj(const mat4f& P);
 		void setVM(const mat4f& MV);
 		inline mat4f getPVM() const { return ProjMtx * ViewModelMtx; }

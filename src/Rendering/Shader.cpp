@@ -116,11 +116,11 @@ Shader::~Shader() {
 	glDeleteProgram(ID);
 }
 
-void Shader::registerFloat4x4(const char* name, float mtx[]) {
+void Shader::registerFloat4x4(const char* name, const float mtx[]) {
 	GLuint id = glGetUniformLocation(ID, name);
 	if (id == -1) {
 		Logger::warning(
-			"uniform mat4 variable"
+			"uniform mat4 variable "
 			+ std::string(name)
 			+ " not found in shader "
 			+ std::string(this->name));
@@ -133,7 +133,7 @@ void Shader::registerFloat4(const char* name, float f1, float f2, float f3, floa
 	GLuint id = glGetUniformLocation(ID, name);
 	if (id == -1) {
 		Logger::warning(
-			"uniform vec4 variable"
+			"uniform vec4 variable "
 			+ std::string(name)
 			+ " not found in shader "
 			+ std::string(this->name));
@@ -146,7 +146,7 @@ void Shader::registerFloat(const char* name, float value) {
 	GLuint id = glGetUniformLocation(ID, name);
 	if (id == -1) {
 		Logger::warning(
-			"uniform float variable"
+			"uniform float variable "
 			+ std::string(name)
 			+ " not found in shader "
 			+ std::string(this->name));

@@ -32,6 +32,9 @@ void tr::ConfigParser::entry2Data(const std::string& entryName, bool& data)
 void tr::ConfigParser::entry2Data(const std::string& entryName, int& data)
 { data = stoi(entryName); }
 
+void tr::ConfigParser::entry2Data(const std::string& entryName, unsigned int& data)
+{ data = (unsigned int)stoi(entryName); }
+
 void tr::ConfigParser::entry2Data(const std::string& entryName, float& data)
 { data = stof(entryName); }
 

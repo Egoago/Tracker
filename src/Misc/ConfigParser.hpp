@@ -18,6 +18,7 @@ namespace tr {
 		void entry2Data(const std::string& entryName, std::string& data);
 		void entry2Data(const std::string& entryName, bool& data);
 		void entry2Data(const std::string& entryName, int& data);
+		void entry2Data(const std::string& entryName, unsigned int& data);
 		void entry2Data(const std::string& entryName, float& data);
 		void entry2Data(const std::string& entryName, double& data);
 
