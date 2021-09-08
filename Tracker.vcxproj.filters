@@ -209,5 +209,6 @@
     </None>
     <None Include="src\Shaders\edge.frag" />
     <None Include="src\Shaders\edge.vert" />
+    <None Include="src\Shaders\outline.frag" />
   </ItemGroup>
 </Project>

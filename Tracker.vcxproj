@@ -248,6 +248,7 @@ del "$(SolutionDir)Config\*" /Q</Command>
     <None Include="src\Shaders\edge.vert" />
     <None Include="src\Shaders\mesh.vert" />
     <None Include="src\Shaders\mesh.frag" />
+    <None Include="src\Shaders\outline.frag" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
