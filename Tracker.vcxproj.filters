@@ -24,11 +24,14 @@
     <Filter Include="Header Files\Misc">
       <UniqueIdentifier>{affec106-5845-4373-ba08-3dd3dfe80770}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\EdgeDetectors">
-      <UniqueIdentifier>{98dd9c26-e1e5-4423-b8f8-9c8195e61530}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\PoseEstimation">
       <UniqueIdentifier>{8a886d80-2865-41d0-a921-c3713c602c2e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Math">
+      <UniqueIdentifier>{7646a9f8-6e68-494a-a450-93dfdb50c8ce}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Detectors">
+      <UniqueIdentifier>{98dd9c26-e1e5-4423-b8f8-9c8195e61530}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -134,16 +137,16 @@
       <Filter>Header Files\Object</Filter>
     </ClInclude>
     <ClInclude Include="src\Detectors\EdgeDetector.hpp">
-      <Filter>Header Files\EdgeDetectors</Filter>
+      <Filter>Header Files\Detectors</Filter>
     </ClInclude>
     <ClInclude Include="src\Detectors\LSDDetector.hpp">
-      <Filter>Header Files\EdgeDetectors</Filter>
+      <Filter>Header Files\Detectors</Filter>
     </ClInclude>
     <ClInclude Include="src\Detectors\lsd.h">
-      <Filter>Header Files\EdgeDetectors</Filter>
+      <Filter>Header Files\Detectors</Filter>
     </ClInclude>
     <ClInclude Include="src\Detectors\CannyDetector.hpp">
-      <Filter>Header Files\EdgeDetectors</Filter>
+      <Filter>Header Files\Detectors</Filter>
     </ClInclude>
     <ClInclude Include="src\PoseEstimation\PoseEstimator.hpp">
       <Filter>Header Files\PoseEstimation</Filter>
@@ -154,50 +157,50 @@
     <ClInclude Include="src\Object\Model.hpp">
       <Filter>Header Files\Object</Filter>
     </ClInclude>
-    <ClInclude Include="src\Rendering\TextureMap.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Rendering\Pipeline.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Misc\Log.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Math\Tensor.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\PoseEstimation\Estimator.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\PoseEstimation\Registrator.hpp">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="src\PoseEstimation\CeresRegistrator.hpp">
+      <Filter>Header Files\PoseEstimation</Filter>
     </ClInclude>
     <ClInclude Include="src\PoseEstimation\DirectEstimator.hpp">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\PoseEstimation</Filter>
     </ClInclude>
-    <ClInclude Include="src\PoseEstimation\CeresRegistrator.hpp">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="src\PoseEstimation\Registrator.hpp">
+      <Filter>Header Files\PoseEstimation</Filter>
     </ClInclude>
-    <ClInclude Include="src\Math\SixDOF.hpp">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="src\PoseEstimation\Estimator.hpp">
+      <Filter>Header Files\PoseEstimation</Filter>
     </ClInclude>
     <ClInclude Include="src\Math\Edge.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Math\Template.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Misc\Range.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Math\RasterPoint.hpp">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Math</Filter>
     </ClInclude>
     <ClInclude Include="src\Math\EigenTransform.hpp">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\RasterPoint.hpp">
+      <Filter>Header Files\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\SixDOF.hpp">
+      <Filter>Header Files\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\Template.hpp">
+      <Filter>Header Files\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\Tensor.hpp">
+      <Filter>Header Files\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Misc\Log.hpp">
+      <Filter>Header Files\Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Misc\Range.hpp">
+      <Filter>Header Files\Misc</Filter>
     </ClInclude>
     <ClInclude Include="src\Detectors\MultiFlashDetector.hpp">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Detectors</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Rendering\TextureMap.hpp">
+      <Filter>Header Files\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Rendering\Pipeline.hpp">
+      <Filter>Header Files\Rendering</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -207,8 +210,11 @@
     <None Include="src\Shaders\mesh.frag">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="src\Shaders\edge.frag" />
-    <None Include="src\Shaders\edge.vert" />
-    <None Include="src\Shaders\outline.frag" />
+    <None Include="src\Shaders\edge.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="src\Shaders\edge.vert">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>
