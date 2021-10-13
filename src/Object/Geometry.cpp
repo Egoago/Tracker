@@ -4,6 +4,7 @@
 #include "../Misc/ConfigParser.hpp"
 #include "../Misc/Links.hpp"
 #include "../Math/Edge.hpp"
+#include <limits>
 
 using namespace std;
 using namespace tr;
@@ -16,6 +17,40 @@ uint find(const T* array, const T& value, const uint size) {
         if (array[i] == value)
             return i;
     return size;
+}
+
+vec3f getCenter(const std::vector<vec3f>& vertices) {
+    constexpr const float minFloat = numeric_limits<float>::min();
+    constexpr const float maxFloat = numeric_limits<float>::max();
+    float boundaries[6] = { maxFloat, minFloat,     //x
+                            maxFloat, minFloat,     //y
+                            maxFloat, minFloat };   //z
+    for (auto vertex : vertices) {
+        if (vertex.x() < boundaries[0])
+            boundaries[0] = vertex.x();
+        if (vertex.x() > boundaries[1])
+            boundaries[1] = vertex.x();
+        if (vertex.y() < boundaries[2])
+            boundaries[2] = vertex.y();
+        if (vertex.y() > boundaries[3])
+            boundaries[3] = vertex.y();
+        if (vertex.z() < boundaries[4])
+            boundaries[4] = vertex.z();
+        if (vertex.z() > boundaries[5])
+            boundaries[5] = vertex.z();
+    }
+    return vec3f((boundaries[0] + boundaries[1]) / 2.0f,
+                 (boundaries[2] + boundaries[3]) / 2.0f,
+                 (boundaries[4] + boundaries[5]) / 2.0f);
+}
+
+float getRadius(const vec3f& center, const std::vector<vec3f>& vertices) {
+    float radius = 0.0f;
+    for (auto vertex : vertices) {
+        float newRadius = distance(vertex, center);
+        if (newRadius > radius) radius = newRadius;
+    }
+    return radius;
 }
 
 void Geometry::generate() {
@@ -81,6 +116,8 @@ void Geometry::generate() {
     edges.shrink_to_fit();
     highEdgeIndices.shrink_to_fit();
     lowEdgeIndices.shrink_to_fit();
+    center = getCenter(vertices);
+    boundingRadius = getRadius(center, vertices);
 
     Logger::log("vertices: " + std::to_string(vertices.size()));
     Logger::log("edges: " + std::to_string(edges.size()/4));

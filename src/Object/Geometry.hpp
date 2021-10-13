@@ -12,6 +12,8 @@ namespace tr {
 		std::vector<vec3f> edges;	//vec3f a1,dir1,b1,dir1,a2,dir2,b2,dir2... interleaved
 		std::vector<uint> highEdgeIndices;
 		std::vector<uint> lowEdgeIndices;
+		float boundingRadius;
+		vec3f center;
 
 		void generate();
 	};

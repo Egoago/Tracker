@@ -133,9 +133,6 @@
     <ClInclude Include="src\Misc\ConfigParser.hpp">
       <Filter>Header Files\Misc</Filter>
     </ClInclude>
-    <ClInclude Include="src\Misc\Base.hpp">
-      <Filter>Header Files\Object</Filter>
-    </ClInclude>
     <ClInclude Include="src\Detectors\EdgeDetector.hpp">
       <Filter>Header Files\Detectors</Filter>
     </ClInclude>
@@ -202,6 +199,9 @@
     <ClInclude Include="src\Rendering\Pipeline.hpp">
       <Filter>Header Files\Rendering</Filter>
     </ClInclude>
+    <ClInclude Include="src\Misc\Base.hpp">
+      <Filter>Header Files\Misc</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="src\Shaders\mesh.vert">
@@ -214,6 +214,9 @@
       <Filter>Shaders</Filter>
     </None>
     <None Include="src\Shaders\edge.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="src\Shaders\outline.frag">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>
