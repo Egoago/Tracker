@@ -43,8 +43,7 @@ Renderer::Renderer(const Geometry& geometry) {
     glutWindow = glutCreateWindow("OpenGL");
     glewInit();
 
-    CameraCalibration camCal = readConfig();
-    resolution = camCal.resolution;
+    camCal = readConfig();
 
     //Shaders
     Shader meshVert("mesh.vert");
@@ -54,16 +53,16 @@ Renderer::Renderer(const Geometry& geometry) {
 
     //Texture for contour mask
     textureMaps.reserve(5);
-    textureMaps.emplace_back(new TextureMap(CV_8U, resolution));
+    textureMaps.emplace_back(new TextureMap(CV_8U, camCal.resolution));
     //Four textures for pos and dir maps for both thresholds
     for(uint i = 0; i < 4; i++)
-        textureMaps.emplace_back(new TextureMap(CV_32FC3, resolution));
+        textureMaps.emplace_back(new TextureMap(CV_32FC3, camCal.resolution));
 
     // Z buffer
     glEnable(GL_DEPTH_TEST);
     glGenRenderbuffers(1, &depthBuffer);
     glBindRenderbuffer(GL_RENDERBUFFER, depthBuffer);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, resolution.x(), resolution.y());
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, camCal.resolution.x(), camCal.resolution.y());
     glDepthFunc(GL_LEQUAL);
     //set up pipelines
     pipelines.reserve(3);
@@ -176,11 +175,15 @@ void Renderer::setGeometry(const Geometry& geometry) {
 
     //register
     pipelines.at(2)->setGeometry(VAO, (uint)geometry.lowEdgeIndices.size());
+
+    //Bounding box
+    geoBBxRadius = geometry.boundingRadius;
 }
 
 void Renderer::updatePipelines() {
     for (auto& pipeline : pipelines) {
-        pipeline->uniform("P", ProjMtx);
+        if (scaling) pipeline->uniform("P", (ScaleMtx * ProjMtx).eval());
+        else pipeline->uniform("P", ProjMtx);
         pipeline->uniform("VM", ViewModelMtx);
         pipeline->uniform("near", nearP);
         pipeline->uniform("far", farP);
@@ -198,9 +201,25 @@ void tr::Renderer::setProj(const mat4f& P) {
     updatePipelines();
 }
 
-void Renderer::setVM(const mat4f& MV) {
-    ViewModelMtx = MV;
+/// <summary>
+/// Uploads the View-Model transformation matrix.
+/// </summary>
+/// <param name="VM">View-Model transformation matrix.</param>
+/// <returns>translation and scaling paramaters applied, packed in a vector [tr.x, tr.y, sc]</returns>
+vec3f Renderer::setVM(const mat4f& VM) {
+    ViewModelMtx = VM;
+    vec3f scalingParameters(0.0f, 0.0f, 1.0f);
+    if (scaling) {
+        const Eigen::Matrix<float, 4, 1> cam = VM.col(3);
+        const float depth = -cam.hnormalized().z();
+        scalingParameters = -(ProjMtx * cam).hnormalized();
+        scalingParameters.z() = (depth * tanf(camCal.FOV / 2.0f)) / (geoBBxRadius * sqrtf(2.0f));
+        ScaleMtx.setIdentity();
+        ScaleMtx *= scale(scalingParameters.z(), scalingParameters.z(), 1.0f);
+        ScaleMtx *= translate(scalingParameters.x(), scalingParameters.y(), 0.0f);
+    }
     updatePipelines();
+    return scalingParameters;
 }
 
 void Renderer::render() {
@@ -208,7 +227,7 @@ void Renderer::render() {
     //x2~3 model load speedup
     //see notes for details
     //Logger::logProcess(__FUNCTION__);
-    glViewport(0, 0, resolution.x(), resolution.y());
+    glViewport(0, 0, camCal.resolution.x(), camCal.resolution.y());
     for (auto& pipeline : pipelines)
         pipeline->render();
     glFlush();

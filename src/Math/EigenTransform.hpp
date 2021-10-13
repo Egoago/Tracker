@@ -75,7 +75,7 @@ namespace tr {
 	}
 
 	template<typename T, typename PType>
-	inline bool project(const T pos[3], const T ori[3], const Eigen::Array<PType,3,1> p, T uv[2], const Eigen::Matrix<PType, 4, 4>& P) {
+	inline bool renderPoint(const T pos[3], const T ori[3], const Eigen::Array<PType,3,1> p, T uv[2], const Eigen::Matrix<PType, 4, 4>& P) {
 		//Logger::logProcess(__FUNCTION__);   //TODO remove logging
 		const Eigen::Quaternion<T> q = RPYToQ(ori);
 		const Eigen::Map<const Eigen::Matrix<T, 3, 1>> t(pos);

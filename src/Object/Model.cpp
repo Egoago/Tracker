@@ -19,23 +19,15 @@ using namespace tr;
 
 ConfigParser Model::config(OBJ_CONFIG_FILE);
 
-struct Candidate {
-	vec3f pos, dir;
-	Candidate(vec3f pos, vec3f dir) : pos(pos), dir(dir) {}
-	Candidate(cv::Point3f pos, cv::Point3f dir) :
-		pos(pos.x, pos.y, pos.z),
-		dir(dir.x, dir.y, dir.z) {}
-};
-
 void generate6DOFs(ConfigParser& config, Tensor<Template>& templates) {
 	Logger::logProcess(__FUNCTION__);
 	//TODO tune granularity
-	const static Range width(config.getEntries<int>("width", { -100, 100, 9 }));//7
-	const static Range height(config.getEntries<int>("height", { -100, 100, 9 }));//7
+	const static Range width(config.getEntries<int>("width", { -70, 70, 7 }));//7
+	const static Range height(config.getEntries<int>("height", { -70, 70, 7 }));//7
 	const static Range depth(config.getEntries<int>("depth", { -250, -600, 5 }));//5
 	//TODO uniform sphere distr <=> homogenous tensor layout????
-	const static Range roll(config.getEntries<int>("roll", { 0, 360, 7 }));//6
-	const static Range yaw(config.getEntries<int>("yaw", { 0, 360, 7 }));//6
+	const static Range roll(config.getEntries<int>("roll", { 0, 360, 6 }));//6
+	const static Range yaw(config.getEntries<int>("yaw", { 0, 360, 6 }));//6
 	const static Range pitch(config.getEntries<int>("pitch", { 0, 180, 3 }));//3
 	templates.allocate({
 		width.resolution,
@@ -83,6 +75,12 @@ void getContour(const cv::Mat& maskMap, cv::Mat& contourMap) {
 	//Logger::logProcess(__FUNCTION__);
 }
 
+
+struct Candidate {
+	vec3f pos, dir;
+	Candidate(vec3f pos, vec3f dir) : pos(pos), dir(dir) {}
+};
+
 const std::vector<Candidate> extractCandidates(const std::vector<cv::Mat*>& textureMaps) {
 	//Logger::logProcess(__FUNCTION__);
 	std::vector<Candidate> candidates;
@@ -96,8 +94,8 @@ const std::vector<Candidate> extractCandidates(const std::vector<cv::Mat*>& text
 			if (pixel == 0) return;
 
 			//test high thres
-			cv::Point3f pos = textureMaps[Renderer::HPOS]->at<cv::Point3f>(p[0], p[1]);
-			cv::Point3f dir = textureMaps[Renderer::HDIR]->at<cv::Point3f>(p[0], p[1]);
+			Eigen::Vector3f pos = textureMaps[Renderer::HPOS]->at<Eigen::Vector3f>(p[0], p[1]);
+			Eigen::Vector3f dir = textureMaps[Renderer::HDIR]->at<Eigen::Vector3f>(p[0], p[1]);
 			if (pos.dot(pos) > 1e-5 && dir.dot(dir) > 1e-5) {
 				mtx.lock();
 				candidates.push_back(Candidate(pos, dir));
@@ -105,8 +103,8 @@ const std::vector<Candidate> extractCandidates(const std::vector<cv::Mat*>& text
 				return;
 			}
 			//test low thres
-			pos = textureMaps[Renderer::LPOS]->at<cv::Point3f>(p[0], p[1]);
-			dir = textureMaps[Renderer::LDIR]->at<cv::Point3f>(p[0], p[1]);
+			pos = textureMaps[Renderer::LPOS]->at<Eigen::Vector3f>(p[0], p[1]);
+			dir = textureMaps[Renderer::LDIR]->at<Eigen::Vector3f>(p[0], p[1]);
 			if (pos.dot(pos) > 1e-5 && dir.dot(dir) > 1e-5) {
 				mtx.lock();
 				candidates.push_back(Candidate(pos, dir));
@@ -126,29 +124,18 @@ void rasterizeCandidates(const std::vector<Candidate>& candidates,
 	const uint bufferSize = (uint)candidates.size();
 	const static int rasterCount = config.getEntry("rasterization count", 100);
 	const static float rasterOffset = config.getEntry("rasterization offset", 0.005f);
-	float rasterProb = (float)rasterCount / (float)bufferSize;
-	if (rasterProb > 1.0f) rasterProb = 1.0f;
-	static std::mt19937 gen(std::random_device{}());
-	static std::bernoulli_distribution dist(rasterProb);
-	std::vector<bool> mask(bufferSize); //mask generation needed for efficient allocation
-	uint chosenCount = 0;
-	std::generate(mask.begin(), mask.end(), [&] {
-		if(dist(gen)){
-			chosenCount++;
-			return true;
-		}
-		return false; 
-	});
-	temp->rasterPoints.reserve(chosenCount);
+	std::vector<Candidate> chosenCandidates;
+	std::sample(candidates.begin(), candidates.end(), std::back_inserter(chosenCandidates),
+		rasterCount, std::mt19937{ std::random_device{}()});
+	temp->rasterPoints.reserve(chosenCandidates.size());
 	//TODO parallelization-compact
-	for(uint i = 0; i < bufferSize; i++)
-		if (mask[i]) {
-			const vec3f p = candidates[i].pos;
-			const vec3f op = p + (candidates[i].dir * rasterOffset);
-			temp->rasterPoints.emplace_back(p, op);
-			if (!temp->rasterPoints.back().render(PVM))
-				temp->rasterPoints.pop_back();
-		}
+	for (const auto& candidate : chosenCandidates) {
+		const vec3f p = candidate.pos;
+		const vec3f op = p + (candidate.dir * rasterOffset);
+		temp->rasterPoints.emplace_back(p, op);
+		if (!temp->rasterPoints.back().render(PVM))
+			temp->rasterPoints.pop_back();
+	}
 	//Logger::logProcess(__FUNCTION__);
 }
 
@@ -174,9 +161,7 @@ void generarteObject(const Geometry& geo, Tensor<Template>& templates, ConfigPar
 	Renderer renderer(geo);
 	renderer.setProj(P);
 	std::vector<cv::Mat*> textureMaps = renderer.getTextures(); //TODO smart pointer
-
 	generate6DOFs(config, templates);
-	
 	int c = 1;
 	std::vector<tr::uint> rasterCounts;
 	for (Template* temp = templates.begin(); temp < (templates.begin() + templates.getSize()); temp++) {
@@ -184,7 +169,7 @@ void generarteObject(const Geometry& geo, Tensor<Template>& templates, ConfigPar
 		// instead moving textures to CPU and using OpenCV
 		// OpenMP??
 
-		renderer.setVM(temp->sixDOF.getModelTransformMatrix());
+		const vec3f scalingParameters = renderer.setVM(temp->sixDOF.getModelTransformMatrix());	//TODO scale instead of rerender?
 		renderer.render();
 		const std::vector<Candidate> candidates = extractCandidates(textureMaps);
 		rasterizeCandidates(candidates, temp, config, renderer.getPVM());

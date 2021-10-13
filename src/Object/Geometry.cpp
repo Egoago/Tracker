@@ -5,6 +5,7 @@
 #include "../Misc/Links.hpp"
 #include "../Math/Edge.hpp"
 #include <limits>
+#include <execution>
 
 using namespace std;
 using namespace tr;
@@ -25,7 +26,7 @@ vec3f getCenter(const std::vector<vec3f>& vertices) {
     float boundaries[6] = { maxFloat, minFloat,     //x
                             maxFloat, minFloat,     //y
                             maxFloat, minFloat };   //z
-    for (auto vertex : vertices) {
+    for (const auto& vertex : vertices) {
         if (vertex.x() < boundaries[0])
             boundaries[0] = vertex.x();
         if (vertex.x() > boundaries[1])
@@ -44,17 +45,28 @@ vec3f getCenter(const std::vector<vec3f>& vertices) {
                  (boundaries[4] + boundaries[5]) / 2.0f);
 }
 
-float getRadius(const vec3f& center, const std::vector<vec3f>& vertices) {
+float getRadius(const std::vector<vec3f>& vertices) {
     float radius = 0.0f;
-    for (auto vertex : vertices) {
-        float newRadius = distance(vertex, center);
-        if (newRadius > radius) radius = newRadius;
+    for (const auto& vertex : vertices) {
+        const float length = vertex.matrix().norm();
+        if (length > radius) radius = length;
     }
     return radius;
 }
 
 void Geometry::generate() {
     tr::Logger::logProcess(__FUNCTION__);   //TODO remove logging
+    //===== Scaling =======
+    centerOffset = -getCenter(vertices);
+    std::for_each(
+        std::execution::par_unseq,
+        vertices.begin(),
+        vertices.end(),
+        [&centerOffset=centerOffset](auto& vertex)
+        {
+            vertex += centerOffset;
+        });
+    boundingRadius = getRadius(vertices);
     //TODO implement soring based pairing with orientation alignement
     //TODO implement a more sohpisticated algorithm
     //like leave out edges on same triangle
@@ -116,8 +128,6 @@ void Geometry::generate() {
     edges.shrink_to_fit();
     highEdgeIndices.shrink_to_fit();
     lowEdgeIndices.shrink_to_fit();
-    center = getCenter(vertices);
-    boundingRadius = getRadius(center, vertices);
 
     Logger::log("vertices: " + std::to_string(vertices.size()));
     Logger::log("edges: " + std::to_string(edges.size()/4));

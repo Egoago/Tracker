@@ -24,14 +24,20 @@ namespace tr {
 			uvec2 resolution;
 		};
 
+		CameraCalibration camCal;
+
 		//TODO simplify to one matrix
-		Eigen::Matrix<float, 4, 4> ProjMtx, ViewModelMtx;
+		mat4f ProjMtx, ViewModelMtx, ScaleMtx;
 
 		void updatePipelines();
 		static CameraCalibration readConfig();
 		float nearP, farP;
-		uvec2 resolution;
 		void setGeometry(const Geometry& geometry);
+
+		//Scaling
+		bool scaling = true;
+		vec3f geoBBxCenter;
+		float geoBBxRadius;
 	public:
 		static mat4f getDefaultP();
 
@@ -45,12 +51,13 @@ namespace tr {
 
 		Renderer(const Geometry& geometry);
 		~Renderer();
+		inline void setScaling(bool scaling) { this->scaling = scaling; }
 		void setProj(float fov, float aspect, float nearP, float farP);
 		void setProj(const mat4f& P);
-		void setVM(const mat4f& MV);
+		vec3f setVM(const mat4f& VM);
 		inline mat4f getPVM() const { return ProjMtx * ViewModelMtx; }
 		inline mat4f getVM() const { return ViewModelMtx; }
-		inline uvec2 getResolution() { return resolution; }
+		inline uvec2 getResolution() { return camCal.resolution; }
 		void render();
 		std::vector<cv::Mat*>getTextures();
 	};

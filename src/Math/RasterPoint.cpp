@@ -12,6 +12,7 @@ bool renderPoint(const vec3f p, const mat4f& mvp, vec2f& uv) {
 	uv = pPos.head(2);
 	if ((uv <  vec2f::Zero()).any() ||
 		(uv >= vec2f::Ones()).any()) {
+		Logger::warning("Rendering point out of bounds.");
 		return false;
 	}
 	return true;
