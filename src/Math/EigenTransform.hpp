@@ -6,9 +6,9 @@ namespace tr {
 	//TODO use quat vs euler
 	template<typename T>
 	inline Eigen::Quaternion<T> RPYToQ(const T rotation[3]) {
-		return Eigen::AngleAxis<T>(rotation[2], Eigen::Matrix<T, 3, 1>::UnitX())
-			* Eigen::AngleAxis<T>(rotation[1], Eigen::Matrix<T, 3, 1>::UnitY())
-			* Eigen::AngleAxis<T>(rotation[0], Eigen::Matrix<T, 3, 1>::UnitZ());
+		return Eigen::AngleAxis<T>(rotation[0], Eigen::Matrix<T, 3, 1>::UnitY())
+			* Eigen::AngleAxis<T>(rotation[1], Eigen::Matrix<T, 3, 1>::UnitX())
+			* Eigen::AngleAxis<T>(rotation[2], Eigen::Matrix<T, 3, 1>::UnitZ());
 	}
 
 	template<typename Scalar>
@@ -60,18 +60,18 @@ namespace tr {
 	}
 
 	template<typename Scalar>
-	Eigen::Matrix<Scalar, 4, 4> rotate(const Scalar roll, const Scalar pitch, const Scalar yaw) {
+	Eigen::Matrix<Scalar, 4, 4> rotate(const Scalar yaw, const Scalar pitch, const Scalar roll) {
 		Eigen::Transform<Scalar, 3, Eigen::Affine> t;
 		t.matrix().setIdentity();
-		t.rotate(Eigen::AngleAxis<Scalar>(pitch, Eigen::Matrix<Scalar, 3, 1>::UnitX()));
 		t.rotate(Eigen::AngleAxis<Scalar>(yaw, Eigen::Matrix<Scalar, 3, 1>::UnitY()));
+		t.rotate(Eigen::AngleAxis<Scalar>(pitch, Eigen::Matrix<Scalar, 3, 1>::UnitX()));
 		t.rotate(Eigen::AngleAxis<Scalar>(roll, Eigen::Matrix<Scalar, 3, 1>::UnitZ()));
 		return t.matrix();
 	}
 
 	template<typename Scalar>
-	Eigen::Matrix<Scalar, 4, 4> rotate(const Eigen::Array<Scalar, 3, 1>& rpy) {
-		return rotate(rpy[0], rpy[2], rpy[1]);
+	Eigen::Matrix<Scalar, 4, 4> rotate(const Eigen::Array<Scalar, 3, 1>& ypr) {
+		return rotate(ypr[0], ypr[1], ypr[2]);
 	}
 
 	template<typename T, typename PType>
