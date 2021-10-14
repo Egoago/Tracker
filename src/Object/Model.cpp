@@ -19,33 +19,42 @@ using namespace tr;
 
 ConfigParser Model::config(OBJ_CONFIG_FILE);
 
+Range::Interploation getDepthInterpolation(ConfigParser& config) {
+	switch (strHash(config.getEntry<std::string>("depth interpolation", "exp").c_str())) {
+	case strHash("lin"): return Range::Interploation::LINEAR;
+	case strHash("exp"): return Range::Interploation::EXPONENTIAL;
+	case strHash("pol"): return Range::Interploation::POLINOMIAL;
+	default: return Range::Interploation::LINEAR;
+	}
+}
+
 void generate6DOFs(ConfigParser& config, Tensor<Template>& templates) {
 	Logger::logProcess(__FUNCTION__);
 	//TODO tune granularity
-	const static Range width(config.getEntries<int>("width", { -70, 70, 7 }));//7
-	const static Range height(config.getEntries<int>("height", { -70, 70, 7 }));//7
-	const static Range depth(config.getEntries<int>("depth", { -250, -600, 5 }));//5
+	const static Range width(config.getEntries<int>("width", { -70, 70, 5 }));//7
+	const static Range height(config.getEntries<int>("height", { -70, 70, 5 }));//7
+	const static Range depth(config.getEntries<int>("depth", { -250, -1500, 4 }), getDepthInterpolation(config));//5
 	//TODO uniform sphere distr <=> homogenous tensor layout????
-	const static Range roll(config.getEntries<int>("roll", { 0, 360, 6 }));//6
-	const static Range yaw(config.getEntries<int>("yaw", { 0, 360, 6 }));//6
-	const static Range pitch(config.getEntries<int>("pitch", { 0, 180, 3 }));//3
+	const static Range yaw(config.getEntries<int>("yaw", { 0, 360, 6 }), Range::Interploation::LINEAR, true);//6
+	const static Range pitch(config.getEntries<int>("pitch", { -60, 60, 3 }), Range::Interploation::LINEAR, false);//3
+	const static Range roll(config.getEntries<int>("roll", { 0, 360, 3 }), Range::Interploation::LINEAR, true);//6
 	templates.allocate({
-		width.resolution,
-		height.resolution,
-		depth.resolution,
-		yaw.resolution,
-		pitch.resolution,
-		roll.resolution });
-	for (uint ya = 0; ya < yaw.resolution; ya++)
-	for (uint p = 0; p < pitch.resolution; p++)
-	for (uint r = 0; r < roll.resolution; r++)
-	for (uint x = 0; x < width.resolution; x++)
-	for (uint y = 0; y < height.resolution; y++)
-	for (uint z = 0; z < depth.resolution; z++)
+		width.size(),
+		height.size(),
+		depth.size(),
+		yaw.size(),
+		pitch.size(),
+		roll.size() });
+	for (uint ya = 0; ya < yaw.size(); ya++)
+	for (uint p = 0; p < pitch.size(); p++)
+	for (uint r = 0; r < roll.size(); r++)
+	for (uint x = 0; x < width.size(); x++)
+	for (uint y = 0; y < height.size(); y++)
+	for (uint z = 0; z < depth.size(); z++)
 	{
 		SixDOF& sixDOF = templates.at({x,y,z,ya,p,r}).sixDOF;
-		sixDOF.position.x() = width[x] / depth.begin * depth[z];
-		sixDOF.position.y() = height[y] / depth.begin * depth[z];
+		sixDOF.position.x() = width[x] / depth[0] * depth[z];
+		sixDOF.position.y() = height[y] / depth[0] * depth[z];
 		sixDOF.position.z() = depth[z];
 		sixDOF.orientation.x() = radian(yaw[ya]);
 		sixDOF.orientation.y() = radian(pitch[p]);
