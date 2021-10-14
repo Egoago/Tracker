@@ -174,7 +174,7 @@ void tr::DistanceTensor::distanceTransformFromEdges(const std::vector<Edge<vec2f
     cv::Mat tmp = Mat((int)height, (int)width, CV_8U);
     for (uint i = 0; i < q; i++) {
         tmp = Scalar::all(255);
-        for (Edge<vec2f>& edge : quantizedEdges[i])
+        for (const Edge<vec2f>& edge : quantizedEdges[i])
             line(tmp,
                 Point((int)std::round(edge.a.x() * width),
                       (int)std::round(edge.a.y() * height)),

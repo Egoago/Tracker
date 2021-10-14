@@ -13,7 +13,7 @@ using namespace tr;
 ConfigParser PoseEstimator::config(POSE_CONFIG_FILE);
 
 Estimator* getEstimator(ConfigParser& config, const Tensor<Template>& templates) {
-    const unsigned int candidateCount = config.getEntry("candidate count", 5);
+    const unsigned int candidateCount = config.getEntry("candidate count", 10);
     Estimator* estimator = nullptr;
     switch (strHash(config.getEntry<std::string>("estimator", "direct").c_str())) {
         //TODO add more
@@ -47,9 +47,9 @@ SixDOF PoseEstimator::getPose(const cv::Mat& frame) {
 
     distanceTensor.setFrame(frame);
     const std::vector<const Template*> candidates = estimator->estimate(distanceTensor);
-    for (auto& candidate : candidates) {
+    for (const auto& candidate : candidates) {
         cv::Mat canvas = frame.clone();
-        for (auto& rasterPoint : candidate->rasterPoints) {
+        for (const auto& rasterPoint : candidate->rasterPoints) {
             cv::circle(canvas,
                        cv::Point((int)(rasterPoint.uv.x() * frame.cols),
                                  (int)(rasterPoint.uv.y() * frame.rows)),

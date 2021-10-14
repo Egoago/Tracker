@@ -83,13 +83,13 @@ namespace tr {
 	template<>
 	inline void ConfigParser::setEntries(const std::string& entryName, const std::vector<bool>& value) {
 		configuration[entryName].clear();
-		for (const auto entry : value)
+		for (const auto& entry : value)
 			configuration[entryName].push_back( entry ? "true" : "false");
 	}
 	template<typename EntryType>
 	inline void ConfigParser::setEntries(const std::string& entryName, const std::vector<EntryType>& value) {
 		configuration[entryName].clear();
-		for (const EntryType entry : value)
+		for (const EntryType& entry : value)
 			configuration[entryName].push_back(std::to_string(entry));
 	}
 }

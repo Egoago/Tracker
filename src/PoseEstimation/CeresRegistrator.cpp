@@ -63,8 +63,8 @@ struct RasterPointCost {
         T indices[3]; //(x, y), angle
         T ouv[2];   //offset (x, y)
         const T one(1), zero(0);
-        if (project(pos, ori, point, indices, P) &&
-            project(pos, ori, offsetPoint, ouv, P)) {
+        if (renderPoint(pos, ori, point, indices, P) &&
+            renderPoint(pos, ori, offsetPoint, ouv, P)) {
             const T dir[2] = { indices[0] - ouv[0], indices[1] - ouv[1] };
             if (dir[0] != zero) {
                 indices[2] = ceres::atan(dir[1] / dir[0]);
@@ -107,7 +107,8 @@ SixDOF CeresRegistrator::registrate(const DistanceTensor& distanceTensor,
     //options.initial_trust_region_radius = 300;
     options.max_num_iterations = 100;
     //options.check_gradients = true;
-    options.num_threads = 1;
+    options.num_threads = 4;
+    options.linear_solver_type = ceres::DENSE_QR;
     ceres::Solver::Summary summary;
     ceres::Solve(options, &problem, &summary);
     

@@ -26,8 +26,8 @@ int main(int argc, char** argv) {
             cv::Scalar(100, 200, 50));
     }*/
     tr::Logger::drawFrame(&frame, "registered");
+    tr::Logger::logProcess(__FUNCTION__);
     tr::Logger::log("Waiting for key...");
     cv::waitKey(1000000);
-    tr::Logger::logProcess(__FUNCTION__);
     return 0;
 }
