@@ -15,13 +15,12 @@ namespace tr {
 		template<typename EntryType = std::string>
 		EntryType getEntry(const std::string& entryName);
 		
-		void entry2Data(const std::string& entryName, std::string& data);
-		void entry2Data(const std::string& entryName, bool& data);
-		void entry2Data(const std::string& entryName, int& data);
-		void entry2Data(const std::string& entryName, unsigned int& data);
-		void entry2Data(const std::string& entryName, float& data);
-		void entry2Data(const std::string& entryName, double& data);
-
+		static void entry2Data(const std::string& entryName, std::string& data);
+		static void entry2Data(const std::string& entryName, bool& data);
+		static void entry2Data(const std::string& entryName, int& data);
+		static void entry2Data(const std::string& entryName, unsigned int& data);
+		static void entry2Data(const std::string& entryName, float& data);
+		static void entry2Data(const std::string& entryName, double& data);
 	public:
 		void load();
 		void save();

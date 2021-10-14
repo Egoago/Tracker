@@ -42,7 +42,7 @@ void tr::ConfigParser::entry2Data(const std::string& entryName, double& data)
 { data = stod(entryName); }
 
 void ConfigParser::load() {
-    ifstream file(CONFIG_FOLDER + string(fileName));
+    ifstream file(CONFIG_FOLDER + string(fileName) + string(CONFIG_EXTENSION));
     string line;
     while (getline(file, line)) {
         vector<string> tokens = split(line, delimiter);
