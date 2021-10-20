@@ -59,7 +59,7 @@
     <ClCompile Include="src\Misc\ConfigParser.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Misc\Links.hpp">
+    <ClCompile Include="src\Misc\Constants.hpp">
       <Filter>Header Files\Misc</Filter>
     </ClCompile>
     <ClCompile Include="src\Detectors\LSDDetector.cpp">

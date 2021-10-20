@@ -2,15 +2,13 @@
 #include "../Misc/Log.hpp"
 #include <string>
 #include "../Misc/ConfigParser.hpp"
-#include "../Misc/Links.hpp"
+#include "../Misc/Constants.hpp"
 #include "../Math/Edge.hpp"
 #include <limits>
 #include <execution>
 
 using namespace std;
 using namespace tr;
-
-static ConfigParser config(GEO_CONFIG_FILE);
 
 template <class T>
 uint find(const T* array, const T& value, const uint size) {
@@ -81,8 +79,8 @@ void Geometry::generate() {
     lowEdgeIndices.reserve(indexCount / 2u);
 
     uint vertexCount = 0u;
-    const float highThreshold = radian(config.getEntry("high threshold", 30.0f));
-    const float lowThreshold = radian(config.getEntry("low threshold", 1e-3f));
+    const float highThreshold = radian(ConfigParser::instance().getEntry(CONFIG_SECTION_GEOMETRY, "high threshold", 30.0f));
+    const float lowThreshold = radian(ConfigParser::instance().getEntry(CONFIG_SECTION_GEOMETRY, "low threshold", 1e-3f));
     for (uint i = 0u; i < indexCount/3u; i++) { //for every triangle in a strip
         for (uint k = 0u; k < 3u; k++) {        //for every vertex in that triangle
             const Edge<> edge(vertices[indices[3u * i + k]],

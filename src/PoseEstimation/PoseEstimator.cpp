@@ -1,5 +1,6 @@
 #include "PoseEstimator.hpp"
-#include "../Misc/Links.hpp"
+#include "../Misc/Constants.hpp"
+#include "../Misc/ConfigParser.hpp"
 #include "DirectEstimator.hpp"
 #include "CeresRegistrator.hpp"
 #include <opencv2/core/utils/logger.hpp>
@@ -10,21 +11,19 @@
 
 using namespace tr;
 
-ConfigParser PoseEstimator::config(POSE_CONFIG_FILE);
-
-Estimator* getEstimator(ConfigParser& config, const Tensor<Template>& templates) {
-    const unsigned int candidateCount = config.getEntry("candidate count", 10);
+Estimator* getEstimator(const Tensor<Template>& templates) {
+    const unsigned int candidateCount = ConfigParser::instance().getEntry(CONFIG_SECTION_POSE, "candidate count", 10);
     Estimator* estimator = nullptr;
-    switch (strHash(config.getEntry<std::string>("estimator", "direct").c_str())) {
+    switch (strHash(ConfigParser::instance().getEntry<std::string>(CONFIG_SECTION_POSE, "estimator", "direct").c_str())) {
         //TODO add more
     case strHash("direct"): return new DirectEstimator(candidateCount, templates);
     default: return new DirectEstimator(candidateCount, templates);
     }
 }
 
-Registrator* getRegistrator(ConfigParser& config, const mat4f& P) {
+Registrator* getRegistrator(const mat4f& P) {
     Estimator* estimator = nullptr;
-    switch (strHash(config.getEntry<std::string>("registrator", "ceres").c_str())) {
+    switch (strHash(ConfigParser::instance().getEntry<std::string>(CONFIG_SECTION_POSE, "registrator", "ceres").c_str())) {
     case strHash("ceres"): return new CeresRegistrator(P.cast<double>());
     default: return new CeresRegistrator(P.cast<double>());
     }
@@ -36,8 +35,8 @@ PoseEstimator::PoseEstimator(const Tensor<Template>& templates,
                              const mat4f& P,
                              const float aspect) :
     distanceTensor(aspect),
-    estimator(getEstimator(config, templates)),
-    registrator(getRegistrator(config, P)) {
+    estimator(getEstimator(templates)),
+    registrator(getRegistrator(P)) {
     cv::utils::logging::setLogLevel(cv::utils::logging::LOG_LEVEL_WARNING);
     p = P; //TODO remove logging
 }

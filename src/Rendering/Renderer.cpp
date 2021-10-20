@@ -1,8 +1,9 @@
 #include <GL/glew.h>
 #include <GL/freeglut.h>
 #include "Renderer.hpp"
-#include "../Misc/Links.hpp"
+#include "../Misc/Constants.hpp"
 #include "../Math/EigenTransform.hpp"
+#include "../Misc/ConfigParser.hpp"
 
 using namespace tr;
 
@@ -11,7 +12,6 @@ extern "C" {
     _declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
 }
 
-ConfigParser Renderer::config(REND_CONFIG_FILE);
 
 //TODO fuse two functions
 mat4f tr::Renderer::getDefaultP() {
@@ -25,11 +25,11 @@ mat4f tr::Renderer::getDefaultP() {
 //TODO fuse two functions
 Renderer::CameraCalibration Renderer::readConfig() {
     CameraCalibration camCal;
-    auto res = config.getEntries<uint>("resolution", { 128,128});
+    auto res = ConfigParser::instance().getEntries<uint>(CONFIG_SECTION_RENDER, "resolution", { 128,128 });
     camCal.resolution = uvec2(res[0], res[1]);
-    camCal.nearPlane = config.getEntry("near clipping pane", 200.0f);
-    camCal.farPlane = config.getEntry("far clipping pane", 4500.0f);
-    camCal.FOV = radian(config.getEntry("fov", 45.0f));
+    camCal.nearPlane = ConfigParser::instance().getEntry(CONFIG_SECTION_RENDER, "near clipping pane", 200.0f);
+    camCal.farPlane = ConfigParser::instance().getEntry(CONFIG_SECTION_RENDER, "far clipping pane", 4500.0f);
+    camCal.FOV = radian(ConfigParser::instance().getEntry(CONFIG_SECTION_RENDER, "fov", 45.0f));
     camCal.aspect = (float)res[0] / res[1];
     return camCal;
 }

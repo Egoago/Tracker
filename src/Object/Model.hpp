@@ -3,14 +3,12 @@
 #include <string>
 #include <iostream>
 #include <opencv2/core/mat.hpp>
-#include "../Misc/ConfigParser.hpp"
 #include "../Misc/Base.hpp"
 #include "../Math/Template.hpp"
 #include "../Math/Tensor.hpp"
 
 namespace tr {
 	class Model {
-		static ConfigParser config;
 		Tensor<Template> templates;
 		mat4f P;
 

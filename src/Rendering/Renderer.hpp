@@ -3,7 +3,6 @@
 #include <vector>
 #include <memory>
 #include "../Math/SixDOF.hpp"
-#include "../Misc/ConfigParser.hpp"
 #include "../Misc/Base.hpp"
 #include "../Object/Geometry.hpp"
 #include "TextureMap.hpp"
@@ -12,8 +11,6 @@
 namespace tr {
 	class Renderer {
 	private:
-		static ConfigParser config;
-
 		std::vector<std::unique_ptr<Pipeline>> pipelines;
 		std::vector<std::shared_ptr<TextureMap>> textureMaps;
 		unsigned int depthBuffer;

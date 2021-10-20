@@ -1,8 +1,9 @@
 #include "DistanceTensor.hpp"
 #include <opencv2/imgproc.hpp>
 #include <opencv2/core/mat.hpp>
-#include "../Misc/Links.hpp"
+#include "../Misc/Constants.hpp"
 #include "../Misc/Log.hpp"
+#include "../Misc/ConfigParser.hpp"
 #include "../Detectors/LSDDetector.hpp"
 #include "../Detectors/CannyDetector.hpp"
 #include <opencv2/highgui.hpp>  //TODO remove
@@ -11,10 +12,8 @@ using namespace std;
 using namespace cv;
 using namespace tr;
 
-ConfigParser DistanceTensor::config(DCDT3_CONFIG_FILE);
-
-EdgeDetector* getEdgeDetector(ConfigParser& config) {
-    switch (strHash(config.getEntry<std::string>("edge detector", "lsd").c_str())) {
+EdgeDetector* getEdgeDetector() {
+    switch (strHash(ConfigParser::instance().getEntry<std::string>(CONFIG_SECTION_DCD3T, "edge detector", "lsd").c_str())) {
     case strHash("canny"): return new CannyDetector();
     case strHash("lsd"):
     default: return new LSDDetector();
@@ -22,10 +21,10 @@ EdgeDetector* getEdgeDetector(ConfigParser& config) {
 }
 
 DistanceTensor::DistanceTensor(const float aspect) :
-    height(uint(config.getEntry("resolution", 1024))),
+    height(uint(ConfigParser::instance().getEntry(CONFIG_SECTION_DCD3T, "resolution", 1024))),
     width(uint(height * aspect)),
-    q(config.getEntry("orientation quantization", 60)),
-    edgeDetector(getEdgeDetector(config)),
+    q(ConfigParser::instance().getEntry(CONFIG_SECTION_DCD3T, "orientation quantization", 60)),
+    edgeDetector(getEdgeDetector()),
     maxCost(sqrtf((float)width * width + height * height)) {
     Logger::logProcess(__FUNCTION__);   //TODO remove logging
     buffers.allocate({ 2, //2 swap buffers
@@ -87,7 +86,7 @@ double DistanceTensor::interpolate(const std::initializer_list<double>& indices)
 }
 
 double DistanceTensor::sample(const std::initializer_list<double>& indices) const {
-    const static bool useInterpolation = config.getEntry("use interpolation", true);
+    const static bool useInterpolation = ConfigParser::instance().getEntry(CONFIG_SECTION_DCD3T, "use interpolation", true);
     return (useInterpolation) ? interpolate(indices) : round(indices);
 }
 
@@ -107,7 +106,7 @@ double DistanceTensor::evaluate(const double coordinates[3], double partialDeriv
                               quantizedIndex(coordinates[2], q)};  //angle
     //NOTE numeric differentiation is best executed with ceres
     if (partialDerivatives != nullptr) {
-        static const double numDiffStep = double(config.getEntry("numeric diff step size", 1e-5));
+        static const double numDiffStep = double(ConfigParser::instance().getEntry(CONFIG_SECTION_DCD3T, "numeric diff step size", 1e-5));
         static const double invDiffStep = double(1) / (double(2) * numDiffStep);
         partialDerivatives[0] = invDiffStep *
             (sample({ indices[0] + numDiffStep, indices[1], indices[2] }) -
@@ -147,7 +146,7 @@ void DistanceTensor::setFrame(const cv::Mat& nextFrame) {
     //Logger::drawFrame(height, width, &buffers.at({ front, 0, 0, 0 }), CV_32F, "trans");   //TODO remove logging
     directedDistanceTransform();
     //Logger::drawFrame(height, width, &buffers.at({ front, 0, 0, 0 }), CV_32F, "dist");    //TODO remove logging
-    const static uint blurCount = uint(config.getEntry("blurring steps", 1));
+    const static uint blurCount = uint(ConfigParser::instance().getEntry(CONFIG_SECTION_DCD3T, "blurring steps", 1));
     for (uint i = 0; i < blurCount; i++) {
         /*cv::Mat slice(height, q, CV_32F);
         cv::namedWindow("blur", cv::WINDOW_NORMAL);
@@ -191,7 +190,7 @@ void tr::DistanceTensor::distanceTransformFromEdges(const std::vector<Edge<vec2f
 
 void DistanceTensor::directedDistanceTransform() {
     Logger::logProcess(__FUNCTION__);   //TODO remove loggingy
-    const static float lambda = config.getEntry("lambda", 100.0f);
+    const static float lambda = ConfigParser::instance().getEntry(CONFIG_SECTION_DCD3T, "lambda", 100.0f);
     const static float dirCost = lambda * float(EIGEN_PI)/q;
     const static ulong pixelCount = width * height;
     //TODO parallelization

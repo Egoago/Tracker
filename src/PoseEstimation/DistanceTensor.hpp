@@ -2,7 +2,6 @@
 #include <vector>
 #include <initializer_list>
 #include <memory>
-#include "../Misc/ConfigParser.hpp"
 #include "../Misc/Base.hpp"
 #include "../Math/Tensor.hpp"
 #include "../Math/Edge.hpp"
@@ -12,7 +11,6 @@
 namespace tr {
 	class DistanceTensor {
 	private:
-		static ConfigParser config;
 		const uint q;
 		std::unique_ptr<EdgeDetector> edgeDetector;
 		const uint height, width; //height has to be declared first!

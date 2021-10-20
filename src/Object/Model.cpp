@@ -5,9 +5,10 @@
 #include <opencv2/imgproc.hpp>
 #include "AssimpLoader.hpp"
 #include "../Rendering/Renderer.hpp"
-#include "../Misc/Links.hpp"
+#include "../Misc/Constants.hpp"
 #include "../Misc/Range.hpp"
 #include "../Misc/Base.hpp"
+#include "../Misc/ConfigParser.hpp"
 #include "../Math/RasterPoint.hpp"
 //TODO remove logging
 #include "../Misc/Log.hpp"
@@ -17,10 +18,9 @@
 //TODO break apart
 using namespace tr;
 
-ConfigParser Model::config(OBJ_CONFIG_FILE);
 
-Range::Interploation getDepthInterpolation(ConfigParser& config) {
-	switch (strHash(config.getEntry<std::string>("depth interpolation", "exp").c_str())) {
+Range::Interploation getDepthInterpolation() {
+	switch (strHash(ConfigParser::instance().getEntry<std::string>(CONFIG_SECTION_MODEL, "depth interpolation", "exp").c_str())) {
 	case strHash("lin"): return Range::Interploation::LINEAR;
 	case strHash("exp"): return Range::Interploation::EXPONENTIAL;
 	case strHash("pol"): return Range::Interploation::POLINOMIAL;
@@ -28,16 +28,16 @@ Range::Interploation getDepthInterpolation(ConfigParser& config) {
 	}
 }
 
-void generate6DOFs(ConfigParser& config, Tensor<Template>& templates) {
+void generate6DOFs(Tensor<Template>& templates) {
 	Logger::logProcess(__FUNCTION__);
 	//TODO tune granularity
-	const static Range width(config.getEntries<int>("width", { -70, 70, 5 }));//7
-	const static Range height(config.getEntries<int>("height", { -70, 70, 5 }));//7
-	const static Range depth(config.getEntries<int>("depth", { -250, -1500, 4 }), getDepthInterpolation(config));//5
+	const static Range width(ConfigParser::instance().getEntries<int>(CONFIG_SECTION_MODEL, "width", { -70, 70, 9 }));//7
+	const static Range height(ConfigParser::instance().getEntries<int>(CONFIG_SECTION_MODEL, "height", { -70, 70, 9 }));//7
+	const static Range depth(ConfigParser::instance().getEntries<int>(CONFIG_SECTION_MODEL, "depth", { -250, -1500, 5 }), getDepthInterpolation());//5
 	//TODO uniform sphere distr <=> homogenous tensor layout????
-	const static Range yaw(config.getEntries<int>("yaw", { 0, 360, 6 }), Range::Interploation::LINEAR, true);//6
-	const static Range pitch(config.getEntries<int>("pitch", { -60, 60, 3 }), Range::Interploation::LINEAR, false);//3
-	const static Range roll(config.getEntries<int>("roll", { 0, 360, 3 }), Range::Interploation::LINEAR, true);//6
+	const static Range yaw(ConfigParser::instance().getEntries<int>(CONFIG_SECTION_MODEL, "yaw", { 0, 360, 8 }), Range::Interploation::LINEAR, true);//6
+	const static Range pitch(ConfigParser::instance().getEntries<int>(CONFIG_SECTION_MODEL, "pitch", { -60, 60, 5 }), Range::Interploation::LINEAR, false);//3
+	const static Range roll(ConfigParser::instance().getEntries<int>(CONFIG_SECTION_MODEL, "roll", { 0, 360, 4 }), Range::Interploation::LINEAR, true);//6
 	templates.allocate({
 		width.size(),
 		height.size(),
@@ -126,13 +126,12 @@ const std::vector<Candidate> extractCandidates(const std::vector<cv::Mat*>& text
 
 void rasterizeCandidates(const std::vector<Candidate>& candidates,
 						Template* temp,
-						ConfigParser& config,
 						const mat4f& PVM) {
 	//Logger::logProcess(__FUNCTION__);
 
 	const uint bufferSize = (uint)candidates.size();
-	const static int rasterCount = config.getEntry("rasterization count", 100);
-	const static float rasterOffset = config.getEntry("rasterization offset", 0.005f);
+	const static int rasterCount = ConfigParser::instance().getEntry(CONFIG_SECTION_MODEL, "rasterization count", 150);
+	const static float rasterOffset = ConfigParser::instance().getEntry(CONFIG_SECTION_MODEL, "rasterization offset", 0.005f);
 	std::vector<Candidate> chosenCandidates;
 	std::sample(candidates.begin(), candidates.end(), std::back_inserter(chosenCandidates),
 		rasterCount, std::mt19937{ std::random_device{}()});
@@ -161,7 +160,7 @@ void analizeRasterization(const std::vector<tr::uint>& rasterCounts) {
 							+ " stdev " + std::to_string(stdev));
 }
 
-void generarteObject(const Geometry& geo, Tensor<Template>& templates, ConfigParser& config, const mat4f& P) {
+void generarteObject(const Geometry& geo, Tensor<Template>& templates, const mat4f& P) {
 	cv::utils::logging::setLogLevel(cv::utils::logging::LOG_LEVEL_WARNING);
 	//TODO proper resource destruction
 	Logger::logProcess(__FUNCTION__);
@@ -170,7 +169,8 @@ void generarteObject(const Geometry& geo, Tensor<Template>& templates, ConfigPar
 	Renderer renderer(geo);
 	renderer.setProj(P);
 	std::vector<cv::Mat*> textureMaps = renderer.getTextures(); //TODO smart pointer
-	generate6DOFs(config, templates);
+	generate6DOFs(templates);
+	//renderer.setScaling(false);
 	int c = 1;
 	std::vector<tr::uint> rasterCounts;
 	for (Template* temp = templates.begin(); temp < (templates.begin() + templates.getSize()); temp++) {
@@ -181,10 +181,10 @@ void generarteObject(const Geometry& geo, Tensor<Template>& templates, ConfigPar
 		const vec3f scalingParameters = renderer.setVM(temp->sixDOF.getModelTransformMatrix());	//TODO scale instead of rerender?
 		renderer.render();
 		const std::vector<Candidate> candidates = extractCandidates(textureMaps);
-		rasterizeCandidates(candidates, temp, config, renderer.getPVM());
+		rasterizeCandidates(candidates, temp, renderer.getPVM());
 		//TODO remove logging
-		Logger::drawFrame(textureMaps[Renderer::MESH], "mesh");
-		Logger::drawFrame(textureMaps[Renderer::HPOS], "hpos");
+		//Logger::drawFrame(textureMaps[Renderer::MESH], "mesh");
+		Logger::drawFrame(textureMaps[Renderer::HPOS], "hpos", 1.0f);
 		//Logger::drawFrame(textureMaps[Renderer::HDIR], "hgir");
 		//cv::Mat canvas(cv::Size(800, 800), CV_8UC3);
 		//canvas = cv::Scalar::all(0);
@@ -207,6 +207,8 @@ void generarteObject(const Geometry& geo, Tensor<Template>& templates, ConfigPar
 		rasterCounts.push_back((tr::uint)temp->rasterPoints.size());
 		Logger::log("Rendered " + std::to_string(c++)
 			+ "\t frames out of "+ std::to_string(templates.getSize())
+			+ " raster counts: " + std::to_string(temp->rasterPoints.size())
+			+ " out of: " + std::to_string(candidates.size())
 			+ " \r", true);
 	}
 	analizeRasterization(rasterCounts);
@@ -230,7 +232,7 @@ Model::Model(const std::string& fileName, const mat4f& P) : P(P) {
 	if (!load(filePath)) {
 		Geometry geo;
 		AssimpLoader::load(objectName, geo);
-		generarteObject(geo, templates, config, P);
+		generarteObject(geo, templates, P);
 		save(filePath);
 	}
 }
