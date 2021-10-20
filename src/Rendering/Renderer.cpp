@@ -25,7 +25,7 @@ mat4f tr::Renderer::getDefaultP() {
 //TODO fuse two functions
 Renderer::CameraCalibration Renderer::readConfig() {
     CameraCalibration camCal;
-    auto res = config.getEntries<uint>("resolution", { 1024,1024 });
+    auto res = config.getEntries<uint>("resolution", { 128,128});
     camCal.resolution = uvec2(res[0], res[1]);
     camCal.nearPlane = config.getEntry("near clipping pane", 200.0f);
     camCal.farPlane = config.getEntry("far clipping pane", 4500.0f);

@@ -202,6 +202,12 @@
     <ClInclude Include="src\Misc\Base.hpp">
       <Filter>Header Files\Misc</Filter>
     </ClInclude>
+    <ClInclude Include="src\Math\Loss.h">
+      <Filter>Header Files\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\Mean.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="src\Shaders\mesh.vert">
