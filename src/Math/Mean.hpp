@@ -1,5 +1,5 @@
 #pragma once
-#include "Loss.h"
+#include "Loss.hpp"
 #include <numeric>
 
 namespace tr {

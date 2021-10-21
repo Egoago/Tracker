@@ -214,8 +214,8 @@ del "$(SolutionDir)Config\*" /Q</Command>
     <ClInclude Include="src\Detectors\MultiFlashDetector.hpp" />
     <ClInclude Include="src\Math\Edge.hpp" />
     <ClInclude Include="src\Math\EigenTransform.hpp" />
-    <ClInclude Include="src\Math\Loss.h" />
-    <ClInclude Include="src\Math\Mean.h" />
+    <ClInclude Include="src\Math\Loss.hpp" />
+    <ClInclude Include="src\Math\Mean.hpp" />
     <ClInclude Include="src\Math\RasterPoint.hpp" />
     <ClInclude Include="src\Math\SixDOF.hpp" />
     <ClInclude Include="src\Camera\Camera.hpp" />
