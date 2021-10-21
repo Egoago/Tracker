@@ -31,12 +31,12 @@ Range::Interploation getDepthInterpolation() {
 void generate6DOFs(Tensor<Template>& templates) {
 	Logger::logProcess(__FUNCTION__);
 	//TODO tune granularity
-	const static Range width(ConfigParser::instance().getEntries<int>(CONFIG_SECTION_MODEL, "width", { -70, 70, 9 }));//7
-	const static Range height(ConfigParser::instance().getEntries<int>(CONFIG_SECTION_MODEL, "height", { -70, 70, 9 }));//7
+	const static Range width(ConfigParser::instance().getEntries<int>(CONFIG_SECTION_MODEL, "width", { -70, 70, 7 }));//7
+	const static Range height(ConfigParser::instance().getEntries<int>(CONFIG_SECTION_MODEL, "height", { -70, 70, 7 }));//7
 	const static Range depth(ConfigParser::instance().getEntries<int>(CONFIG_SECTION_MODEL, "depth", { -250, -1500, 5 }), getDepthInterpolation());//5
 	//TODO uniform sphere distr <=> homogenous tensor layout????
-	const static Range yaw(ConfigParser::instance().getEntries<int>(CONFIG_SECTION_MODEL, "yaw", { 0, 360, 8 }), Range::Interploation::LINEAR, true);//6
-	const static Range pitch(ConfigParser::instance().getEntries<int>(CONFIG_SECTION_MODEL, "pitch", { -60, 60, 5 }), Range::Interploation::LINEAR, false);//3
+	const static Range yaw(ConfigParser::instance().getEntries<int>(CONFIG_SECTION_MODEL, "yaw", { 0, 360, 6 }), Range::Interploation::LINEAR, true);//6
+	const static Range pitch(ConfigParser::instance().getEntries<int>(CONFIG_SECTION_MODEL, "pitch", { -60, 60, 3 }), Range::Interploation::LINEAR, false);//3
 	const static Range roll(ConfigParser::instance().getEntries<int>(CONFIG_SECTION_MODEL, "roll", { 0, 360, 4 }), Range::Interploation::LINEAR, true);//6
 	templates.allocate({
 		width.size(),

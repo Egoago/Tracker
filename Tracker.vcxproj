@@ -163,6 +163,7 @@ del "$(SolutionDir)Config\*" /Q</Command>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <Optimization>MaxSpeed</Optimization>
+      <OpenMPSupport>true</OpenMPSupport>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -202,6 +203,8 @@ del "$(SolutionDir)Config\*" /Q</Command>
     <ClCompile Include="src\Object\AssimpLoader.cpp" />
     <ClCompile Include="src\Object\Geometry.cpp" />
     <ClCompile Include="src\Object\Model.cpp" />
+    <ClCompile Include="src\PoseEstimation\Estimator.cpp" />
+    <ClCompile Include="src\PoseEstimation\ParallelEstimator.cpp" />
     <ClCompile Include="src\PoseEstimation\PoseEstimator.cpp" />
     <ClCompile Include="src\Rendering\Pipeline.cpp" />
     <ClCompile Include="src\Rendering\Renderer.cpp" />
@@ -238,6 +241,7 @@ del "$(SolutionDir)Config\*" /Q</Command>
     <ClInclude Include="src\Object\Model.hpp" />
     <ClInclude Include="src\PoseEstimation\DirectEstimator.hpp" />
     <ClInclude Include="src\PoseEstimation\Estimator.hpp" />
+    <ClInclude Include="src\PoseEstimation\ParallelEstimator.hpp" />
     <ClInclude Include="src\PoseEstimation\PoseEstimator.hpp" />
     <ClInclude Include="src\PoseEstimation\Registrator.hpp" />
     <ClInclude Include="src\Rendering\Pipeline.hpp" />

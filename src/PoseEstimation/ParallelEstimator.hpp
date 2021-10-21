@@ -1,10 +1,11 @@
 #pragma once
 #include "Estimator.hpp"
+#include <vector>
 
 namespace tr {
-	class DirectEstimator : public Estimator {
+	class ParallelEstimator : public Estimator {
 	public:
-		DirectEstimator(const Tensor<Template>& templates) : Estimator(templates) {}
+		ParallelEstimator(const Tensor<Template>& templates) : Estimator(templates) { }
 		virtual const std::vector<const Template*> estimate(const DistanceTensor& dcd3t) override;
 	};
 }

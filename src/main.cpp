@@ -1,4 +1,4 @@
-#include "Misc/Links.hpp"
+#include "Misc/Constants.hpp"
 #include "PoseEstimation/PoseEstimator.hpp"
 #include "Object/Model.hpp"
 #include <opencv2/highgui.hpp>
@@ -6,6 +6,7 @@
 #include "Math/EigenTransform.hpp"
 #include <opencv2/imgproc.hpp>
 #include "Object/AssimpLoader.hpp"
+#include "Misc/ConfigParser.hpp"
 
 int main(int argc, char** argv) {
     tr::Logger::logProcess(__FUNCTION__);

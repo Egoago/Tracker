@@ -2,6 +2,7 @@
 #include "../Misc/Constants.hpp"
 #include "../Misc/ConfigParser.hpp"
 #include "DirectEstimator.hpp"
+#include "ParallelEstimator.hpp"
 #include "CeresRegistrator.hpp"
 #include <opencv2/core/utils/logger.hpp>
 
@@ -12,18 +13,16 @@
 using namespace tr;
 
 Estimator* getEstimator(const Tensor<Template>& templates) {
-    const unsigned int candidateCount = ConfigParser::instance().getEntry(CONFIG_SECTION_POSE, "candidate count", 10);
-    Estimator* estimator = nullptr;
-    switch (strHash(ConfigParser::instance().getEntry<std::string>(CONFIG_SECTION_POSE, "estimator", "direct").c_str())) {
-        //TODO add more
-    case strHash("direct"): return new DirectEstimator(candidateCount, templates);
-    default: return new DirectEstimator(candidateCount, templates);
+    switch (strHash(ConfigParser::instance().getEntry<std::string>(CONFIG_SECTION_ESTIMATION, "estimator", "parallel").c_str())) {
+    case strHash("direct"): return new DirectEstimator(templates);
+    case strHash("parallel"): return new ParallelEstimator(templates);
+    default: return new DirectEstimator(templates);
     }
 }
 
 Registrator* getRegistrator(const mat4f& P) {
     Estimator* estimator = nullptr;
-    switch (strHash(ConfigParser::instance().getEntry<std::string>(CONFIG_SECTION_POSE, "registrator", "ceres").c_str())) {
+    switch (strHash(ConfigParser::instance().getEntry<std::string>(CONFIG_SECTION_REGISTRATION, "registrator", "ceres").c_str())) {
     case strHash("ceres"): return new CeresRegistrator(P.cast<double>());
     default: return new CeresRegistrator(P.cast<double>());
     }

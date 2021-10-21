@@ -107,6 +107,12 @@
     <ClCompile Include="src\Detectors\MultiFlashDetector.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\PoseEstimation\Estimator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PoseEstimation\ParallelEstimator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Camera\Camera.hpp">
@@ -202,11 +208,14 @@
     <ClInclude Include="src\Misc\Base.hpp">
       <Filter>Header Files\Misc</Filter>
     </ClInclude>
-    <ClInclude Include="src\Math\Loss.h">
+    <ClInclude Include="src\Math\Loss.hpp">
       <Filter>Header Files\Math</Filter>
     </ClInclude>
-    <ClInclude Include="src\Math\Mean.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="src\Math\Mean.hpp">
+      <Filter>Header Files\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="src\PoseEstimation\ParallelEstimator.hpp">
+      <Filter>Header Files\PoseEstimation</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
