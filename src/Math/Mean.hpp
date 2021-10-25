@@ -37,10 +37,27 @@ namespace tr {
             const T absError = abs(error);
             if (absError > c)
                 return sum + c*(2*abs(error)-c);
-            else return sum + error * error;
+            else return sum + absError * absError;
         }
     public:
         Huber(T cutOff = T(1)): c(abs(cutOff)) {}
+        virtual inline Loss* clone() { return new Huber<T>(c); }
+    };
+
+    template<typename T>
+    class Fit : public Mean<T> {
+    private:
+        const T c;
+    protected:
+        inline T accumulate(T sum, T error) {
+            T absError = abs(error);
+            if (absError < c)
+                return sum;
+            absError -= c;
+            return sum + absError * absError;
+        }
+    public:
+        Fit(T cutOff = T(1)) : c(abs(cutOff)) {}
         virtual inline Loss* clone() { return new Huber<T>(c); }
     };
 }
