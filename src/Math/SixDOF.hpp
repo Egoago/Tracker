@@ -26,6 +26,12 @@ namespace tr {
 			orientation = other.orientation;
 		}
 
+		SixDOF& operator=(const SixDOF& other) {
+			position = other.position;
+			orientation = other.orientation;
+			return *this;
+		}
+
 		mat4f getModelTransformMatrix() const;
 
 		friend std::ostream& operator<<(std::ostream& ost, const SixDOF& sDOF);

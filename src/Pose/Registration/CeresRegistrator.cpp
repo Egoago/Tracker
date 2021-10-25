@@ -2,9 +2,11 @@
 #include <ceres/ceres.h>
 //TODO remove glog
 #include <glog/logging.h>
-#include "../Misc/log.hpp"
-#include "../Misc/Base.hpp"
-#include "../Math/EigenTransform.hpp"
+#include "../../Misc/log.hpp"
+#include "../../Misc/Base.hpp"
+#include "../../Misc/ConfigParser.hpp"
+#include "../../Misc/Constants.hpp"
+#include "../../Math/EigenTransform.hpp"
 
 using namespace tr;
 using namespace ceres;
@@ -84,7 +86,7 @@ tr::CeresRegistrator::CeresRegistrator(const mat4d& P) : Registrator(P) {
     google::InitGoogleLogging("Tracker");
 }
 
-SixDOF CeresRegistrator::registrate(const DistanceTensor& distanceTensor,
+const Registrator::Registration CeresRegistrator::registrate(const DistanceTensor& distanceTensor,
                                     const Template* candidate) {
     Logger::logProcess(__FUNCTION__);   //TODO remove logging
     double params[6];
@@ -96,27 +98,27 @@ SixDOF CeresRegistrator::registrate(const DistanceTensor& distanceTensor,
         auto rast = new RasterPointCost(P, rasterPoint, distanceTensor);
         CostFunction* cost_function = new AutoDiffCostFunction<RasterPointCost, 1, 3, 3>(rast);
         problem.AddResidualBlock(cost_function,
-                                 new HuberLoss(1.0),
+                                 new HuberLoss(ConfigParser::instance().getEntry(CONFIG_SECTION_REGISTRATION, "huber cutoff", 1.0)),
                                  params,
                                  &params[3]);
     }
 
     // Run the solver!
     ceres::Solver::Options options;
-    options.minimizer_progress_to_stdout = true;
+    //options.minimizer_progress_to_stdout = true;
     //options.initial_trust_region_radius = 300;
     options.max_num_iterations = 100;
     //options.check_gradients = true;
-    options.num_threads = 4;
+    options.num_threads = 8;
     options.linear_solver_type = ceres::DENSE_QR;
     ceres::Solver::Summary summary;
     ceres::Solve(options, &problem, &summary);
     
-    SixDOF result;
+    Registration result;
     for (uint i = 0; i < 6; i++)
-        result.data[i] = float(params[i]);
-
-    Logger::log(summary.FullReport());
+        result.pose.data[i] = float(params[i]);
+    result.finalLoss = summary.final_cost;
+    Logger::log(summary.BriefReport());
     Logger::logProcess(__FUNCTION__);   //TODO remove logging
     return result;
 }

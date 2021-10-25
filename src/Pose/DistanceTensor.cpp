@@ -139,7 +139,7 @@ void DistanceTensor::setFrame(const cv::Mat& nextFrame) {
                   (int)std::round(edge.a.y() * nextFrame.rows)),
             Point((int)std::round(edge.b.x() * nextFrame.cols),
                   (int)std::round(edge.b.y() * nextFrame.rows)),
-            Scalar(255, 0, 0), 1, LINE_8);
+            Scalar(255, 0, 0), 3, LINE_8);
     }
 
     distanceTransformFromEdges(edges);

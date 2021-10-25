@@ -1,11 +1,11 @@
 #pragma once
 #include <vector>
 #include <limits>
-#include "../Math/Loss.hpp"
-#include "../Math/Tensor.hpp"
-#include "../Math/Template.hpp"
-#include "../Misc/Base.hpp"
-#include "DistanceTensor.hpp"
+#include "../../Math/Loss.hpp"
+#include "../../Math/Tensor.hpp"
+#include "../../Math/Template.hpp"
+#include "../../Misc/Base.hpp"
+#include "../DistanceTensor.hpp"
 
 namespace tr {
 	class Estimator {

@@ -1,8 +1,8 @@
 #pragma once
 #include <opencv2/core/mat.hpp>
 #include <memory>
-#include "Estimator.hpp"
-#include "Registrator.hpp"
+#include "Estimation/Estimator.hpp"
+#include "Registration/Registrator.hpp"
 #include "../Math/Tensor.hpp"
 #include "../Math/Template.hpp"
 #include "../Misc/Base.hpp"

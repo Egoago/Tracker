@@ -1,13 +1,15 @@
 #include "Estimator.hpp"
-#include "../Math/Mean.hpp"
-#include "../Misc/ConfigParser.hpp"
-#include "../Misc/Constants.hpp"
+#include "../../Math/Mean.hpp"
+#include "../../Misc/ConfigParser.hpp"
+#include "../../Misc/Constants.hpp"
+#include <thread>
 
 using namespace tr;
 
 Loss<double>* getLossFunction() {
 	switch (strHash(ConfigParser::instance().getEntry<std::string>(CONFIG_SECTION_ESTIMATION, "loss function", "mse").c_str())) {
-	case strHash("huber"): return new Huber<double>(ConfigParser::instance().getEntry(CONFIG_SECTION_ESTIMATION, "huber cutoff", 1));
+	case strHash("huber"): return new Huber<double>(ConfigParser::instance().getEntry(CONFIG_SECTION_ESTIMATION, "huber cutoff", 1.0));
+	case strHash("fit"): return new Huber<double>(ConfigParser::instance().getEntry(CONFIG_SECTION_ESTIMATION, "fit cutoff", 1.0));
 	case strHash("mae"): return new MAE<double>();
 	case strHash("mse"): return new MSE<double>();
 	default: 
@@ -40,5 +42,6 @@ double tr::Estimator::getDistance(const Template& temp, const DistanceTensor& dc
 tr::Estimator::Estimator(const Tensor<Template>& templates) :
 	templates(templates),
 	lossFunction(getLossFunction()),
-	candidateCount(ConfigParser::instance().getEntry(CONFIG_SECTION_ESTIMATION, "candidate count", 5))
-{}
+	candidateCount(ConfigParser::instance().getEntry(CONFIG_SECTION_ESTIMATION,
+													 "candidate count",
+													 std::thread::hardware_concurrency())) {}

@@ -24,14 +24,20 @@
     <Filter Include="Header Files\Misc">
       <UniqueIdentifier>{affec106-5845-4373-ba08-3dd3dfe80770}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\PoseEstimation">
-      <UniqueIdentifier>{8a886d80-2865-41d0-a921-c3713c602c2e}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\Math">
       <UniqueIdentifier>{7646a9f8-6e68-494a-a450-93dfdb50c8ce}</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Files\Detectors">
       <UniqueIdentifier>{98dd9c26-e1e5-4423-b8f8-9c8195e61530}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Pose">
+      <UniqueIdentifier>{b4290e3d-176f-4325-8bba-57664a07ee0d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Pose\Estimation">
+      <UniqueIdentifier>{ac9a9065-bf45-4a0c-927d-eef8de411b99}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Pose\Registration">
+      <UniqueIdentifier>{eea9ea33-d3dc-4bf8-967c-e096f96f344b}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -71,12 +77,6 @@
     <ClCompile Include="src\Detectors\CannyDetector.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\PoseEstimation\DistanceTensor.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\PoseEstimation\PoseEstimator.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\Object\Geometry.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -87,12 +87,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Misc\Log.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\PoseEstimation\DirectEstimator.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\PoseEstimation\CeresRegistrator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Math\SixDOF.cpp">
@@ -107,10 +101,25 @@
     <ClCompile Include="src\Detectors\MultiFlashDetector.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\PoseEstimation\Estimator.cpp">
+    <ClCompile Include="src\Pose\DistanceTensor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\PoseEstimation\ParallelEstimator.cpp">
+    <ClCompile Include="src\Pose\Pose.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Pose\Registration\CeresRegistrator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Pose\Estimation\SmartEstimator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Pose\Estimation\DirectEstimator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Pose\Estimation\Estimator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Pose\Estimation\ParallelEstimator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -151,26 +160,8 @@
     <ClInclude Include="src\Detectors\CannyDetector.hpp">
       <Filter>Header Files\Detectors</Filter>
     </ClInclude>
-    <ClInclude Include="src\PoseEstimation\PoseEstimator.hpp">
-      <Filter>Header Files\PoseEstimation</Filter>
-    </ClInclude>
-    <ClInclude Include="src\PoseEstimation\DistanceTensor.hpp">
-      <Filter>Header Files\PoseEstimation</Filter>
-    </ClInclude>
     <ClInclude Include="src\Object\Model.hpp">
       <Filter>Header Files\Object</Filter>
-    </ClInclude>
-    <ClInclude Include="src\PoseEstimation\CeresRegistrator.hpp">
-      <Filter>Header Files\PoseEstimation</Filter>
-    </ClInclude>
-    <ClInclude Include="src\PoseEstimation\DirectEstimator.hpp">
-      <Filter>Header Files\PoseEstimation</Filter>
-    </ClInclude>
-    <ClInclude Include="src\PoseEstimation\Registrator.hpp">
-      <Filter>Header Files\PoseEstimation</Filter>
-    </ClInclude>
-    <ClInclude Include="src\PoseEstimation\Estimator.hpp">
-      <Filter>Header Files\PoseEstimation</Filter>
     </ClInclude>
     <ClInclude Include="src\Math\Edge.hpp">
       <Filter>Header Files\Math</Filter>
@@ -214,8 +205,29 @@
     <ClInclude Include="src\Math\Mean.hpp">
       <Filter>Header Files\Math</Filter>
     </ClInclude>
-    <ClInclude Include="src\PoseEstimation\ParallelEstimator.hpp">
-      <Filter>Header Files\PoseEstimation</Filter>
+    <ClInclude Include="src\Pose\DistanceTensor.hpp">
+      <Filter>Header Files\Pose</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Pose\Pose.hpp">
+      <Filter>Header Files\Pose</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Pose\Registration\CeresRegistrator.hpp">
+      <Filter>Header Files\Pose\Registration</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Pose\Registration\Registrator.hpp">
+      <Filter>Header Files\Pose\Registration</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Pose\Estimation\DirectEstimator.hpp">
+      <Filter>Header Files\Pose\Estimation</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Pose\Estimation\Estimator.hpp">
+      <Filter>Header Files\Pose\Estimation</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Pose\Estimation\ParallelEstimator.hpp">
+      <Filter>Header Files\Pose\Estimation</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Pose\Estimation\SmartEstimator.hpp">
+      <Filter>Header Files\Pose\Estimation</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
