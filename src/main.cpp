@@ -1,5 +1,5 @@
 #include "Misc/Constants.hpp"
-#include "PoseEstimation/PoseEstimator.hpp"
+#include "Pose/Pose.hpp"
 #include "Object/Model.hpp"
 #include <opencv2/highgui.hpp>
 #include "Misc/Log.hpp"
@@ -10,8 +10,8 @@
 
 int main(int argc, char** argv) {
     tr::Logger::logProcess(__FUNCTION__);
-    tr::Model model("cube");
-    cv::Mat frame = cv::imread(tr::TEST_FRAME_CUBE);
+    tr::Model model("cylinder");
+    cv::Mat frame = cv::imread(tr::TEST_FRAME_CYLINDER);
     tr::PoseEstimator poseEstimator(model.getTemplates(), model.getP(), (float)frame.cols/frame.rows);
     const tr::SixDOF pose = poseEstimator.getPose(frame);
     /*tr::Geometry geo;
