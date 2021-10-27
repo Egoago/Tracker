@@ -7,8 +7,12 @@
 #include <opencv2/imgproc.hpp>
 #include "Object/AssimpLoader.hpp"
 #include "Misc/ConfigParser.hpp"
+#include "Camera/OpenCVCamera.hpp"
 
 int main(int argc, char** argv) {
+    std::unique_ptr<tr::Camera> camera(new tr::OpenCVCamera());
+    camera->calibrate();
+    return 0;
     tr::Logger::logProcess(__FUNCTION__);
     tr::Model model("cylinder");
     cv::Mat frame = cv::imread(tr::TEST_FRAME_CYLINDER);

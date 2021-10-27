@@ -19,13 +19,11 @@ OpenCVCamera::OpenCVCamera(int id)
     nBitsPerPixel = 24;
 }
 
-OpenCVCamera::~OpenCVCamera()
-{
+OpenCVCamera::~OpenCVCamera() {
     free(cap);
 }
 
-char* OpenCVCamera::getNextFrame()
-{
+char* OpenCVCamera::getNextFrameData() const {
     VideoCapture* camera = (VideoCapture*)cap;
     Mat bgrFrame;
     *camera >> bgrFrame;
@@ -33,8 +31,7 @@ char* OpenCVCamera::getNextFrame()
     return (char*)frame.data;
 }
 
-double OpenCVCamera::getFPS() const
-{
+double OpenCVCamera::getFPS() const {
     return 0.0;
 }
 

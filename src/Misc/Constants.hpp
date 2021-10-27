@@ -14,6 +14,7 @@ namespace tr {
 	static const std::string CONFIG_SECTION_MODEL = "Model";
 	static const std::string CONFIG_SECTION_REGISTRATION = "Registration";
 	static const std::string CONFIG_SECTION_ESTIMATION = "Estimation";
+	static const std::string CONFIG_SECTION_CAMERA = "Camera";
 
 	//  MODEL
 	static const std::string MODELS_FOLDER = "Resources/Models/";

@@ -185,6 +185,7 @@ copy "$(SolutionDir)Common\ceres\Bin\Release\ceres.dll" "$(SolutionDir)Bin\$(Pla
     </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\Camera\Camera.cpp" />
     <ClCompile Include="src\Detectors\MultiFlashDetector.cpp" />
     <ClCompile Include="src\Math\RasterPoint.cpp" />
     <ClCompile Include="src\Math\SixDOF.cpp" />

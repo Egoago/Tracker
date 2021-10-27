@@ -12,7 +12,7 @@ namespace tr
 	public:
 		UEyeCamera();
 		~UEyeCamera();
-		virtual char* getNextFrame() override;
+		virtual char* getNextFrameData() const override;
 		virtual double getFPS() const override;
 		virtual int getFormat() const override;
 	};

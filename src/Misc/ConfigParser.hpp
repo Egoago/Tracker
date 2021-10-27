@@ -7,7 +7,7 @@
 #include <iterator>
 
 namespace tr {
-	class ConfigParser {
+	class ConfigParser { 
 	public:
 		typedef std::string Entry, Key;
 		typedef std::vector<Entry> MultiEntry;

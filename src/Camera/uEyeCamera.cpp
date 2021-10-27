@@ -7,20 +7,17 @@ using namespace tr;
 int setColorMode(HIDS hCam, char colorMode) {
     int nColorMode;
     int nBitsPerPixel;
-    if (colorMode == IS_COLORMODE_BAYER)
-    {
+    if (colorMode == IS_COLORMODE_BAYER) {
         // for color camera models use RGB24 mode
         nColorMode = IS_CM_BGR8_PACKED;
         nBitsPerPixel = 24;
     }
-    else if (colorMode == IS_COLORMODE_CBYCRY)
-    {
+    else if (colorMode == IS_COLORMODE_CBYCRY) {
         // for CBYCRY camera models use RGB32 mode
         nColorMode = IS_CM_BGRA8_PACKED;
         nBitsPerPixel = 32;
     }
-    else
-    {
+    else {
         // for monochrome camera models use Y8 mode
         nColorMode = IS_CM_MONO8;
         nBitsPerPixel = 8;
@@ -63,7 +60,7 @@ UEyeCamera::~UEyeCamera()
     is_ExitCamera(hCam);
 }
 
-char* UEyeCamera::getNextFrame() {
+char* UEyeCamera::getNextFrameData() const {
     is_FreezeVideo(hCam, IS_WAIT);
     return pcImageMemory;
 }
