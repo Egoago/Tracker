@@ -11,10 +11,14 @@
 
 int main(int argc, char** argv) {
     std::unique_ptr<tr::Camera> camera(new tr::OpenCVCamera());
-    camera->calibrate();
-    return 0;
+    if (!camera->isCalibrated()) camera->calibrate();
+    while (1) {
+        cv::imshow("calibrated", camera->undistort(camera->getNextFrame()));
+        cv::waitKey(1);
+    }
+    
     tr::Logger::logProcess(__FUNCTION__);
-    tr::Model model("cylinder");
+    tr::Model model("cylinder", camera->getParameters());
     cv::Mat frame = cv::imread(tr::TEST_FRAME_CYLINDER);
     tr::PoseEstimator poseEstimator(model.getTemplates(), model.getP(), (float)frame.cols/frame.rows);
     const tr::SixDOF pose = poseEstimator.getPose(frame);

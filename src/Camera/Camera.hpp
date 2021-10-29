@@ -1,24 +1,32 @@
 #pragma once
 #include <opencv2/core/mat.hpp>
+#include "CameraParameters.hpp"
 
 namespace tr {
 	class Camera {
+	private:
+		bool saveCailbration();
+		bool loadCalibration();
 	protected:
 		int width, height;
 		int nBitsPerPixel;
-		cv::Mat camMtx, distortion; //for calibration
+		cv::Mat projection, distortion; //for calibration
+		CameraParameters calibration;
 		bool calibrated = false;
-		virtual char* getNextFrameData() const = 0;
+		virtual char* getNextFrameData() = 0;
+		void load();
 	public:
 		cv::Mat undistort(const cv::Mat& frame);
-		int getWidth() const { return width; }
+		inline int getWidth() const { return width; }
 		virtual ~Camera() {}
-		int getHeight() const { return height; }
-		int getPixelSize() const { return nBitsPerPixel / 8; }
-		cv::Mat getNextFrame() const;
+		inline int getHeight() const { return height; }
+		inline int getPixelSize() const { return nBitsPerPixel / 8; }
+		cv::Mat getNextFrame();
 		virtual double getFPS() const = 0;
 		virtual int getFormat() const = 0;
-		float calibrate();
+		CameraParameters calibrate(bool reset = false);
+		CameraParameters getParameters();
+		inline bool isCalibrated() { return calibrated; }
 	};
 }
 

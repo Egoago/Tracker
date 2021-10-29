@@ -5,6 +5,7 @@
 #include "../Math/SixDOF.hpp"
 #include "../Misc/Base.hpp"
 #include "../Object/Geometry.hpp"
+#include "../Camera/CameraParameters.hpp"
 #include "TextureMap.hpp"
 #include "Pipeline.hpp"
 
@@ -16,27 +17,20 @@ namespace tr {
 		unsigned int depthBuffer;
 		int glutWindow;
 
-		struct CameraCalibration {
-			float nearPlane, farPlane, FOV, aspect;
-			uvec2 resolution;
-		};
-
-		CameraCalibration camCal;
-
 		//TODO simplify to one matrix
-		mat4f ProjMtx, ViewModelMtx, ScaleMtx;
+		mat4f P, VM, ScaleMtx;
+		uvec2 resolution;
 
 		void updatePipelines();
-		static CameraCalibration readConfig();
-		float nearP, farP;
+		float nearP, farP, FOVy;
 		void setGeometry(const Geometry& geometry);
 
 		//Scaling
 		bool scaling = true;
 		vec3f geoBBxCenter;
 		float geoBBxRadius;
+		void readConfig(float aspect);
 	public:
-		static mat4f getDefaultP();
 
 		enum TextureMapIndex {
 			MESH = 0,
@@ -46,15 +40,16 @@ namespace tr {
 			LDIR = 4
 		};
 
-		Renderer(const Geometry& geometry);
+		Renderer(const Geometry& geometry, const CameraParameters cam = CameraParameters::default());
 		~Renderer();
 		inline void setScaling(bool scaling) { this->scaling = scaling; }
-		void setProj(float fov, float aspect, float nearP, float farP);
-		void setProj(const mat4f& P);
+		inline mat4f getP() const { return P; }
+		void setP(float fovy, float aspect, float nearP, float farP);
+		void setP(const mat4f& P);
 		vec3f setVM(const mat4f& VM);
-		inline mat4f getPVM() const { return ProjMtx * ViewModelMtx; }
-		inline mat4f getVM() const { return ViewModelMtx; }
-		inline uvec2 getResolution() { return camCal.resolution; }
+		inline mat4f getPVM() const { return P * VM; }
+		inline mat4f getVM() const { return VM; }
+		inline uvec2 getResolution() { return resolution; }
 		void render();
 		std::vector<cv::Mat*>getTextures();
 	};

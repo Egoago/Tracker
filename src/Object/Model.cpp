@@ -160,14 +160,12 @@ void analizeRasterization(const std::vector<tr::uint>& rasterCounts) {
 							+ " stdev " + std::to_string(stdev));
 }
 
-void generarteObject(const Geometry& geo, Tensor<Template>& templates, const mat4f& P) {
+void generarteObject(Tensor<Template>& templates, Renderer& renderer) {
 	cv::utils::logging::setLogLevel(cv::utils::logging::LOG_LEVEL_WARNING);
 	//TODO proper resource destruction
 	Logger::logProcess(__FUNCTION__);
 	//TODO add loading bar
 	
-	Renderer renderer(geo);
-	renderer.setProj(P);
 	std::vector<cv::Mat*> textureMaps = renderer.getTextures(); //TODO smart pointer
 	generate6DOFs(templates);
 	//renderer.setScaling(false);
@@ -225,14 +223,15 @@ std::string getSavePath(const std::string& objectName) {
 	return LOADED_OBJECTS_FOLDER + objectName + LOADED_OBJECT_FILENAME_EXTENSION;
 }
 
-Model::Model(const std::string& fileName) : Model(fileName, Renderer::getDefaultP()) {}
-Model::Model(const std::string& fileName, const mat4f& P) : P(P) {
+Model::Model(const std::string& fileName, const CameraParameters cam) {
 	std:: string objectName = getObjectName(fileName);
 	std:: string filePath = getSavePath(objectName);
 	if (!load(filePath)) {
 		Geometry geo;
 		AssimpLoader::load(objectName, geo);
-		generarteObject(geo, templates, P);
+		Renderer renderer(geo, cam);
+		P = renderer.getP();
+		generarteObject(templates, renderer);
 		save(filePath);
 	}
 }

@@ -39,6 +39,8 @@ namespace tr {
 		template<typename EntryType = std::string>
 		EntryType getEntry(const Key& sectionName, const Key& entryName);
 
+		bool hasEntry(const Key& sectionName, const Key& entryName);
+
 		template<typename EntryType = std::string>
 		EntryType getEntry(const Key& sectionName, const Key& entryName, const EntryType& defaultValue);
 

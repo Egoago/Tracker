@@ -2,32 +2,35 @@
 #include <iostream>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc.hpp>
+#include "../Misc/Log.hpp"
 
 using namespace cv;
 using namespace tr;
 
-OpenCVCamera::OpenCVCamera(int id)
-{
+OpenCVCamera::OpenCVCamera(int id) {
     cap = new VideoCapture(id);
     VideoCapture* camera = (VideoCapture*) cap;
-    if (!cap || !camera->open(0)) {
-        std::cerr << "Couldn't open OpenCV camera";
-        exit(1);
-    }
+    if (!cap || !camera->open(0)) 
+        Logger::error("Couldn't open OpenCV camera");
     width = (int)camera->get(CAP_PROP_FRAME_WIDTH);
     height = (int)camera->get(CAP_PROP_FRAME_HEIGHT);
     nBitsPerPixel = 24;
+    load();
 }
 
 OpenCVCamera::~OpenCVCamera() {
     free(cap);
 }
 
-char* OpenCVCamera::getNextFrameData() const {
+char* OpenCVCamera::getNextFrameData() {
     VideoCapture* camera = (VideoCapture*)cap;
+    if (!cap || !camera->isOpened())
+        Logger::error("Couldn't open OpenCV camera");
     Mat bgrFrame;
-    *camera >> bgrFrame;
+    (*camera) >> bgrFrame;
     cvtColor(bgrFrame, frame, COLOR_BGR2GRAY);
+    if (frame.empty())
+        Logger::error("Couldn't open OpenCV camera");
     return (char*)frame.data;
 }
 

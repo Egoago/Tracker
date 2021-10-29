@@ -6,6 +6,7 @@
 #include "../Misc/Base.hpp"
 #include "../Math/Template.hpp"
 #include "../Math/Tensor.hpp"
+#include "../Camera/CameraParameters.hpp"
 
 namespace tr {
 	class Model {
@@ -14,8 +15,7 @@ namespace tr {
 
 		bool load(const std::string& filename);
 	public:
-		Model(const std::string& fileName);
-		Model(const std::string& fileName, const mat4f& P);
+		Model(const std::string& fileName, const CameraParameters cam = CameraParameters::default());
 		~Model() {}
 
 		void save(const std::string& fileName = "");

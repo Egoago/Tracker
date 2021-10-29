@@ -47,11 +47,11 @@ SixDOF PoseEstimator::getPose(const cv::Mat& frame) {
 
     distanceTensor.setFrame(frame);
     const std::vector<const Template*> candidates = estimator->estimate(distanceTensor);
-
+    Logger::log("Candidates: " + std::to_string(candidates.size()));
     //TODO parallel registration
     Registrator::Registration bestRegistration;
     bestRegistration.pose = candidates[0]->sixDOF;
-    bestRegistration.finalLoss = std::numeric_limits<double>::max();
+    bestRegistration.finalLoss = std::numeric_limits<float>::max();
     uint finalIndex = 0;
     for (uint i = 0; i < candidates.size(); i++) {
         const Registrator::Registration registration = registrator->registrate(distanceTensor, candidates[i]);

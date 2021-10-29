@@ -3,8 +3,7 @@
 #include "Camera.hpp"
 #include <opencv2/core/mat.hpp>
 
-namespace tr
-{
+namespace tr {
 	class OpenCVCamera : public Camera {
 	private:
 		void* cap;
@@ -12,7 +11,7 @@ namespace tr
 	public:
 		OpenCVCamera(int id = 0);
 		~OpenCVCamera();
-		virtual char* getNextFrameData() const override;
+		virtual char* getNextFrameData() override;
 		virtual double getFPS() const override;
 		virtual int getFormat() const override;
 	};

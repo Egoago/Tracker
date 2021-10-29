@@ -116,4 +116,10 @@ bool tr::ConfigParser::validEntry(const MultiEntry& multiEntry) {
     return true;
 }
 
+bool tr::ConfigParser::hasEntry(const Key& sectionName, const Key& entryName) {
+    if (!validKey(sectionName)) Logger::error("Section name invalid: " + sectionName);
+    if (!validKey(entryName)) Logger::error("Entry name invalid: " + sectionName);
+    return (configuration.count(sectionName) > 0 && configuration[sectionName].count(entryName) > 0);
+}
+
 ConfigParser::~ConfigParser() { save(); }

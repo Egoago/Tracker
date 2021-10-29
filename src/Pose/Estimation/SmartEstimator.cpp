@@ -15,6 +15,8 @@ const std::vector<const Template*> tr::SmartEstimator::estimate(const DistanceTe
     std::vector<const Template*> candidates(candidateCount, nullptr);
     double max;
     uint id;
+    Logger::log("Processors: " + std::to_string(omp_get_num_procs()));
+    Logger::log("Max threads: " + std::to_string(omp_get_max_threads()));
 #pragma omp parallel num_threads(candidateCount) private(id, max) shared(candidates)
     {
         max = std::numeric_limits<double>::max();
@@ -27,10 +29,14 @@ const std::vector<const Template*> tr::SmartEstimator::estimate(const DistanceTe
                 if (distance < max) {
                     max = distance;
                     candidates[id] = temp;
+
+                    Logger::log("Thread: " + std::to_string(id));
                 }
             }
         }
     }
+    for (auto candidate : candidates)
+        Logger::log(std::to_string(candidate==nullptr));
     Logger::logProcess(__FUNCTION__);   //TODO remove logging
     return candidates;
 }

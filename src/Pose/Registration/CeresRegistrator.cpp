@@ -75,6 +75,7 @@ struct RasterPointCost {
             }
             else indices[2] = T(EIGEN_PI / 2);
             (*distanceTensorWrapper)(indices, residuals);
+            residuals[0] *= -pos[2];
         }
         else residuals[0] = T(0);
         //Logger::logProcess(__FUNCTION__);   //TODO remove logging

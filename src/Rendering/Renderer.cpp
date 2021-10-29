@@ -12,29 +12,15 @@ extern "C" {
     _declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
 }
 
-
-//TODO fuse two functions
-mat4f tr::Renderer::getDefaultP() {
-    CameraCalibration camCal = readConfig();
-    return tr::perspective(camCal.FOV,
-                           camCal.aspect,
-                           camCal.nearPlane,
-                           camCal.farPlane);
+void Renderer::readConfig(float aspect) {
+    ConfigParser config = ConfigParser::instance();
+    const uint res = config.getEntry(CONFIG_SECTION_RENDER, "resolution", 128u);
+    resolution = uvec2(uint(res*aspect), res);
+    nearP = config.getEntry(CONFIG_SECTION_RENDER, "near clipping pane", 200.0f);
+    farP = config.getEntry(CONFIG_SECTION_RENDER, "far clipping pane", 4500.0f);
 }
 
-//TODO fuse two functions
-Renderer::CameraCalibration Renderer::readConfig() {
-    CameraCalibration camCal;
-    auto res = ConfigParser::instance().getEntries<uint>(CONFIG_SECTION_RENDER, "resolution", { 128,128 });
-    camCal.resolution = uvec2(res[0], res[1]);
-    camCal.nearPlane = ConfigParser::instance().getEntry(CONFIG_SECTION_RENDER, "near clipping pane", 200.0f);
-    camCal.farPlane = ConfigParser::instance().getEntry(CONFIG_SECTION_RENDER, "far clipping pane", 4500.0f);
-    camCal.FOV = radian(ConfigParser::instance().getEntry(CONFIG_SECTION_RENDER, "fov", 45.0f));
-    camCal.aspect = (float)res[0] / res[1];
-    return camCal;
-}
-
-Renderer::Renderer(const Geometry& geometry) {
+Renderer::Renderer(const Geometry& geometry, const CameraParameters cam) {
     //TODO add back-face culling
     int argc=0;
     glutInit(&argc, nullptr);
@@ -43,7 +29,7 @@ Renderer::Renderer(const Geometry& geometry) {
     glutWindow = glutCreateWindow("OpenGL");
     glewInit();
 
-    camCal = readConfig();
+    readConfig(cam.aspect);
 
     //Shaders
     Shader meshVert("mesh.vert");
@@ -53,16 +39,16 @@ Renderer::Renderer(const Geometry& geometry) {
 
     //Texture for contour mask
     textureMaps.reserve(5);
-    textureMaps.emplace_back(new TextureMap(CV_8U, camCal.resolution));
+    textureMaps.emplace_back(new TextureMap(CV_8U, resolution));
     //Four textures for pos and dir maps for both thresholds
     for(uint i = 0; i < 4; i++)
-        textureMaps.emplace_back(new TextureMap(CV_32FC3, camCal.resolution));
+        textureMaps.emplace_back(new TextureMap(CV_32FC3, resolution));
 
     // Z buffer
     glEnable(GL_DEPTH_TEST);
     glGenRenderbuffers(1, &depthBuffer);
     glBindRenderbuffer(GL_RENDERBUFFER, depthBuffer);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, camCal.resolution.x(), camCal.resolution.y());
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, resolution.x(), resolution.y());
     glDepthFunc(GL_LEQUAL);
     //set up pipelines
     pipelines.reserve(3);
@@ -91,10 +77,11 @@ Renderer::Renderer(const Geometry& geometry) {
                                     depthBuffer,
                                     true));
     setGeometry(geometry);
-    setProj(camCal.FOV,
-            camCal.aspect,
-            camCal.nearPlane,
-            camCal.farPlane);
+    FOVy = cam.FOVy;
+    setP(cam.FOVy,
+        cam.aspect,
+        nearP,
+        farP);
 }
 
 Renderer::~Renderer()
@@ -182,22 +169,22 @@ void Renderer::setGeometry(const Geometry& geometry) {
 
 void Renderer::updatePipelines() {
     for (auto& pipeline : pipelines) {
-        if (scaling) pipeline->uniform("P", (ScaleMtx * ProjMtx).eval());
-        else pipeline->uniform("P", ProjMtx);
-        pipeline->uniform("VM", ViewModelMtx);
+        if (scaling) pipeline->uniform("P", (ScaleMtx * P).eval());
+        else pipeline->uniform("P", P);
+        pipeline->uniform("VM", VM);
         pipeline->uniform("near", nearP);
         pipeline->uniform("far", farP);
     }
 }
 
-void Renderer::setProj(float fov, float aspect, float nearP, float farP) {
+void Renderer::setP(float fovy, float aspect, float nearP, float farP) {
     this->nearP = nearP;
     this->farP = farP;
-    setProj(tr::perspective(fov, aspect, nearP, farP));
+    setP(tr::perspective(fovy, aspect, nearP, farP));
 }
 
-void tr::Renderer::setProj(const mat4f& P) {
-    ProjMtx = P;
+void tr::Renderer::setP(const mat4f& P) {
+    this->P = P;
     updatePipelines();
 }
 
@@ -207,13 +194,13 @@ void tr::Renderer::setProj(const mat4f& P) {
 /// <param name="VM">View-Model transformation matrix.</param>
 /// <returns>translation and scaling paramaters applied, packed in a vector [tr.x, tr.y, sc]</returns>
 vec3f Renderer::setVM(const mat4f& VM) {
-    ViewModelMtx = VM;
+    this->VM = VM;
     vec3f scalingParameters(0.0f, 0.0f, 1.0f);
     if (scaling) {
         const Eigen::Matrix<float, 4, 1> cam = VM.col(3);
         const float depth = -cam.hnormalized().z();
-        scalingParameters = -(ProjMtx * cam).hnormalized();
-        scalingParameters.z() = (depth * tanf(camCal.FOV / 2.0f)) / (geoBBxRadius * sqrtf(2.0f));
+        scalingParameters = -(P * cam).hnormalized();
+        scalingParameters.z() = (depth * tanf(FOVy / 2.0f)) / (geoBBxRadius * sqrtf(2.0f));
         ScaleMtx.setIdentity();
         ScaleMtx *= scale(scalingParameters.z(), scalingParameters.z(), 1.0f);
         ScaleMtx *= translate(scalingParameters.x(), scalingParameters.y(), 0.0f);
@@ -227,7 +214,7 @@ void Renderer::render() {
     //x2~3 model load speedup
     //see notes for details
     //Logger::logProcess(__FUNCTION__);
-    glViewport(0, 0, camCal.resolution.x(), camCal.resolution.y());
+    glViewport(0, 0, resolution.x(), resolution.y());
     for (auto& pipeline : pipelines)
         pipeline->render();
     glFlush();
