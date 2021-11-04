@@ -181,7 +181,7 @@ bool loadDoubleMat(Mat& mat, const string& keyName, const Size matSize) {
 	if (!ConfigParser::instance().hasEntry(CONFIG_SECTION_CAMERA, keyName)) return false;
 	std::vector<double> array = ConfigParser::instance().getEntries<double>(CONFIG_SECTION_CAMERA, keyName);
 	if (array.size() != matSize.area()) return false;
-	mat = Mat(matSize, CV_64FC1, array.data());
+	mat = Mat(matSize, CV_64FC1, array.data()).clone();
 	return true;
 }
 
