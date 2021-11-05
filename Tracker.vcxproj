@@ -215,6 +215,7 @@ copy "$(SolutionDir)Common\ceres\Bin\Release\ceres.dll" "$(SolutionDir)Bin\$(Pla
     <ClCompile Include="src\Math\Template.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Camera\CameraParameters.hpp" />
     <ClInclude Include="src\Detectors\MultiFlashDetector.hpp" />
     <ClInclude Include="src\Math\Edge.hpp" />
     <ClInclude Include="src\Math\EigenTransform.hpp" />
