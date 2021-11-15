@@ -9,7 +9,6 @@ using namespace tr;
 Loss<double>* getLossFunction() {
 	switch (strHash(ConfigParser::instance().getEntry<std::string>(CONFIG_SECTION_ESTIMATION, "loss function", "mse").c_str())) {
 	case strHash("huber"): return new Huber<double>(ConfigParser::instance().getEntry(CONFIG_SECTION_ESTIMATION, "huber cutoff", 1.0));
-	case strHash("fit"): return new Huber<double>(ConfigParser::instance().getEntry(CONFIG_SECTION_ESTIMATION, "fit cutoff", 1.0));
 	case strHash("mae"): return new MAE<double>();
 	case strHash("mse"): return new MSE<double>();
 	default: 
