@@ -3,7 +3,6 @@
 //TODO remove glog
 #include "../../Misc/log.hpp"
 #include "../../Misc/Base.hpp"
-#include "../../Misc/ConfigParser.hpp"
 #include "../../Misc/Constants.hpp"
 #include "../../Math/EigenTransform.hpp"
 
@@ -76,7 +75,7 @@ struct RasterPointCost {
             }
             else indices[2] = T(EIGEN_PI / 2);
             (*distanceTensorWrapper)(indices, residuals);
-            //residuals[0] *= (-pos[2])/T(1500.0);
+            residuals[0] *= (-pos[2])/T(1500.0);
         }
         else residuals[0] = T(1e10);
         //Logger::logProcess(__FUNCTION__);   //TODO remove logging
@@ -85,10 +84,10 @@ struct RasterPointCost {
 };
 
 tr::CeresRegistrator::CeresRegistrator(const mat4d& P) : Registrator(P) {
-    google::InitGoogleLogging("Tracker");
+    //google::InitGoogleLogging("Tracker");
 }
 
-const Registrator::Registration CeresRegistrator::registrate(const DistanceTensor& distanceTensor, const Template* candidate) {
+const Registrator::Registration CeresRegistrator::registrate(const DistanceTensor& distanceTensor, const Template* candidate) const {
     //Logger::logProcess(__FUNCTION__);   //TODO remove logging
     double params[6];
     for (uint i = 0; i < 6; i++)
@@ -99,7 +98,7 @@ const Registrator::Registration CeresRegistrator::registrate(const DistanceTenso
         auto rast = new RasterPointCost(P, rasterPoint, distanceTensor);
         CostFunction* cost_function = new AutoDiffCostFunction<RasterPointCost, 1, 3, 3>(rast);
         problem.AddResidualBlock(cost_function,
-                                 new HuberLoss(ConfigParser::instance().getEntry(CONFIG_SECTION_REGISTRATION, "huber cutoff", 1.0)),
+                                 new HuberLoss(10000.0),//ConfigParser::instance().getEntry(CONFIG_SECTION_REGISTRATION, "huber cutoff", 1.0)),
                                  params,
                                  &params[3]);
     }
@@ -123,4 +122,8 @@ const Registrator::Registration CeresRegistrator::registrate(const DistanceTenso
     //Logger::log(summary.BriefReport());
     //Logger::logProcess(__FUNCTION__);   //TODO remove logging
     return result;
+}
+
+Registrator* tr::CeresRegistrator::clone() const {
+    return new CeresRegistrator(*this);
 }

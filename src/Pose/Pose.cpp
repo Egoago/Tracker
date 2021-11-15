@@ -6,6 +6,7 @@
 #include "Estimation/SmartEstimator.hpp"
 #include "Registration/CeresRegistrator.hpp"
 #include <opencv2/core/utils/logger.hpp>
+#include <omp.h>
 
 #include "../Misc/Log.hpp"  //TODO remove logging
 #include <opencv2/imgproc.hpp>
@@ -87,16 +88,20 @@ SixDOF PoseEstimator::getPose(const cv::Mat& frame) {
     const cv::Mat originalFrame = frame.clone();
     distanceTensor.setFrame(frame);
     const std::vector<const Template*> candidates = estimator->estimate(distanceTensor);
-    std::vector<float> losses;
-    std::vector<SixDOF> poses;
-    losses.reserve(candidates.size());
-    poses.reserve(candidates.size());
+    std::vector<float> losses(candidates.size());
+    std::vector<SixDOF> poses(candidates.size());
     //TODO parallel registration
     Logger::logProcess("Registration");   //TODO remove logging
-    for (const auto& candidate : candidates) {
-        const Registrator::Registration registration = registrator->registrate(distanceTensor, candidate);
-        losses.emplace_back(registration.finalLoss);
-        poses.emplace_back(registration.pose);
+
+#pragma omp parallel num_threads(omp_get_num_procs())
+    {
+        std::unique_ptr<Registrator> reg(registrator->clone());
+#pragma omp for
+        for (int i = 0; i < candidates.size(); i++) {
+                const Registrator::Registration registration = reg->registrate(distanceTensor, candidates[i]);
+            losses[i] = registration.finalLoss;
+            poses[i] = registration.pose;
+        }
     }
     Logger::logProcess("Registration");   //TODO remove logging
 
@@ -125,11 +130,12 @@ SixDOF PoseEstimator::getPose(const cv::Mat& frame) {
             }
         }
 
-    Logger::log("\tIndex\t\tScore\t\tLoss");
+    Logger::log("\tIndex\t\tScore\t\tLoss\t\tOverall");
     for (uint i = 0; i < candidates.size(); i++)
         Logger::log("\t" + tr::string(i+1, 3)
                   + "\t\t" + tr::string(scores[i], 3)
-                  + "\t\t" + tr::string(losses[i], 3));
+                  + "\t\t" + tr::string(losses[i], 3)
+                  + "\t\t" + tr::string((1.0f-scores[i])*losses[i], 3));
     Logger::log("min loss:" + tr::string(minLossIndex + 1));
     Logger::log("max score:" + tr::string(maxScoreIndex + 1));
     Logger::logProcess(__FUNCTION__);   //TODO remove logging

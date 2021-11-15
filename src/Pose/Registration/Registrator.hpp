@@ -15,6 +15,7 @@ namespace tr{
 			float finalLoss;
 		};
 		Registrator(const mat4d& P) : P(P) {}
-		virtual const Registration registrate(const DistanceTensor& distanceTensor, const Template* candidate) = 0;
+		virtual const Registration registrate(const DistanceTensor& distanceTensor, const Template* candidate) const = 0;
+		virtual Registrator* clone() const = 0;
 	};
 }

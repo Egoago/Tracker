@@ -1,6 +1,7 @@
 #pragma once
 #include "Estimator.hpp"
 #include <vector>
+#include <omp.h>
 
 namespace tr {
 	class ParallelEstimator : public Estimator {
