@@ -18,6 +18,8 @@ namespace tr {
 	typedef Eigen::Array<float, 4, 1> vec4f;
 	typedef Eigen::Array<double, 4, 1> vec4d;
 
+	const static float PI = float(EIGEN_PI);
+
 	inline uint64_t constexpr mix(char m, uint64_t s) {
 		return ((s << 7) + ~(s >> 3)) + ~m;
 	}
@@ -69,7 +71,6 @@ namespace tr {
 	inline Type degree(const Type radian) { return radian * Type(180) / Type(EIGEN_PI); }
 	template <typename Type>
 	inline Type radian(const Type degree) { return degree * Type(EIGEN_PI) / Type(180); }
-
 }
 
 

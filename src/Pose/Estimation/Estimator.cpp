@@ -34,7 +34,7 @@ double tr::Estimator::getDistance(const Template& temp, const DistanceTensor& dc
 		loss->addError(error);
 	}
 	double distance = loss->loss();
-	distance *= -temp.sixDOF.position.z();
+	//distance *= -temp.sixDOF.position.z();
 	return distance;
 }
 

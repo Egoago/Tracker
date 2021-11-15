@@ -18,47 +18,60 @@
 //TODO break apart
 using namespace tr;
 
+float random(float min = 0.0f, float max = 1.0f) {
+	const float t = float((double)rand() / RAND_MAX);
+	return t * (max - min) + min;
+}
 
-Range::Interploation getDepthInterpolation() {
-	switch (strHash(ConfigParser::instance().getEntry<std::string>(CONFIG_SECTION_MODEL, "depth interpolation", "exp").c_str())) {
-	case strHash("lin"): return Range::Interploation::LINEAR;
-	case strHash("exp"): return Range::Interploation::EXPONENTIAL;
-	case strHash("pol"): return Range::Interploation::POLINOMIAL;
-	default: return Range::Interploation::LINEAR;
+vec3f randomRotate() {
+	vec3f ypr;
+	ypr.x() = random(-1.0f, 1.0f) * PI;
+	ypr.y() = float(acos(random(-1.0f, 1.0f)) + PI /2);
+	if (random() < 0.5f) {
+		if (ypr.y() < PI)
+			ypr.y() += PI;
+		else ypr.y() -= PI;
 	}
+	ypr.z() = float((random(-1.0f, 1.0f)) * PI);
+	return ypr;
+}
+
+vec3f randomRotate2() {
+	vec3f randomVec(random(-1.0f, 1.0f),
+					random(-1.0f, 1.0f),
+					random(-1.0f, 1.0f));
+	while (randomVec.matrix().norm() > 1.0f)
+		randomVec = vec3f(random(-1.0f, 1.0f),
+						  random(-1.0f, 1.0f),
+						  random(-1.0f, 1.0f));
+	randomVec.matrix().normalize();
+	vec3f ypr;
+	ypr.x() = float((2 * random() - 1) * PI);
+	ypr.y() = float(acos(2 * random() - 1) + PI / 2);
+	if (random() < 0.5) {
+		if (ypr.y() < PI)
+			ypr.y() += PI;
+		else ypr.y() -= PI;
+	}
+	ypr.z() = float((2 * random() - 1) * PI);
+	return ypr;
 }
 
 void generate6DOFs(Tensor<Template>& templates) {
 	Logger::logProcess(__FUNCTION__);
-	//TODO tune granularity
-	const static Range width(ConfigParser::instance().getEntries<int>(CONFIG_SECTION_MODEL, "width", { -70, 70, 7 }));//7
-	const static Range height(ConfigParser::instance().getEntries<int>(CONFIG_SECTION_MODEL, "height", { -70, 70, 7 }));//7
-	const static Range depth(ConfigParser::instance().getEntries<int>(CONFIG_SECTION_MODEL, "depth", { -250, -1500, 5 }), getDepthInterpolation());//5
-	//TODO uniform sphere distr <=> homogenous tensor layout????
-	const static Range yaw(ConfigParser::instance().getEntries<int>(CONFIG_SECTION_MODEL, "yaw", { 0, 360, 6 }), Range::Interploation::LINEAR, true);//6
-	const static Range pitch(ConfigParser::instance().getEntries<int>(CONFIG_SECTION_MODEL, "pitch", { -60, 60, 3 }), Range::Interploation::LINEAR, false);//3
-	const static Range roll(ConfigParser::instance().getEntries<int>(CONFIG_SECTION_MODEL, "roll", { 0, 360, 4 }), Range::Interploation::LINEAR, true);//6
-	templates.allocate({
-		width.size(),
-		height.size(),
-		depth.size(),
-		yaw.size(),
-		pitch.size(),
-		roll.size() });
-	for (uint ya = 0; ya < yaw.size(); ya++)
-	for (uint p = 0; p < pitch.size(); p++)
-	for (uint r = 0; r < roll.size(); r++)
-	for (uint x = 0; x < width.size(); x++)
-	for (uint y = 0; y < height.size(); y++)
-	for (uint z = 0; z < depth.size(); z++)
-	{
-		SixDOF& sixDOF = templates.at({x,y,z,ya,p,r}).sixDOF;
-		sixDOF.position.x() = width[x] / depth[0] * depth[z];
-		sixDOF.position.y() = height[y] / depth[0] * depth[z];
-		sixDOF.position.z() = depth[z];
-		sixDOF.orientation.x() = radian(yaw[ya]);
-		sixDOF.orientation.y() = radian(pitch[p]);
-		sixDOF.orientation.z() = radian(roll[r]);
+	const static std::vector<int> dRange = ConfigParser::instance().getEntries<int>(CONFIG_SECTION_MODEL, "depth range", { -250, -1500});
+	const static int depthRange = dRange[1] - dRange[0];
+	const static int depthStart = dRange[0];
+	const static float wRange = float(ConfigParser::instance().getEntry(CONFIG_SECTION_MODEL, "width range", 70));
+	const static float hRange = float(ConfigParser::instance().getEntry(CONFIG_SECTION_MODEL, "height range", 60));
+	const static uint tCount = ConfigParser::instance().getEntry(CONFIG_SECTION_MODEL, "template count", 32768);
+	templates.allocate({ tCount });
+	for (uint i = 0; i < tCount; i++) {
+		vec3f position;
+		position.z() = (powf(10.0f, random(-1.0f, 0.0f)) - 0.1f)* depthRange + depthStart;
+		position.x() = random(-wRange, wRange) / depthStart * position.z();
+		position.y() = random(-hRange, hRange) / depthStart * position.z();
+		(templates.begin() + i)->sixDOF = SixDOF(position, randomRotate());
 	}
 	Logger::logProcess(__FUNCTION__);
 }
@@ -168,6 +181,7 @@ void generarteObject(Tensor<Template>& templates, Renderer& renderer) {
 	//TODO add loading bar
 	
 	generate6DOFs(templates);
+	
 	//renderer.setScaling(false);
 	int c = 1;
 	std::vector<tr::uint> rasterCounts;
@@ -182,7 +196,7 @@ void generarteObject(Tensor<Template>& templates, Renderer& renderer) {
 		rasterizeCandidates(candidates, temp, renderer.getPVM());
 		//TODO remove logging
 		//Logger::drawFrame(textureMaps[Renderer::MESH], "mesh");
-		Logger::drawFrame(textureMaps[Renderer::HPOS], "hpos", 1.0f);
+		//Logger::drawFrame(textureMaps[Renderer::HPOS], "hpos", 1.0f);
 		//Logger::drawFrame(textureMaps[Renderer::HDIR], "hgir");
 		//cv::Mat canvas(cv::Size(800, 800), CV_8UC3);
 		//canvas = cv::Scalar::all(0);

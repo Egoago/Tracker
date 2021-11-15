@@ -16,9 +16,10 @@ const std::vector<const Template*> tr::ParallelEstimator::estimate(const Distanc
 #pragma omp parallel for num_threads(omp_get_num_procs())
     for (int i = 0; i < size; i++)
         distances[i] = getDistance(*(start+i), dcd3t);
+
     std::priority_queue<index, std::vector<index>> indices;
     for (int i = 0; i < size; i++) {
-        const float distance = distances[i];
+        const double distance = distances[i];
         if (indices.size() < candidateCount)
             indices.push(std::make_pair(distance, i));
         else if (indices.top().first > distance){
@@ -27,13 +28,14 @@ const std::vector<const Template*> tr::ParallelEstimator::estimate(const Distanc
         }
     }
     delete[](distances);
-    std::vector<const Template*> candidates;
-    candidates.reserve(candidateCount);
-    while (!indices.empty()) {
-        candidates.push_back(start + indices.top().second);
-        Logger::log(tr::string(indices.top().first));
+    std::vector<const Template*> candidates(candidateCount);
+    int i = candidateCount-1;
+    while (!indices.empty() && i >= 0) {
+        candidates[i--] = start + indices.top().second;
         indices.pop();
     }
+    if (i >= 0 || !indices.empty())
+        Logger::error("size mismatch in parallel estimation");
     Logger::logProcess(__FUNCTION__);   //TODO remove logging
     return candidates;
 }

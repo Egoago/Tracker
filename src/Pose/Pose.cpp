@@ -47,7 +47,7 @@ void gradOrientation(const cv::Mat& frame, Eigen::ArrayXd& gradX, Eigen::ArrayXd
         cvtColor(frame, img, cv::COLOR_BGR2GRAY);
     }
     cv::Mat temp;
-    cv::blur(img, img, cv::Size(3, 3));
+    //cv::blur(img, img, cv::Size(3, 3));
     cv::Sobel(img, temp, CV_64F, 1, 0, 3);
     //Logger::drawFrame(&temp, "x grad", 1.0f);
     gradX = Eigen::Map<Eigen::ArrayXd>((double*)temp.data, temp.rows, temp.cols).eval();
@@ -101,8 +101,8 @@ SixDOF PoseEstimator::getPose(const cv::Mat& frame) {
     Logger::logProcess("Registration");   //TODO remove logging
 
     std::vector<float> scores = getScores(candidates, poses, originalFrame, P);
-    int minLossIndex = std::min_element(losses.begin(), losses.end()) - losses.begin();
-    int maxScoreIndex = std::max_element(scores.begin(), scores.end()) - scores.begin();
+    int minLossIndex = int(std::min_element(losses.begin(), losses.end()) - losses.begin());
+    int maxScoreIndex = int(std::max_element(scores.begin(), scores.end()) - scores.begin());
 
     //TODO remove logging
     for (uint i = 0; i < candidates.size(); i++)
@@ -130,7 +130,8 @@ SixDOF PoseEstimator::getPose(const cv::Mat& frame) {
         Logger::log("\t" + tr::string(i+1, 3)
                   + "\t\t" + tr::string(scores[i], 3)
                   + "\t\t" + tr::string(losses[i], 3));
-    Logger::log("best:" + tr::string(minLossIndex + 1));
+    Logger::log("min loss:" + tr::string(minLossIndex + 1));
+    Logger::log("max score:" + tr::string(maxScoreIndex + 1));
     Logger::logProcess(__FUNCTION__);   //TODO remove logging
     return poses[minLossIndex];
 }
