@@ -20,20 +20,20 @@ CameraParameters getCameraParameters(const Mat& projection, const Size imSize) {
 	ConfigParser config = ConfigParser::instance();
 	const auto sensorSize = config.getEntries<double>(CONFIG_SECTION_CAMERA, "sensor", { 5.37, 4.04 }); // 1/2.7"
 	CameraParameters calibraion;
-	double focalLength, aspect;
+	double fovx, fovy;
 	Point2d c;
+	double aspect, focalLength;
 	calibrationMatrixValues(projection,
 		imSize,
 		sensorSize[0],
 		sensorSize[1],
-		calibraion.FOVx,
-		calibraion.FOVy,
+		fovx,
+		fovy,
 		focalLength,
 		c,
 		aspect);
-	calibraion.FOVx = radian(calibraion.FOVx);
-	calibraion.FOVy = radian(calibraion.FOVy);
-	calibraion.aspect = calibraion.FOVy / calibraion.FOVx;
+	calibraion.FOVy = radian(fovy);
+	calibraion.aspect = (float)imSize.width / imSize.height;
 	calibraion.resolution.x() = imSize.width;
 	calibraion.resolution.y() = imSize.height;
 	return calibraion;
@@ -116,38 +116,42 @@ CameraParameters Camera::calibrate(bool reset) {
 	if (reset) calibrated = false;
 	if (!calibrated) {
 		const bool circles = ConfigParser::instance().getEntry(CONFIG_SECTION_CAMERA, "circles", false);
-		const vector<uint> size = ConfigParser::instance().getEntries<uint>(CONFIG_SECTION_CAMERA, "grid", { 9u,6u });
+		const uvec2 size = circles ? uvec2(4u, 11u) : uvec2(9u,6u);
 		const Size imSize(width, height), gridSize(size[0], size[1]);
 		const vector<Point3f> grid = circles ? generateCircleGrid(gridSize)
 			: generateChessboardGrid(gridSize);
 		const uint sampleCount = 40u;
 		vector<vector<Point2f>> foundMarkers;
 		foundMarkers.reserve(sampleCount * 3);
+		const uint stepsBetweenCaptures = 5;
+		uint counter = stepsBetweenCaptures;
 		while (!calibrated) {
 			const Mat frame = getNextFrame();
-			const vector<Point2f> markers = circles ? findCircleMarkers(frame, gridSize)
-				: findChessboardMarkers(frame, gridSize);
-			if (markers.size() > 0) {
-				foundMarkers.push_back(markers);
-				drawChessboardCorners(frame, gridSize, markers, true);
+			if (counter-- == 0) {
+				counter = stepsBetweenCaptures;
+				const vector<Point2f> markers = circles ? findCircleMarkers(frame, gridSize)
+					: findChessboardMarkers(frame, gridSize);
+				if (markers.size() > 0) {
+					foundMarkers.push_back(markers);
+					drawChessboardCorners(frame, gridSize, markers, true);
+				}
+				if (foundMarkers.size() > sampleCount * 3) {
+					Logger::logProcess("calibrating");
+					vector<vector<Point2f>> p2D;
+					vector<vector<Point3f>> p3D(sampleCount, grid);
+					sample(foundMarkers.begin(), foundMarkers.end(), back_inserter(p2D),
+						sampleCount, mt19937{ random_device{}() });
+					Mat R, T;
+					const double error = calibrateCamera(p3D, p2D, imSize, projection, distortion, R, T);
+					projection = getOptimalNewCameraMatrix(projection, distortion, imSize, 0, imSize);
+					calibration = getCameraParameters(projection, Size(width, height));
+					Logger::log("FOVy=" + tr::string(calibration.FOVy));
+					calibrated = saveCailbration();
+					break;
+				}
 			}
-			if (foundMarkers.size() > sampleCount * 3) {
-				Logger::logProcess("calibrating");
-				vector<vector<Point2f>> p2D;
-				vector<vector<Point3f>> p3D(sampleCount, grid);
-				sample(foundMarkers.begin(), foundMarkers.end(), back_inserter(p2D),
-					sampleCount, mt19937{ random_device{}() });
-				Mat R, T;
-				const double error = calibrateCamera(p3D, p2D, imSize, projection, distortion, R, T);
-				projection = getOptimalNewCameraMatrix(projection, distortion, imSize, 0, imSize);
-				calibration = getCameraParameters(projection, Size(width, height));
-				Logger::log("FOVy=" + to_string(calibration.FOVy));
-				calibrated = saveCailbration();
-				Logger::logProcess("calibrating");
-				break;
-			}
-			imshow("distorted", frame);
-			waitKey(40);
+			cv::imshow("Distorted", frame);
+			cv::waitKey(1);
 		}
 	}
 	Logger::logProcess(__FUNCTION__);

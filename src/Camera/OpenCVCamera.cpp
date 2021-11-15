@@ -12,6 +12,8 @@ OpenCVCamera::OpenCVCamera(int id) {
     VideoCapture* camera = (VideoCapture*) cap;
     if (!cap || !camera->open(0)) 
         Logger::error("Couldn't open OpenCV camera");
+    camera->set(CAP_PROP_FRAME_WIDTH, 2000);
+    camera->set(CAP_PROP_FRAME_HEIGHT, 2000);
     width = (int)camera->get(CAP_PROP_FRAME_WIDTH);
     height = (int)camera->get(CAP_PROP_FRAME_HEIGHT);
     nBitsPerPixel = 24;
@@ -19,6 +21,8 @@ OpenCVCamera::OpenCVCamera(int id) {
 }
 
 OpenCVCamera::~OpenCVCamera() {
+    VideoCapture* camera = (VideoCapture*)cap;
+    camera->release();
     free(cap);
 }
 

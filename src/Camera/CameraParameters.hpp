@@ -3,13 +3,12 @@
 
 namespace tr {
 	struct CameraParameters {
-		double FOVx, FOVy, aspect;
+		double FOVy, aspect;
 		uvec2 resolution;
 		static CameraParameters default() {
 			CameraParameters cam;
 			cam.aspect = 1.0;
-			cam.FOVx = radian(90.0);
-			cam.FOVy = radian(90.0);
+			cam.FOVy = radian(45.0);
 			return cam;
 		}
 	};

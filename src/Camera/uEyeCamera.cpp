@@ -1,6 +1,7 @@
 #include "uEyeCamera.hpp"
 #include <uEye.h>
 #include <iostream>
+#include "../Misc/Log.hpp"
 
 using namespace tr;
 
@@ -28,19 +29,13 @@ int setColorMode(HIDS hCam, char colorMode) {
 }
 
 UEyeCamera::UEyeCamera() {
-    if (is_InitCamera(&hCam, NULL) != IS_SUCCESS) {
-        std::cerr << "Camera not found";
-        exit(1);
-    }
-    if (is_SetExternalTrigger(hCam, IS_SET_TRIGGER_OFF) != IS_SUCCESS) {
-        std::cerr << "Could not disable external trigger mode on uEye camera";
-        exit(1);
-    }
+    if (is_InitCamera(&hCam, NULL) != IS_SUCCESS)
+        Logger::error("Camera not found");
+    if (is_SetExternalTrigger(hCam, IS_SET_TRIGGER_OFF) != IS_SUCCESS)
+        Logger::error("Could not disable external trigger mode on uEye camera");
     SENSORINFO sInfo;
-    if (is_GetSensorInfo(hCam, &sInfo) != IS_SUCCESS) {
-        std::cerr << "Could not read sensor info";
-        exit(1);
-    }
+    if (is_GetSensorInfo(hCam, &sInfo) != IS_SUCCESS)
+        Logger::error("Could not read sensor info");
     width = sInfo.nMaxWidth;
     height = sInfo.nMaxHeight;
     nBitsPerPixel = setColorMode(hCam, sInfo.nColorMode);
