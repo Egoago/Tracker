@@ -46,3 +46,10 @@ bool tr::RasterPoint::render(const mat4f& mvp) {
 	angle = _angle;
 	return true;
 }
+
+vecm2f tr::RasterPoint::renderOffset(const mat4f& mvp) {
+	vec2f x, ox;
+	if (!renderPoint(pos, mvp, x)) return vecm2f(0);
+	if (!renderPoint(offsetPos, mvp, ox)) return vecm2f(0);
+	return (x - ox).eval().matrix().normalized();
+}

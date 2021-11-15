@@ -15,6 +15,7 @@ namespace tr {
 		RasterPoint(const RasterPoint& other);
 		RasterPoint(const vec3f p = vec3f::Zero(), const vec3f op = vec3f::Zero());
 		bool render(const mat4f& mvp);
+		vecm2f renderOffset(const mat4f& mvp);
 	};
 }
 

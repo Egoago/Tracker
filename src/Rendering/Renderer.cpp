@@ -209,7 +209,7 @@ vec3f Renderer::setVM(const mat4f& VM) {
     return scalingParameters;
 }
 
-void Renderer::render() {
+std::vector<cv::Mat*> Renderer::render() {
     //TODO use PBOs for downloading and double buffering
     //x2~3 model load speedup
     //see notes for details
@@ -218,7 +218,7 @@ void Renderer::render() {
     for (auto& pipeline : pipelines)
         pipeline->render();
     glFlush();
-    getTextures();
+    return getTextures();
     //Logger::logProcess(__FUNCTION__);
 }
 

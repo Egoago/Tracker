@@ -50,8 +50,8 @@ namespace tr {
 		inline mat4f getPVM() const { return P * VM; }
 		inline mat4f getVM() const { return VM; }
 		inline uvec2 getResolution() { return resolution; }
-		void render();
-		std::vector<cv::Mat*>getTextures();
+		std::vector<cv::Mat*> render();
+		std::vector<cv::Mat*> getTextures();
 	};
 }
 

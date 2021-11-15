@@ -13,6 +13,7 @@ namespace tr {
 		DistanceTensor distanceTensor;
 		std::unique_ptr<Estimator> estimator;
 		std::unique_ptr<Registrator> registrator;
+		const mat4f P;
 	public:
 		PoseEstimator(const Tensor<Template>& templates, const mat4f& P, const float aspect);
 		SixDOF getPose(const cv::Mat& frame);

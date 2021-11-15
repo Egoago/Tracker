@@ -63,8 +63,9 @@ void generate6DOFs(Tensor<Template>& templates) {
 	Logger::logProcess(__FUNCTION__);
 }
 
-void floatToBinary(const cv::Mat& floatMap, cv::Mat& binary) {
+cv::Mat floatToBinary(const cv::Mat& floatMap) {
 	//Logger::logProcess(__FUNCTION__);
+	cv::Mat binary;
 	cv::absdiff(floatMap, cv::Scalar::all(0), binary);
 	switch (binary.channels()) {
 		case 3: cv::transform(binary, binary, cv::Matx13f(1.0, 1.0, 1.0)); break;
@@ -74,6 +75,7 @@ void floatToBinary(const cv::Mat& floatMap, cv::Mat& binary) {
 	cv::threshold(binary, binary, 1e-10, 255, cv::THRESH_BINARY);
 	binary.convertTo(binary, CV_8U);
 	//Logger::logProcess(__FUNCTION__);
+	return binary;
 }
 
 void getContour(const cv::Mat& maskMap, cv::Mat& contourMap) {
@@ -93,8 +95,7 @@ struct Candidate {
 const std::vector<Candidate> extractCandidates(const std::vector<cv::Mat*>& textureMaps) {
 	//Logger::logProcess(__FUNCTION__);
 	std::vector<Candidate> candidates;
-	cv::Mat maskMap;
-	floatToBinary(*textureMaps[Renderer::HDIR], maskMap);
+	cv::Mat maskMap = floatToBinary(*textureMaps[Renderer::HDIR]);
 	getContour(*textureMaps[Renderer::MESH], maskMap);
 	std::mutex mtx;
 	maskMap.forEach<uchar>(
@@ -166,7 +167,6 @@ void generarteObject(Tensor<Template>& templates, Renderer& renderer) {
 	Logger::logProcess(__FUNCTION__);
 	//TODO add loading bar
 	
-	std::vector<cv::Mat*> textureMaps = renderer.getTextures(); //TODO smart pointer
 	generate6DOFs(templates);
 	//renderer.setScaling(false);
 	int c = 1;
@@ -177,7 +177,7 @@ void generarteObject(Tensor<Template>& templates, Renderer& renderer) {
 		// OpenMP??
 
 		const vec3f scalingParameters = renderer.setVM(temp->sixDOF.getModelTransformMatrix());	//TODO scale instead of rerender?
-		renderer.render();
+		std::vector<cv::Mat*> textureMaps = renderer.render();
 		const std::vector<Candidate> candidates = extractCandidates(textureMaps);
 		rasterizeCandidates(candidates, temp, renderer.getPVM());
 		//TODO remove logging
