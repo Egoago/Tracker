@@ -166,7 +166,7 @@ CameraParameters tr::Camera::getParameters() {
 	return calibration;
 }
 
-bool saveDoubleMat(const Mat mat, const string& keyName) {
+bool saveDoubleMat(const Mat mat, const std::string& keyName) {
 	Mat mat2 = mat.clone();
 	if (mat2.type() != CV_64FC1)
 		mat.convertTo(mat2, CV_64FC1);
@@ -181,7 +181,7 @@ bool tr::Camera::saveCailbration() {
 		saveDoubleMat(distortion, "distortion");
 }
 
-bool loadDoubleMat(Mat& mat, const string& keyName, const Size matSize) {
+bool loadDoubleMat(Mat& mat, const std::string& keyName, const Size matSize) {
 	if (!ConfigParser::instance().hasEntry(CONFIG_SECTION_CAMERA, keyName)) return false;
 	std::vector<double> array = ConfigParser::instance().getEntries<double>(CONFIG_SECTION_CAMERA, keyName);
 	if (array.size() != matSize.area()) return false;

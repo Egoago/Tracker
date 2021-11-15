@@ -5,6 +5,7 @@
 #include <type_traits>
 #include <algorithm>
 #include <iterator>
+#include <iomanip>
 
 namespace tr {
 	class ConfigParser { 
@@ -116,7 +117,7 @@ namespace tr {
 			std::transform(std::begin(value),
 				std::end(value),
 				std::back_inserter(strValues),
-				[](EntryType entry) { return std::to_string(entry); }
+				[](EntryType entry) { return tr::string(entry); }
 			);
 		}
 		if (validKey(sectionName) && validEntry(entryName) && validEntry(strValues)) {
@@ -125,6 +126,13 @@ namespace tr {
 			save();
 		}
 		//setEntries<std::string>(sectionName, entryName, newValues);
+	}
+
+	template <typename T>
+	std::string string(const T& value, const int precision = 10) {
+		std::stringstream str;
+		str << std::defaultfloat << std::setprecision(precision) << value;
+		return str.str();
 	}
 }
 

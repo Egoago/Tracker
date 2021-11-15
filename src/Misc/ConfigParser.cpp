@@ -4,14 +4,13 @@
 #include "Constants.hpp"
 #include "Log.hpp"
 
-using namespace std;
 using namespace tr;
 
-vector<string> split(string str, string delimiter) {
-    vector<string> out;
+std::vector<std::string> split(std::string str, std::string delimiter) {
+    std::vector<std::string> out;
     size_t pos = 0;
-    while ((pos = str.find(delimiter)) != string::npos) {
-        string l = str.substr(0, pos);
+    while ((pos = str.find(delimiter)) != std::string::npos) {
+        std::string l = str.substr(0, pos);
         if (l.length() > 0)
             out.push_back(l);
         str.erase(0, pos + delimiter.length());
@@ -21,9 +20,9 @@ vector<string> split(string str, string delimiter) {
     return out;
 }
 
-string trim(const string& str) {
+std::string trim(const std::string& str) {
     const size_t first = str.find_first_not_of(" \n\t");
-    if (first == string::npos) return "";
+    if (first == std::string::npos) return "";
     const auto last = str.find_last_not_of(" \n\t");
     return str.substr(first, 1 + last - first);
 }
@@ -53,12 +52,12 @@ void tr::ConfigParser::entry2Data(const Entry& entryName, double& data) {
 }
 
 void ConfigParser::load() {
-    ifstream file(CONFIG_FILE);
-    string line;
+    std::ifstream file(CONFIG_FILE);
+    std::string line;
     configuration.clear();
     Key sectionKey = "";
     while (getline(file, line)) {
-        vector<string> tokens = split(trim(line), CONFIG_DELIMITER);
+        std::vector<std::string> tokens = split(trim(line), CONFIG_DELIMITER);
         if (tokens.size() == 2) {
             if (tokens[0].compare(CONFIG_SECTION_LABEL) == 0) sectionKey = tokens[1];
             else configuration[sectionKey][tokens[0]] = split(tokens[1], CONFIG_SUB_DELIMITER);
@@ -71,12 +70,12 @@ void ConfigParser::load() {
 }
 
 void ConfigParser::save() {
-    ofstream file(CONFIG_FILE);
+    std::ofstream file(CONFIG_FILE);
     for (auto const& section : configuration) {
         file << CONFIG_SECTION_LABEL
              << CONFIG_DELIMITER
              << section.first
-             << endl;
+             << std::endl;
         for (auto const& entry : section.second) {
             bool first = true;
             file << CONFIG_TABULATOR << entry.first << CONFIG_DELIMITER;
@@ -86,9 +85,9 @@ void ConfigParser::save() {
                     first = false;
                 }
                 else file << CONFIG_SUB_DELIMITER << value;
-            file << endl;
+            file << std::endl;
         }
-        file << endl;
+        file << std::endl;
     }
     file.close();
 }
