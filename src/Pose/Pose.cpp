@@ -30,36 +30,79 @@ Registrator* getRegistrator(const mat4f& P) {
     }
 }
 
-mat4f p; //TODO remove logging
-
 PoseEstimator::PoseEstimator(const Tensor<Template>& templates,
                              const mat4f& P,
                              const float aspect) :
     distanceTensor(aspect),
     estimator(getEstimator(templates)),
-    registrator(getRegistrator(P)) {
+    registrator(getRegistrator(P)),
+    P(P){
     cv::utils::logging::setLogLevel(cv::utils::logging::LOG_LEVEL_WARNING);
-    p = P; //TODO remove logging
+}
+
+void gradOrientation(const cv::Mat& frame, Eigen::ArrayXd& gradX, Eigen::ArrayXd& gradY) {
+    cv::Mat img = frame.clone();
+    //cv::blur(img, img, cv::Size(3, 3));
+    if (img.type() != CV_8U) {
+        cvtColor(frame, img, cv::COLOR_BGR2GRAY);
+    }
+    cv::Mat temp;
+    cv::blur(img, img, cv::Size(3, 3));
+    cv::Sobel(img, temp, CV_64F, 1, 0, 3);
+    //Logger::drawFrame(&temp, "x grad", 1.0f);
+    gradX = Eigen::Map<Eigen::ArrayXd>((double*)temp.data, temp.rows, temp.cols).eval();
+    cv::Sobel(img, temp, CV_64F, 0, 1, 3);
+    //Logger::drawFrame(&temp, "Y grad", 1.0f);
+    gradY = Eigen::Map<Eigen::ArrayXd>((double*)temp.data, temp.rows, temp.cols).eval();
+}
+
+std::vector<float> getScores(const std::vector<const Template*>& candidates,
+                             const std::vector<SixDOF>& poses,
+                             const cv::Mat& frame,
+                             const mat4f& P) {
+    if (candidates.size() != poses.size())
+        Logger::error("Same amount of registrations and candidates expected");
+    Eigen::ArrayXd gradX, gradY;
+    gradOrientation(frame, gradX, gradY);
+    std::vector<float> scores(candidates.size());
+    for (uint i = 0; i < candidates.size(); i++) {
+        float score = 0.f;
+        for (auto rasterPoint : candidates[i]->rasterPoints) {
+            const mat4f mvp = P * poses[i].getModelTransformMatrix();
+            const vecm2f renderGrad = rasterPoint.renderOffset(mvp);
+            rasterPoint.render(mvp);
+            const uvec2 pixel((int)(rasterPoint.uv.x() * frame.cols),
+                              (int)(rasterPoint.uv.y() * frame.rows));
+            vecm2f imgGrad(gradX(pixel.y(), pixel.x()), gradY(pixel.y(), pixel.x()));
+            imgGrad.normalize();
+            score += fabs(imgGrad.dot(renderGrad))/0.637f; //rescale for cosine avg power
+        }
+        scores[i] = std::max(1.f - score / candidates[i]->rasterPoints.size(), 0.0f);
+    }
+    return scores;
 }
 
 SixDOF PoseEstimator::getPose(const cv::Mat& frame) {
     Logger::logProcess(__FUNCTION__);   //TODO remove logging
-
+    const cv::Mat originalFrame = frame.clone();
     distanceTensor.setFrame(frame);
     const std::vector<const Template*> candidates = estimator->estimate(distanceTensor);
-    Logger::log("Candidates: " + std::to_string(candidates.size()));
+    std::vector<float> losses;
+    std::vector<SixDOF> poses;
+    losses.reserve(candidates.size());
+    poses.reserve(candidates.size());
     //TODO parallel registration
-    Registrator::Registration bestRegistration;
-    bestRegistration.pose = candidates[0]->sixDOF;
-    bestRegistration.finalLoss = std::numeric_limits<float>::max();
-    uint finalIndex = 0;
-    for (uint i = 0; i < candidates.size(); i++) {
-        const Registrator::Registration registration = registrator->registrate(distanceTensor, candidates[i]);
-        if (bestRegistration.finalLoss > registration.finalLoss) {
-            bestRegistration = registration;
-            finalIndex = i;
-        }
+    Logger::logProcess("Registration");   //TODO remove logging
+    for (const auto& candidate : candidates) {
+        const Registrator::Registration registration = registrator->registrate(distanceTensor, candidate);
+        losses.emplace_back(registration.finalLoss);
+        poses.emplace_back(registration.pose);
     }
+    Logger::logProcess("Registration");   //TODO remove logging
+
+    std::vector<float> scores = getScores(candidates, poses, originalFrame, P);
+    int minLossIndex = std::min_element(losses.begin(), losses.end()) - losses.begin();
+    int maxScoreIndex = std::max_element(scores.begin(), scores.end()) - scores.begin();
 
     //TODO remove logging
     for (uint i = 0; i < candidates.size(); i++)
@@ -67,18 +110,27 @@ SixDOF PoseEstimator::getPose(const cv::Mat& frame) {
             cv::circle(frame,
                 cv::Point((int)(rasterPoint.uv.x() * frame.cols),
                           (int)(rasterPoint.uv.y() * frame.rows)), 1,
-                          (i == finalIndex) ? cv::Scalar(255,0,0): cv::Scalar(0, 0, 255),
+                          (i == minLossIndex || i == maxScoreIndex) ? cv::Scalar(255,0,0): cv::Scalar(0, 0, 255),
                           -1);
-            if (i == finalIndex) {
-                rasterPoint.render(p * bestRegistration.pose.getModelTransformMatrix());
-                cv::circle(frame,
-                    cv::Point((int)(rasterPoint.uv.x() * frame.cols),
-                              (int)(rasterPoint.uv.y() * frame.rows)),
-                              1, cv::Scalar(0, 255, 0), -1);
+            if (i == minLossIndex || i == maxScoreIndex) {
+                if (rasterPoint.render(P * poses[i].getModelTransformMatrix())) {
+                    cv::Scalar color(0, 255, 0);
+                    if (i == maxScoreIndex)
+                        color[2] = 255;
+                    cv::circle(frame,
+                        cv::Point((int)(rasterPoint.uv.x() * frame.cols),
+                            (int)(rasterPoint.uv.y() * frame.rows)),
+                        1, color, -1);
+                }
             }
         }
-    Logger::log("Final loss:" + std::to_string(bestRegistration.finalLoss));
-    Logger::log("Final index:" + std::to_string(finalIndex));
+
+    Logger::log("\tIndex\t\tScore\t\tLoss");
+    for (uint i = 0; i < candidates.size(); i++)
+        Logger::log("\t" + tr::string(i+1, 3)
+                  + "\t\t" + tr::string(scores[i], 3)
+                  + "\t\t" + tr::string(losses[i], 3));
+    Logger::log("best:" + tr::string(minLossIndex + 1));
     Logger::logProcess(__FUNCTION__);   //TODO remove logging
-    return bestRegistration.pose;
+    return poses[minLossIndex];
 }

@@ -1,7 +1,6 @@
 #include "CeresRegistrator.hpp"
 #include <ceres/ceres.h>
 //TODO remove glog
-#include <glog/logging.h>
 #include "../../Misc/log.hpp"
 #include "../../Misc/Base.hpp"
 #include "../../Misc/ConfigParser.hpp"
@@ -72,12 +71,14 @@ struct RasterPointCost {
                 indices[2] = ceres::atan(dir[1] / dir[0]);
                 if (indices[2] < zero)
                     indices[2] += T(EIGEN_PI);
+                if (indices[2] > T(EIGEN_PI))
+                    indices[2] -= T(EIGEN_PI);
             }
             else indices[2] = T(EIGEN_PI / 2);
             (*distanceTensorWrapper)(indices, residuals);
-            residuals[0] *= -pos[2];
+            //residuals[0] *= (-pos[2])/T(1500.0);
         }
-        else residuals[0] = T(0);
+        else residuals[0] = T(1e10);
         //Logger::logProcess(__FUNCTION__);   //TODO remove logging
         return true;
     }
@@ -87,9 +88,8 @@ tr::CeresRegistrator::CeresRegistrator(const mat4d& P) : Registrator(P) {
     google::InitGoogleLogging("Tracker");
 }
 
-const Registrator::Registration CeresRegistrator::registrate(const DistanceTensor& distanceTensor,
-                                    const Template* candidate) {
-    Logger::logProcess(__FUNCTION__);   //TODO remove logging
+const Registrator::Registration CeresRegistrator::registrate(const DistanceTensor& distanceTensor, const Template* candidate) {
+    //Logger::logProcess(__FUNCTION__);   //TODO remove logging
     double params[6];
     for (uint i = 0; i < 6; i++)
         params[i] = double(candidate->sixDOF.data[i]);
@@ -110,6 +110,7 @@ const Registrator::Registration CeresRegistrator::registrate(const DistanceTenso
     //options.initial_trust_region_radius = 300;
     options.max_num_iterations = 100;
     //options.check_gradients = true;
+    //options.gradient_check_relative_precision = 1e-5;
     options.num_threads = 8;
     options.linear_solver_type = ceres::DENSE_QR;
     ceres::Solver::Summary summary;
@@ -118,8 +119,8 @@ const Registrator::Registration CeresRegistrator::registrate(const DistanceTenso
     Registration result;
     for (uint i = 0; i < 6; i++)
         result.pose.data[i] = float(params[i]);
-    result.finalLoss = summary.final_cost;
-    Logger::log(summary.BriefReport());
-    Logger::logProcess(__FUNCTION__);   //TODO remove logging
+    result.finalLoss = (float)summary.final_cost;
+    //Logger::log(summary.BriefReport());
+    //Logger::logProcess(__FUNCTION__);   //TODO remove logging
     return result;
 }
