@@ -28,6 +28,7 @@ namespace tr {
 	static const std::string FRAGMENT_SHADER_EXTENSION = ".frag";
 	
 	//  TEST
+	static const std::string TEST_FRAME_CUBE_WEBCAM = "Resources/TestFrames/testFrame.jpg";
 	static const std::string TEST_FRAME_CUBE = "Resources/TestFrames/cube_noise.png";
 	static const std::string TEST_FRAME_TRIANGLE = "Resources/TestFrames/triangle.png";
 	static const std::string TEST_FRAME_CYLINDER = "Resources/TestFrames/cylinder.png";

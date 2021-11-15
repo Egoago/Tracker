@@ -7,21 +7,24 @@
 #include <opencv2/imgproc.hpp>
 #include "Object/AssimpLoader.hpp"
 #include "Misc/ConfigParser.hpp"
-#include "Camera/OpenCVCamera.hpp"
+#include "Camera/uEyeCamera.hpp"
 
 int main(int argc, char** argv) {
-    std::unique_ptr<tr::Camera> camera(new tr::OpenCVCamera());
+    std::unique_ptr<tr::Camera> camera(new tr::UEyeCamera());
     if (!camera->isCalibrated()) camera->calibrate();
-    while (1) {
-        cv::imshow("calibrated", camera->undistort(camera->getNextFrame()));
+
+    /*while (1) {
+        const cv::Mat frame = camera->getNextFrame();
+        cv::imshow("Distorted", frame);
+        cv::imshow("Calibrated", camera->undistort(frame));
         cv::waitKey(1);
-    }
+    }*/
     
     tr::Logger::logProcess(__FUNCTION__);
-    tr::Model model("cylinder", camera->getParameters());
-    cv::Mat frame = cv::imread(tr::TEST_FRAME_CYLINDER);
+    tr::Model model("cube", camera->getParameters()); //tr::CameraParameters::default());
+    cv::Mat frame = cv::imread(tr::TEST_FRAME_CUBE);
     tr::PoseEstimator poseEstimator(model.getTemplates(), model.getP(), (float)frame.cols/frame.rows);
-    const tr::SixDOF pose = poseEstimator.getPose(frame);
+    const tr::SixDOF pose = poseEstimator.getPose(camera->undistort(frame));
     /*tr::Geometry geo;
     tr::AssimpLoader::load("cube", geo);
     const tr::mat4f P = model.getP();
@@ -34,9 +37,13 @@ int main(int argc, char** argv) {
             cv::Point((int)(bUV[0] * frame.cols), (int)(bUV[1] * frame.rows)),
             cv::Scalar(100, 200, 50));
     }*/
-    tr::Logger::drawFrame(&frame, "registered");
+    tr::Logger::drawFrame(&frame, "registered", 1.0f);
     tr::Logger::logProcess(__FUNCTION__);
     tr::Logger::log("Waiting for key...");
-    cv::waitKey(1000000);
+    while (true) {
+        int c = cv::waitKey(1);
+        if (c > 0)
+            break;
+    }
     return 0;
 }

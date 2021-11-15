@@ -9,6 +9,7 @@ namespace tr {
 
 	typedef Eigen::Matrix<float, 4, 4> mat4f;
 	typedef Eigen::Matrix<double, 4, 4> mat4d;
+	typedef Eigen::Matrix<float, 2, 1> vecm2f;
 	typedef Eigen::Array<float, 2, 1> vec2f;
 	typedef Eigen::Array<double, 2, 1> vec2d;
 	typedef Eigen::Array<uint, 2, 1> uvec2;

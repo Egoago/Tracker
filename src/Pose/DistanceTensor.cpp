@@ -125,7 +125,7 @@ double DistanceTensor::evaluate(const double coordinates[3], double partialDeriv
 void DistanceTensor::setFrame(const cv::Mat& nextFrame) {
     Logger::logProcess(__FUNCTION__);   //TODO remove logging
     vector<Edge<vec2f>> edges;
-    Mat frame = nextFrame;
+    Mat frame = nextFrame.clone();
     if (nextFrame.type() != CV_8U) {
         cvtColor(nextFrame, frame, COLOR_BGR2GRAY);
     }
