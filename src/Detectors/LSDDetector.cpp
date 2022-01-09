@@ -21,8 +21,10 @@ void LSDDetector::detectEdges(const cv::Mat& img, std::vector<Edge<vec2f>>& edge
     Mat doubleImg;
     img.convertTo(doubleImg, CV_64F);
     int lineCount = 0;
-    double* lines = lsd_scale(&lineCount, doubleImg.ptr<double>(), width, height,
-        ConfigParser::instance().getEntry(CONFIG_SECTION_DCD3T, "lsd scale", 0.5));
+    const double scale = ConfigParser::instance().getEntry(CONFIG_SECTION_DCD3T, "lsd scale", 0.5);
+    //double* lines = lsd_scale(&lineCount, doubleImg.ptr<double>(), width, height,);
+    double* lines = LineSegmentDetection(&lineCount, doubleImg.ptr<double>(), width, height,
+                                         scale,1.0,0.95,22.5,0.0,0.5,1024,NULL, NULL, NULL);
     for (int i = 0; i < lineCount; i++) {
         const vec2f a( lines[i * 7 + 0] / width,
                 lines[i * 7 + 1] / height);

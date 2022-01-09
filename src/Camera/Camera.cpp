@@ -46,7 +46,8 @@ void tr::Camera::load() {
 
 Mat tr::Camera::undistort(const Mat& frame) {
 	Mat dst = frame;
-	if (calibrated) cv::undistort(frame.clone(), dst, projection, distortion);
+	if (calibrated) 
+		cv::undistort(frame.clone(), dst, projection, distortion);
 	else Logger::warning("Camera is not yet calibrated.");
 	return dst;
 }

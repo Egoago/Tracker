@@ -29,7 +29,7 @@ namespace tr {
 	
 	//  TEST
 	static const std::string TEST_FRAME_CUBE_WEBCAM = "Resources/TestFrames/testFrame.jpg";
-	static const std::string TEST_FRAME_CUBE = "Resources/TestFrames/cube_noise.png";
+	static const std::string TEST_FRAME_CUBE = "Resources/TestFrames/cube_noise.jpg";
 	static const std::string TEST_FRAME_TRIANGLE = "Resources/TestFrames/triangle.png";
 	static const std::string TEST_FRAME_CYLINDER = "Resources/TestFrames/cylinder.png";
 	inline static std::string MFC_TEST_FRAME(unsigned int index, const char* folder) {

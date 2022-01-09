@@ -166,6 +166,7 @@ del "$(SolutionDir)Config\*" /Q</Command>
       <Optimization>MaxSpeed</Optimization>
       <OpenMPSupport>true</OpenMPSupport>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
+      <AdditionalOptions>-DWITH_FFMPEG=ON %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
