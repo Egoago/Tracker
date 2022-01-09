@@ -1,0 +1,256 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Header Files\Camera">
+      <UniqueIdentifier>{82806d0d-67b9-4d44-b17a-c37b63a34dad}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Object">
+      <UniqueIdentifier>{2fe124e4-2ac3-4ca4-9c38-d4f165a602ed}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{d0c2f1d9-5ced-4bbc-8952-e0fda72694d3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Rendering">
+      <UniqueIdentifier>{87043aae-913c-445b-b6f8-b1f435b5a67e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Misc">
+      <UniqueIdentifier>{affec106-5845-4373-ba08-3dd3dfe80770}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Math">
+      <UniqueIdentifier>{7646a9f8-6e68-494a-a450-93dfdb50c8ce}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Detectors">
+      <UniqueIdentifier>{98dd9c26-e1e5-4423-b8f8-9c8195e61530}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Pose">
+      <UniqueIdentifier>{b4290e3d-176f-4325-8bba-57664a07ee0d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Pose\Estimation">
+      <UniqueIdentifier>{ac9a9065-bf45-4a0c-927d-eef8de411b99}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Pose\Registration">
+      <UniqueIdentifier>{eea9ea33-d3dc-4bf8-967c-e096f96f344b}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Camera\uEyeCamera.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Camera\OpenCVCamera.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Object\AssimpLoader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Rendering\Shader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Rendering\Renderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Object\Model.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Misc\ConfigParser.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Misc\Constants.hpp">
+      <Filter>Header Files\Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Detectors\LSDDetector.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Detectors\lsd.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Detectors\CannyDetector.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Object\Geometry.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Rendering\TextureMap.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Rendering\Pipeline.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Misc\Log.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Math\SixDOF.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Math\Template.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Math\RasterPoint.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Detectors\MultiFlashDetector.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Pose\DistanceTensor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Pose\Pose.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Pose\Registration\CeresRegistrator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Pose\Estimation\SmartEstimator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Pose\Estimation\DirectEstimator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Pose\Estimation\Estimator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Pose\Estimation\ParallelEstimator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Camera\Camera.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\Camera\Camera.hpp">
+      <Filter>Header Files\Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Camera\uEyeCamera.hpp">
+      <Filter>Header Files\Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Camera\OpenCVCamera.hpp">
+      <Filter>Header Files\Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Object\Geometry.hpp">
+      <Filter>Header Files\Object</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Object\AssimpLoader.hpp">
+      <Filter>Header Files\Object</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Rendering\Shader.hpp">
+      <Filter>Header Files\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Rendering\Renderer.hpp">
+      <Filter>Header Files\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Misc\ConfigParser.hpp">
+      <Filter>Header Files\Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Detectors\EdgeDetector.hpp">
+      <Filter>Header Files\Detectors</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Detectors\LSDDetector.hpp">
+      <Filter>Header Files\Detectors</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Detectors\lsd.h">
+      <Filter>Header Files\Detectors</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Detectors\CannyDetector.hpp">
+      <Filter>Header Files\Detectors</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Object\Model.hpp">
+      <Filter>Header Files\Object</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\Edge.hpp">
+      <Filter>Header Files\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\EigenTransform.hpp">
+      <Filter>Header Files\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\RasterPoint.hpp">
+      <Filter>Header Files\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\SixDOF.hpp">
+      <Filter>Header Files\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\Template.hpp">
+      <Filter>Header Files\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\Tensor.hpp">
+      <Filter>Header Files\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Misc\Log.hpp">
+      <Filter>Header Files\Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Misc\Range.hpp">
+      <Filter>Header Files\Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Detectors\MultiFlashDetector.hpp">
+      <Filter>Header Files\Detectors</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Rendering\TextureMap.hpp">
+      <Filter>Header Files\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Rendering\Pipeline.hpp">
+      <Filter>Header Files\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Misc\Base.hpp">
+      <Filter>Header Files\Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\Loss.hpp">
+      <Filter>Header Files\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Math\Mean.hpp">
+      <Filter>Header Files\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Pose\DistanceTensor.hpp">
+      <Filter>Header Files\Pose</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Pose\Pose.hpp">
+      <Filter>Header Files\Pose</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Pose\Registration\CeresRegistrator.hpp">
+      <Filter>Header Files\Pose\Registration</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Pose\Registration\Registrator.hpp">
+      <Filter>Header Files\Pose\Registration</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Pose\Estimation\DirectEstimator.hpp">
+      <Filter>Header Files\Pose\Estimation</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Pose\Estimation\Estimator.hpp">
+      <Filter>Header Files\Pose\Estimation</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Pose\Estimation\ParallelEstimator.hpp">
+      <Filter>Header Files\Pose\Estimation</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Pose\Estimation\SmartEstimator.hpp">
+      <Filter>Header Files\Pose\Estimation</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Camera\CameraParameters.hpp">
+      <Filter>Header Files\Camera</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="src\Shaders\mesh.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="src\Shaders\mesh.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="src\Shaders\edge.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="src\Shaders\edge.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="src\Shaders\outline.frag">
+      <Filter>Shaders</Filter>
+    </None>
+  </ItemGroup>
+</Project>

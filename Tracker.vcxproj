@@ -1,0 +1,268 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{3126a5dc-5368-4614-8afe-7b4a93948ef3}</ProjectGuid>
+    <RootNamespace>Tracker</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>Build\$(Platform)\$(Configuration)\</IntDir>
+    <IncludePath>$(SolutionDir)Common\Serializer\Include;$(SolutionDir)Common\ceres\Include;$(SolutionDir)Common\Eigen\Include;$(SolutionDir)Common\assimp\Include;$(SolutionDir)Common\uEye\Include;$(SolutionDir)Common\freeglut\Include;$(SolutionDir)Common\glew-2.1.0\Include;$(SolutionDir)Common\Opencv\Include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)Common\ceres\Lib\Debug;$(SolutionDir)Common\uEye\Lib;$(SolutionDir)Common\freeglut\Lib;$(SolutionDir)Common\assimp\Lib;$(SolutionDir)Common\glew-2.1.0\Lib\Release\x64;$(SolutionDir)Common\OpenCV\Lib;$(LibraryPath)</LibraryPath>
+    <SourcePath>$(SourcePath)</SourcePath>
+    <CustomBuildBeforeTargets>Build</CustomBuildBeforeTargets>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>Build\$(Platform)\$(Configuration)\</IntDir>
+    <IncludePath>$(SolutionDir)Common\Serializer\Include;$(SolutionDir)Common\Eigen\Include;$(SolutionDir)Common\ceres\Include;$(SolutionDir)Common\glew-2.1.0\Include;$(SolutionDir)Common\assimp\Include;$(SolutionDir)Common\uEye\Include;$(SolutionDir)Common\freeglut\Include;$(SolutionDir)Common\Opencv\Include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)Common\ceres\Lib\Release;$(SolutionDir)Common\uEye\Lib;$(SolutionDir)Common\freeglut\Lib;$(SolutionDir)Common\assimp\Lib;$(SolutionDir)Common\glew-2.1.0\Lib\Release\x64;$(SolutionDir)Common\OpenCV\Lib;$(LibraryPath)</LibraryPath>
+    <SourcePath>$(SourcePath)</SourcePath>
+    <CustomBuildBeforeTargets>Build</CustomBuildBeforeTargets>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;GOOGLE_GLOG_DLL_DECL=;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>false</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <BrowseInformation>true</BrowseInformation>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>opencv_world452d.lib;uEye_api_64.lib;uEye_tools_64.lib;freeglut64.lib;assimp-vc142-mtd.lib;glew32.lib;ceres.lib;libglog_static.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
+    </Link>
+    <CustomBuildStep>
+      <Command>copy "$(SolutionDir)Common\OpenCV\Bin\opencv_world452d.dll" "$(SolutionDir)Bin\$(Platform)\$(Configuration)\opencv_world452d.dll" /Y
+copy "$(SolutionDir)Common\freeglut\Bin\x64\freeglut.dll" "$(SolutionDir)Bin\$(Platform)\$(Configuration)\freeglut.dll" /Y
+copy "$(SolutionDir)Common\assimp\Bin\assimp-vc142-mtd.dll" "$(SolutionDir)Bin\$(Platform)\$(Configuration)\assimp-vc142-mtd.dll" /Y
+copy "$(SolutionDir)Common\glew-2.1.0\Bin\Release\x64\glew32.dll" "$(SolutionDir)Bin\$(Platform)\$(Configuration)\glew32.dll" /Y
+copy "$(SolutionDir)Common\ceres\Bin\Debug\ceres.dll" "$(SolutionDir)Bin\$(Platform)\$(Configuration)\ceres.dll" /Y
+del "$(SolutionDir)Config\*" /Q</Command>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Outputs>$(SolutionDir)Bin\$(Platform)\$(Configuration)\opencv_world452d.dll;$(SolutionDir)Bin\$(Platform)\$(Configuration)\freeglut.dll;$(SolutionDir)Bin\$(Platform)\$(Configuration)\assimp-vc142-mtd.dll;$(SolutionDir)Bin\$(Platform)\$(Configuration)\glew32.dll;$(SolutionDir)Bin\$(Platform)\$(Configuration)\ceres.dll</Outputs>
+    </CustomBuildStep>
+    <Bscmake>
+      <PreserveSbr>true</PreserveSbr>
+    </Bscmake>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;GOOGLE_GLOG_DLL_DECL=;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>false</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <Optimization>MaxSpeed</Optimization>
+      <OpenMPSupport>true</OpenMPSupport>
+      <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
+      <AdditionalOptions>-DWITH_FFMPEG=ON %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>opencv_world452.lib;uEye_api_64.lib;uEye_tools_64.lib;freeglut64.lib;assimp-vc142-mtd.lib;glew32.lib;ceres.lib;libglog_static.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+    </Link>
+    <CustomBuildStep>
+      <Command>copy "$(SolutionDir)Common\OpenCV\Bin\opencv_world452.dll" "$(SolutionDir)Bin\$(Platform)\$(Configuration)\opencv_world452.dll" /Y
+copy "$(SolutionDir)Common\freeglut\Bin\x64\freeglut.dll" "$(SolutionDir)Bin\$(Platform)\$(Configuration)\freeglut.dll" /Y
+copy "$(SolutionDir)Common\assimp\Bin\assimp-vc142-mtd.dll" "$(SolutionDir)Bin\$(Platform)\$(Configuration)\assimp-vc142-mtd.dll" /Y
+copy "$(SolutionDir)Common\glew-2.1.0\Bin\Release\x64\glew32.dll" "$(SolutionDir)Bin\$(Platform)\$(Configuration)\glew32.dll" /Y
+copy "$(SolutionDir)Common\ceres\Bin\Release\ceres.dll" "$(SolutionDir)Bin\$(Platform)\$(Configuration)\ceres.dll" /Y</Command>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Outputs>$(SolutionDir)Bin\$(Platform)\$(Configuration)\opencv_world452.dll;$(SolutionDir)Bin\$(Platform)\$(Configuration)\freeglut.dll;$(SolutionDir)Bin\$(Platform)\$(Configuration)\assimp-vc142-mtd.dll;$(SolutionDir)Bin\$(Platform)\$(Configuration)\glew32.dll;$(SolutionDir)Bin\$(Platform)\$(Configuration)\ceres.dll</Outputs>
+    </CustomBuildStep>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="src\Camera\Camera.cpp" />
+    <ClCompile Include="src\Detectors\MultiFlashDetector.cpp" />
+    <ClCompile Include="src\Math\RasterPoint.cpp" />
+    <ClCompile Include="src\Math\SixDOF.cpp" />
+    <ClCompile Include="src\Camera\OpenCVCamera.cpp" />
+    <ClCompile Include="src\Camera\uEyeCamera.cpp" />
+    <ClCompile Include="src\Detectors\CannyDetector.cpp" />
+    <ClCompile Include="src\Detectors\lsd.c" />
+    <ClCompile Include="src\Detectors\LSDDetector.cpp" />
+    <ClCompile Include="src\Misc\ConfigParser.cpp" />
+    <ClCompile Include="src\Misc\Constants.hpp" />
+    <ClCompile Include="src\Misc\Log.cpp" />
+    <ClCompile Include="src\Object\AssimpLoader.cpp" />
+    <ClCompile Include="src\Object\Geometry.cpp" />
+    <ClCompile Include="src\Object\Model.cpp" />
+    <ClCompile Include="src\Pose\DistanceTensor.cpp" />
+    <ClCompile Include="src\Pose\Estimation\DirectEstimator.cpp" />
+    <ClCompile Include="src\Pose\Estimation\Estimator.cpp" />
+    <ClCompile Include="src\Pose\Estimation\ParallelEstimator.cpp" />
+    <ClCompile Include="src\Pose\Estimation\SmartEstimator.cpp" />
+    <ClCompile Include="src\Pose\Pose.cpp" />
+    <ClCompile Include="src\Pose\Registration\CeresRegistrator.cpp" />
+    <ClCompile Include="src\Rendering\Pipeline.cpp" />
+    <ClCompile Include="src\Rendering\Renderer.cpp" />
+    <ClCompile Include="src\Rendering\Shader.cpp" />
+    <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\Rendering\TextureMap.cpp" />
+    <ClCompile Include="src\Math\Template.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\Camera\CameraParameters.hpp" />
+    <ClInclude Include="src\Detectors\MultiFlashDetector.hpp" />
+    <ClInclude Include="src\Math\Edge.hpp" />
+    <ClInclude Include="src\Math\EigenTransform.hpp" />
+    <ClInclude Include="src\Math\Loss.hpp" />
+    <ClInclude Include="src\Math\Mean.hpp" />
+    <ClInclude Include="src\Math\RasterPoint.hpp" />
+    <ClInclude Include="src\Math\SixDOF.hpp" />
+    <ClInclude Include="src\Camera\Camera.hpp" />
+    <ClInclude Include="src\Camera\OpenCVCamera.hpp" />
+    <ClInclude Include="src\Camera\uEyeCamera.hpp" />
+    <ClInclude Include="src\Math\Template.hpp" />
+    <ClInclude Include="src\Misc\Range.hpp" />
+    <ClInclude Include="src\Detectors\CannyDetector.hpp" />
+    <ClInclude Include="src\Detectors\EdgeDetector.hpp" />
+    <ClInclude Include="src\Detectors\lsd.h" />
+    <ClInclude Include="src\Detectors\LSDDetector.hpp" />
+    <ClInclude Include="src\Math\Tensor.hpp" />
+    <ClInclude Include="src\Misc\ConfigParser.hpp" />
+    <ClInclude Include="src\Misc\Log.hpp" />
+    <ClInclude Include="src\Misc\Base.hpp" />
+    <ClInclude Include="src\Object\Geometry.hpp" />
+    <ClInclude Include="src\Object\AssimpLoader.hpp" />
+    <ClInclude Include="src\Object\Model.hpp" />
+    <ClInclude Include="src\Pose\DistanceTensor.hpp" />
+    <ClInclude Include="src\Pose\Estimation\DirectEstimator.hpp" />
+    <ClInclude Include="src\Pose\Estimation\Estimator.hpp" />
+    <ClInclude Include="src\Pose\Estimation\ParallelEstimator.hpp" />
+    <ClInclude Include="src\Pose\Estimation\SmartEstimator.hpp" />
+    <ClInclude Include="src\Pose\Pose.hpp" />
+    <ClInclude Include="src\Pose\Registration\CeresRegistrator.hpp" />
+    <ClInclude Include="src\Pose\Registration\Registrator.hpp" />
+    <ClInclude Include="src\Rendering\Pipeline.hpp" />
+    <ClInclude Include="src\Rendering\Renderer.hpp" />
+    <ClInclude Include="src\Rendering\Shader.hpp" />
+    <ClInclude Include="src\Rendering\TextureMap.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="src\Shaders\edge.frag" />
+    <None Include="src\Shaders\edge.vert" />
+    <None Include="src\Shaders\mesh.vert" />
+    <None Include="src\Shaders\mesh.frag" />
+    <None Include="src\Shaders\outline.frag" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

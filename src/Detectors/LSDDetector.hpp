@@ -1,0 +1,14 @@
+#pragma once
+#include "EdgeDetector.hpp"
+
+namespace tr {
+	class LSDDetector : public EdgeDetector {
+	private:
+		float scale;
+	public:
+
+		LSDDetector(float scale = 0.8f) :scale(scale) {}
+
+		virtual void detectEdges(const cv::Mat& img, std::vector<Edge<vec2f>>& edges) const override;
+	};
+}
